@@ -38,6 +38,11 @@ public class Origins {
 	public static ServerConfig config;
 
 	public static void register() {
+		String[] splitVersion = VERSION.split("\\.");
+		SEMVER = new int[splitVersion.length];
+		for (int i = 0; i < SEMVER.length; i++) {
+			SEMVER[i] = Integer.parseInt(splitVersion[i]);
+		}
 		LOGGER.info("Origins " + VERSION + " is initializing. Have fun!");
 		AutoConfig.register(ServerConfig.class, OriginsConfigSerializer::new);
 		config = AutoConfig.getConfigHolder(ServerConfig.class).getConfig();

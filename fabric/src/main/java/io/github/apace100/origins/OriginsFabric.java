@@ -18,11 +18,6 @@ public class OriginsFabric implements ModInitializer {
 			if(VERSION.contains("-")) {
 				VERSION = VERSION.split("-")[0];
 			}
-			String[] splitVersion = VERSION.split("\\.");
-			SEMVER = new int[splitVersion.length];
-			for (int i = 0; i < SEMVER.length; i++) {
-				SEMVER[i] = Integer.parseInt(splitVersion[i]);
-			}
 		});
 		register();
 		FallFlyingLib.registerAccessor(ElytraPowerFallFlying::new);
