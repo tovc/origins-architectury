@@ -8,6 +8,7 @@
 		"OriginLayersMixin",
 		"OriginManagerMixin",
 		"PlayerEntityMixin",
+		"EntityShapeContextMixin",
 		"PowerTypesMixin",
 		"ServerPlayerEntityMixin",
 		"ServerPlayerInteractionManagerMixin",

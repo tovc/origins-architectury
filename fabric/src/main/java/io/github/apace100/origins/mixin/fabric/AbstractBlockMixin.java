@@ -1,11 +1,13 @@
 package io.github.apace100.origins.mixin.fabric;
 
 import io.github.apace100.origins.access.EntityShapeContextAccess;
+import io.github.apace100.origins.access.EntityShapeContextAccessor;
 import io.github.apace100.origins.component.OriginComponent;
 import io.github.apace100.origins.power.ModifyBreakSpeedPower;
 import io.github.apace100.origins.power.PreventBlockSelectionPower;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.EntityShapeContext;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -33,10 +35,12 @@ public abstract class AbstractBlockMixin {
     //Forge: AbstractBlockStateMixin#modifyBlockOutline
     @Inject(at = @At("RETURN"), method = "getOutlineShape", cancellable = true)
     private void modifyBlockOutline(BlockState state, BlockView world, BlockPos pos, ShapeContext context, CallbackInfoReturnable<VoxelShape> cir) {
-        Entity entity = ((EntityShapeContextAccess)context).getEntity();
-        if(entity != null) {
-            if(OriginComponent.getPowers(entity, PreventBlockSelectionPower.class).stream().anyMatch(p -> p.doesPrevent(entity.world, pos))) {
-                cir.setReturnValue(VoxelShapes.empty());
+        if (context instanceof EntityShapeContext) {
+            Entity entity = EntityShapeContextAccessor.getEntity((EntityShapeContext) context);
+            if (entity != null) {
+                if (OriginComponent.getPowers(entity, PreventBlockSelectionPower.class).stream().anyMatch(p -> p.doesPrevent(entity.world, pos))) {
+                    cir.setReturnValue(VoxelShapes.empty());
+                }
             }
         }
     }

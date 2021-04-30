@@ -1,4 +1,4 @@
-package io.github.apace100.origins.mixin;
+package io.github.apace100.origins.mixin.fabric;
 
 import io.github.apace100.origins.access.EntityShapeContextAccess;
 import net.minecraft.block.EntityShapeContext;

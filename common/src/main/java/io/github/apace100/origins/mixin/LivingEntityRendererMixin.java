@@ -1,5 +1,6 @@
 package io.github.apace100.origins.mixin;
 
+import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.component.OriginComponent;
 import io.github.apace100.origins.power.InvisibilityPower;
 import io.github.apace100.origins.power.ModelColorPower;
@@ -17,12 +18,10 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 import java.util.List;
 
@@ -59,19 +58,23 @@ public abstract class LivingEntityRendererMixin extends EntityRenderer<LivingEnt
     }
 
     @Environment(EnvType.CLIENT)
-    @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/entity/model/EntityModel;render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;IIFFFF)V", ordinal = 0))
-    private <T extends LivingEntity> void renderColorChangedModel(EntityModel<T> model, MatrixStack matrices, VertexConsumer vertices, int light, int overlay, float red, float green, float blue, float alpha, LivingEntity player) {
+    @ModifyArgs(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/entity/model/EntityModel;render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;IIFFFF)V", ordinal = 0))
+    private <T extends LivingEntity> void renderColorChangedModel(Args args, LivingEntity player, float f, float g, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i) {
         if(player instanceof PlayerEntity) {
             List<ModelColorPower> modelColorPowers = OriginComponent.getPowers(player, ModelColorPower.class);
             if (!modelColorPowers.isEmpty()) {
-                float r = modelColorPowers.stream().map(ModelColorPower::getRed).reduce(1.0F, (a, b) -> a * b);
-                float g = modelColorPowers.stream().map(ModelColorPower::getGreen).reduce(1.0F, (a, b) -> a * b);
-                float b = modelColorPowers.stream().map(ModelColorPower::getBlue).reduce(1.0F, (a, c) -> a * c);
-                float a = modelColorPowers.stream().map(ModelColorPower::getAlpha).min(Float::compare).orElseThrow(RuntimeException::new);
-                model.render(matrices, vertices, light, overlay, r * red, g * green, b * blue, a * alpha);
-                return;
+                //Mixin is being weird.
+                //Basically: if there is a redirect, args[0] is a Model
+                // otherwise args[0] is the MatrixStack
+                int red = args.size() - 4;
+                int green = args.size() - 3;
+                int blue = args.size() - 2;
+                int alpha = args.size() - 1;
+                args.set(red, args.<Float>get(red) * modelColorPowers.stream().map(ModelColorPower::getRed).reduce(1.0F, (a, b) -> a * b));
+                args.set(green, args.<Float>get(green) * modelColorPowers.stream().map(ModelColorPower::getGreen).reduce(1.0F, (a, b) -> a * b));
+                args.set(blue, args.<Float>get(blue) * modelColorPowers.stream().map(ModelColorPower::getBlue).reduce(1.0F, (a, c) -> a * c));
+                args.set(alpha, args.<Float>get(alpha) * modelColorPowers.stream().map(ModelColorPower::getAlpha).min(Float::compare).orElseThrow(RuntimeException::new));
             }
         }
-        model.render(matrices, vertices, light, overlay, red, green, blue, alpha);
     }
 }

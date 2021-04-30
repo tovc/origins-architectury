@@ -9,7 +9,6 @@
 		"ConduitBlockEntityMixin",
 		"CreeperEntityMixin",
 		"EntityMixin",
-		"EntityShapeContextMixin",
 		"ExperienceOrbEntityMixin",
 		"HungerManagerMixin",
 		"ItemStackMixin",
