@@ -16,6 +16,11 @@ architectury {
 	fabric()
 }
 
+repositories {
+	maven { url 'https://dl.bintray.com/ladysnake/libs' }
+	maven { url 'https://dl.bintray.com/adriantodt/maven' }
+}
+
 dependencies {
 	minecraft("com.mojang:minecraft:${rootProject.architectury.minecraft}")
 	mappings "net.fabricmc:yarn:${rootProject.yarn_mappings}"

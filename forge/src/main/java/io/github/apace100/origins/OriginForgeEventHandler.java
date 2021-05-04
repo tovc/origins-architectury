@@ -92,9 +92,7 @@ public class OriginForgeEventHandler {
 
 	@SubscribeEvent
 	public static void playerClone(PlayerEvent.Clone event) {
-		if (event.isWasDeath()) {
-			copy(ModComponentsArchitecturyImpl.ORIGIN_COMPONENT_CAPABILITY, event);
-		}
+		copy(ModComponentsArchitecturyImpl.ORIGIN_COMPONENT_CAPABILITY, event);
 	}
 
 	@SubscribeEvent
