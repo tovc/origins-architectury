@@ -35,10 +35,9 @@ allprojects {
 	group = rootProject.maven_group
 
 	repositories {
-		maven { url 'https://jitpack.io' }
+		maven { url 'https://ladysnake.jfrog.io/artifactory/mods' }
 		maven { url 'https://maven.jamieswhiteshirt.com/libs-release/' }
 		maven { url 'https://maven.shedaniel.me/' }
-		jcenter()
 		mavenLocal()
 	}
 

@@ -97,7 +97,7 @@ public interface OriginComponent {
 				.filter(p -> powerFilter == null || powerFilter.test(p))
 				.flatMap(p -> p.getModifiers().stream()).collect(Collectors.toList());
 			if(powerAction != null) {
-				powers.forEach(powerAction);
+				powers.stream().filter(p -> powerFilter == null || powerFilter.test(p)).forEach(powerAction);
 			}
 			return AttributeUtil.sortAndApplyModifiers(mps, baseValue);
 		}
@@ -129,6 +129,8 @@ public interface OriginComponent {
 						setOrigin(layer, origins.get(0));
 					}
 					choseOneAutomatically = true;
+					shouldContinue = true;
+				} else if(layer.getOriginOptionCount(player) == 0) {
 					shouldContinue = true;
 				}
 			} else {
