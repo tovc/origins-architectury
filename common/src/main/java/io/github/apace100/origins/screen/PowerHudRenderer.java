@@ -27,7 +27,7 @@ public class PowerHudRenderer extends DrawableHelper implements GameHudRender {
     @Environment(EnvType.CLIENT)
     public void render(MatrixStack matrices, float delta) {
         MinecraftClient client = MinecraftClient.getInstance();
-        OriginComponent component = ModComponents.ORIGIN.get(client.player);
+        OriginComponent component = ModComponentsArchitectury.getOriginComponent(client.player);
         if(component.hasAllOrigins()) {
             int x = client.getWindow().getScaledWidth() / 2 + 20 + OriginsClient.config.xOffset;
             int y = client.getWindow().getScaledHeight() - 47 + OriginsClient.config.yOffset;

@@ -8,7 +8,7 @@ pluginManagement {
 }
 
 include("common")
-//include("fabric") //Ignore fabric for now as it uses bintray which doesn't work well with jitpack
+include("fabric") //Ignore fabric for now as it uses bintray which doesn't work well with jitpack
 include("forge")
 
 rootProject.name = "Origins"

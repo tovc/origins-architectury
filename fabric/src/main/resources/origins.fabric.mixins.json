@@ -9,6 +9,7 @@
 		"OriginManagerMixin",
 		"PlayerEntityMixin",
 		"EntityShapeContextMixin",
+		"InGameHudMixin",
 		"PowerTypesMixin",
 		"ServerPlayerEntityMixin",
 		"ServerPlayerInteractionManagerMixin",

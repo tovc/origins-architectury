@@ -27,7 +27,7 @@ public class OriginsForge {
 	/**
 	 * Lowest version without networking changes.
 	 */
-	private static final String NETVERSION = "0.7.0";
+	private static final String NETVERSION = "0.7.1";
 	public static final SimpleChannel channel = NetworkRegistry.newSimpleChannel(Origins.identifier("handshake"), () -> NETVERSION, NetworkRegistry.acceptMissingOr(NETVERSION), NetworkRegistry.acceptMissingOr(NETVERSION));
 
 	public OriginsForge() {
