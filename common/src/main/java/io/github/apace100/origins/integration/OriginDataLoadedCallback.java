@@ -11,12 +11,17 @@ import me.shedaniel.architectury.event.EventFactory;
  *
  */
 public interface OriginDataLoadedCallback {
-    Event<OriginDataLoadedCallback> EVENT = EventFactory.of((listeners) -> (isClient) -> {
-            for (OriginDataLoadedCallback event : listeners) {
-                event.onDataLoaded(isClient);
-            }
-        }
-    );
+
+    Event<OriginDataLoadedCallback> ORIGIN_LAYERS_LOADED = EventFactory.createLoop();
+    Event<OriginDataLoadedCallback> ORIGINS_LOADED = EventFactory.createLoop();
+    Event<OriginDataLoadedCallback> POWER_TYPES_LOADED = EventFactory.createLoop();
+
+
+    /**
+     * @deprecated Use {@link #ORIGIN_LAYERS_LOADED} instead.
+     */
+    @Deprecated
+    Event<OriginDataLoadedCallback> EVENT = ORIGIN_LAYERS_LOADED;
 
     void onDataLoaded(boolean isClient);
 }

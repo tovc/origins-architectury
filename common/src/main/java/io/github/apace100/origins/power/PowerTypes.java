@@ -2,6 +2,7 @@ package io.github.apace100.origins.power;
 
 import com.google.gson.*;
 import io.github.apace100.origins.Origins;
+import io.github.apace100.origins.integration.OriginDataLoadedCallback;
 import io.github.apace100.origins.power.factory.PowerFactory;
 import io.github.apace100.origins.registry.ModRegistriesArchitectury;
 import io.github.apace100.origins.util.MultiJsonDataLoader;
@@ -101,6 +102,7 @@ public class PowerTypes extends MultiJsonDataLoader {
         CURRENT_NAMESPACE = null;
         CURRENT_PATH = null;
         Origins.LOGGER.info("Finished loading powers from data files. Registry contains " + PowerTypeRegistry.size() + " powers.");
+        OriginDataLoadedCallback.POWER_TYPES_LOADED.invoker().onDataLoaded(false);
     }
 
     private void readPower(Identifier id, JsonElement je, boolean isSubPower) {

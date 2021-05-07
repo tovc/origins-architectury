@@ -87,6 +87,7 @@ public class ModPacketsS2C {
             for(int i = 0; i < ids.length; i++) {
                 OriginRegistry.register(ids[i], Origin.createFromData(ids[i], origins[i]));
             }
+            OriginDataLoadedCallback.ORIGINS_LOADED.invoker().onDataLoaded(true);
         });
     }
 
@@ -102,7 +103,7 @@ public class ModPacketsS2C {
             for(int i = 0; i < layerCount; i++) {
                 OriginLayers.add(layers[i]);
             }
-            OriginDataLoadedCallback.EVENT.invoker().onDataLoaded(true);
+            OriginDataLoadedCallback.ORIGIN_LAYERS_LOADED.invoker().onDataLoaded(true);
         });
     }
 
@@ -126,5 +127,6 @@ public class ModPacketsS2C {
             PowerTypeRegistry.clear();
             factories.forEach(PowerTypeRegistry::register);
         });
+        OriginDataLoadedCallback.POWER_TYPES_LOADED.invoker().onDataLoaded(true);
     }
 }

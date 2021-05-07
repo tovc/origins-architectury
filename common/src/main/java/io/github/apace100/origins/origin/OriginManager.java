@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import io.github.apace100.origins.Origins;
+import io.github.apace100.origins.integration.OriginDataLoadedCallback;
 import io.github.apace100.origins.util.MultiJsonDataLoader;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
@@ -38,6 +39,7 @@ public class OriginManager extends MultiJsonDataLoader /*implements Identifiable
 			}
 		}));
 		Origins.LOGGER.info("Finished loading origins from data files. Registry contains " + OriginRegistry.size() + " origins.");
+		OriginDataLoadedCallback.ORIGINS_LOADED.invoker().onDataLoaded(false);
 	}
 
 	/*@Override*/

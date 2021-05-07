@@ -52,7 +52,7 @@ public class OriginLayers extends MultiJsonDataLoader {
             }
         }));
         Origins.LOGGER.info("Finished loading origin layers from data files. Read " + layers.size() + " layers.");
-        OriginDataLoadedCallback.EVENT.invoker().onDataLoaded(false);
+        OriginDataLoadedCallback.ORIGIN_LAYERS_LOADED.invoker().onDataLoaded(false);
     }
 
     public static OriginLayer getLayer(Identifier id) {
