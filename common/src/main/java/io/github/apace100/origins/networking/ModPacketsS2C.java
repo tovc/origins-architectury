@@ -1,7 +1,7 @@
 package io.github.apace100.origins.networking;
 
 import io.github.apace100.origins.component.OriginComponent;
-import io.github.apace100.origins.integration.OriginDataLoadedCallback;
+import io.github.apace100.origins.integration.OriginEventsArchitectury;
 import io.github.apace100.origins.origin.Origin;
 import io.github.apace100.origins.origin.OriginLayer;
 import io.github.apace100.origins.origin.OriginLayers;
@@ -87,7 +87,7 @@ public class ModPacketsS2C {
             for(int i = 0; i < ids.length; i++) {
                 OriginRegistry.register(ids[i], Origin.createFromData(ids[i], origins[i]));
             }
-            OriginDataLoadedCallback.ORIGINS_LOADED.invoker().onDataLoaded(true);
+            OriginEventsArchitectury.ORIGINS_LOADED.invoker().onDataLoaded(true);
         });
     }
 
@@ -103,7 +103,7 @@ public class ModPacketsS2C {
             for(int i = 0; i < layerCount; i++) {
                 OriginLayers.add(layers[i]);
             }
-            OriginDataLoadedCallback.ORIGIN_LAYERS_LOADED.invoker().onDataLoaded(true);
+            OriginEventsArchitectury.ORIGIN_LAYERS_LOADED.invoker().onDataLoaded(true);
         });
     }
 
@@ -127,6 +127,6 @@ public class ModPacketsS2C {
             PowerTypeRegistry.clear();
             factories.forEach(PowerTypeRegistry::register);
         });
-        OriginDataLoadedCallback.POWER_TYPES_LOADED.invoker().onDataLoaded(true);
+        OriginEventsArchitectury.POWER_TYPES_LOADED.invoker().onDataLoaded(true);
     }
 }

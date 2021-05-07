@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import io.github.apace100.origins.Origins;
-import io.github.apace100.origins.integration.OriginDataLoadedCallback;
+import io.github.apace100.origins.integration.OriginEventsArchitectury;
 import io.github.apace100.origins.util.MultiJsonDataLoader;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
@@ -13,12 +13,16 @@ import net.minecraft.util.profiler.Profiler;
 import java.util.List;
 import java.util.Map;
 
-public class OriginManager extends MultiJsonDataLoader /*implements IdentifiableResourceReloadListener*/ {
+public class OriginManager extends MultiJsonDataLoader {
 	
 	private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().disableHtmlEscaping().create();
 
 	public OriginManager() {
 		super(GSON, "origins");
+	}
+
+	private static void fireLoadingEvent(Origin origin) {
+		OriginEventsArchitectury.ORIGIN_LOADING.invoker().onLoad(origin);
 	}
 
 	@Override
@@ -27,6 +31,7 @@ public class OriginManager extends MultiJsonDataLoader /*implements Identifiable
 		loader.forEach((id, jel) -> jel.forEach(je -> {
 			try {
 				Origin origin = Origin.fromJson(id, je.getAsJsonObject());
+				fireLoadingEvent(origin);
 				if(!OriginRegistry.contains(id)) {
 					OriginRegistry.register(id, origin);
 				} else {
@@ -39,7 +44,7 @@ public class OriginManager extends MultiJsonDataLoader /*implements Identifiable
 			}
 		}));
 		Origins.LOGGER.info("Finished loading origins from data files. Registry contains " + OriginRegistry.size() + " origins.");
-		OriginDataLoadedCallback.ORIGINS_LOADED.invoker().onDataLoaded(false);
+		OriginEventsArchitectury.ORIGINS_LOADED.invoker().onDataLoaded(false);
 	}
 
 	/*@Override*/

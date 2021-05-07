@@ -5,7 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.github.apace100.origins.Origins;
-import io.github.apace100.origins.integration.OriginDataLoadedCallback;
+import io.github.apace100.origins.integration.OriginEventsArchitectury;
 import io.github.apace100.origins.util.MultiJsonDataLoader;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
@@ -27,6 +27,10 @@ public class OriginLayers extends MultiJsonDataLoader {
         super(GSON, "origin_layers");
     }
 
+    private static void fireLoadingEvent(OriginLayer layer) {
+        OriginEventsArchitectury.ORIGIN_LAYER_LOADING.invoker().onLoad(layer);
+    }
+
     @Override
     protected void apply(Map<Identifier, List<JsonElement>> loader, ResourceManager manager, Profiler profiler) {
         clear();
@@ -38,13 +42,16 @@ public class OriginLayers extends MultiJsonDataLoader {
                 if (layers.containsKey(id)) {
                     if (replace) {
                         OriginLayer layer = OriginLayer.fromJson(id, jo);
+                        fireLoadingEvent(layer);
                         layers.put(id, layer);
                     } else {
                         Origins.LOGGER.info("Merging origin layer " + id.toString());
                         layers.get(id).merge(jo);
+                        fireLoadingEvent(layers.get(id));
                     }
                 } else {
                     OriginLayer layer = OriginLayer.fromJson(id, jo);
+                    fireLoadingEvent(layer);
                     layers.put(id, layer);
                 }
             } catch (Exception e) {
@@ -52,7 +59,7 @@ public class OriginLayers extends MultiJsonDataLoader {
             }
         }));
         Origins.LOGGER.info("Finished loading origin layers from data files. Read " + layers.size() + " layers.");
-        OriginDataLoadedCallback.ORIGIN_LAYERS_LOADED.invoker().onDataLoaded(false);
+        OriginEventsArchitectury.ORIGIN_LAYERS_LOADED.invoker().onDataLoaded(false);
     }
 
     public static OriginLayer getLayer(Identifier id) {
