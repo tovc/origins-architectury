@@ -6,7 +6,8 @@
 	"mixins": [
 		"AbstractBlockStateMixin",
 		"EnderianPearlEntityMixin",
-		"ForgeHooksMixin"
+		"ForgeHooksMixin",
+		"LivingEntityMixin"
 	],
 	"client": [
 		"BackgroundRendererMixin",

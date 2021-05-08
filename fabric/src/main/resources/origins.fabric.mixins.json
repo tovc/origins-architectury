@@ -5,15 +5,16 @@
 	"compatibilityLevel": "JAVA_8",
 	"mixins": [
 		"AbstractBlockMixin",
-		"OriginLayersMixin",
-		"OriginManagerMixin",
-		"PlayerEntityMixin",
 		"EntityShapeContextMixin",
 		"InGameHudMixin",
+		"LivingEntityMixin",
+		"OriginLayersMixin",
+		"OriginManagerMixin",
+		"PersistentProjectileEntityMixin",
+		"PlayerEntityMixin",
 		"PowerTypesMixin",
 		"ServerPlayerEntityMixin",
 		"ServerPlayerInteractionManagerMixin",
-		"PersistentProjectileEntityMixin",
 		"TridentEntityMixin"
 	],
 	"client": [
