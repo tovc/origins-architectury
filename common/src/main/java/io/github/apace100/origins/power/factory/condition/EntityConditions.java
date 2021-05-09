@@ -1,5 +1,6 @@
 package io.github.apace100.origins.power.factory.condition;
 
+import com.mojang.serialization.Codec;
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.access.MovingEntity;
 import io.github.apace100.origins.component.OriginComponent;
@@ -7,20 +8,24 @@ import io.github.apace100.origins.origin.Origin;
 import io.github.apace100.origins.origin.OriginLayer;
 import io.github.apace100.origins.origin.OriginLayers;
 import io.github.apace100.origins.power.*;
+import io.github.apace100.origins.power.condition.MetaFactories;
+import io.github.apace100.origins.power.condition.entity.BlockCollisionCondition;
+import io.github.apace100.origins.power.condition.entity.PowerActiveCondition;
+import io.github.apace100.origins.power.condition.meta.FloatComparingCondition;
+import io.github.apace100.origins.power.condition.meta.IntComparingCondition;
 import io.github.apace100.origins.registry.ModComponentsArchitectury;
 import io.github.apace100.origins.registry.ModRegistriesArchitectury;
-import io.github.apace100.origins.util.Comparison;
-import io.github.apace100.origins.util.SerializableData;
-import io.github.apace100.origins.util.SerializableDataType;
-import io.github.apace100.origins.util.Shape;
+import io.github.apace100.origins.util.*;
 import net.minecraft.block.pattern.CachedBlockPosition;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeInstance;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.passive.TameableEntity;
@@ -41,6 +46,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.tag.Tag;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.registry.Registry;
@@ -54,58 +60,29 @@ public class EntityConditions {
 
     @SuppressWarnings("unchecked")
     public static void register() {
-        register(new ConditionFactory<>(Origins.identifier("constant"), new SerializableData()
-            .add("value", SerializableDataType.BOOLEAN),
-            (data, entity) -> data.getBoolean("value")));
-        register(new ConditionFactory<>(Origins.identifier("and"), new SerializableData()
-            .add("conditions", SerializableDataType.ENTITY_CONDITIONS),
-            (data, entity) -> ((List<ConditionFactory<LivingEntity>.Instance>)data.get("conditions")).stream().allMatch(
-                condition -> condition.test(entity)
-            )));
-        register(new ConditionFactory<>(Origins.identifier("or"), new SerializableData()
-            .add("conditions", SerializableDataType.ENTITY_CONDITIONS),
-            (data, entity) -> ((List<ConditionFactory<LivingEntity>.Instance>)data.get("conditions")).stream().anyMatch(
-                condition -> condition.test(entity)
-            )));
-        register(new ConditionFactory<>(Origins.identifier("block_collision"), new SerializableData()
-            .add("offset_x", SerializableDataType.FLOAT)
-            .add("offset_y", SerializableDataType.FLOAT)
-            .add("offset_z", SerializableDataType.FLOAT),
-            (data, entity) -> entity.world.getBlockCollisions(entity,
-                entity.getBoundingBox().offset(
-                    data.getFloat("offset_x") * entity.getBoundingBox().getXLength(),
-                    data.getFloat("offset_y") * entity.getBoundingBox().getYLength(),
-                    data.getFloat("offset_z") * entity.getBoundingBox().getZLength())
-            ).findAny().isPresent()));
-        register(new ConditionFactory<>(Origins.identifier("brightness"), new SerializableData()
-            .add("comparison", SerializableDataType.COMPARISON)
-            .add("compare_to", SerializableDataType.FLOAT),
-            (data, entity) -> ((Comparison)data.get("comparison")).compare(entity.getBrightnessAtEyes(), data.getFloat("compare_to"))));
-        register(new ConditionFactory<>(Origins.identifier("daytime"), new SerializableData(), (data, entity) -> entity.world.getTimeOfDay() % 24000L < 13000L));
-        register(new ConditionFactory<>(Origins.identifier("time_of_day"), new SerializableData()
-            .add("comparison", SerializableDataType.COMPARISON)
-            .add("compare_to", SerializableDataType.INT), (data, entity) ->
-            ((Comparison)data.get("comparison")).compare(entity.world.getTimeOfDay() % 24000L, data.getInt("compare_to"))));
-        register(new ConditionFactory<>(Origins.identifier("fall_flying"), new SerializableData(), (data, entity) -> entity.isFallFlying()));
-        register(new ConditionFactory<>(Origins.identifier("exposed_to_sun"), new SerializableData(), (data, entity) -> {
-            if (entity.world.isDay() && !entity.isBeingRainedOn()) {
-                float f = entity.getBrightnessAtEyes();
-                BlockPos blockPos = entity.getVehicle() instanceof BoatEntity ? (new BlockPos(entity.getX(), (double) Math.round(entity.getY()), entity.getZ())).up() : new BlockPos(entity.getX(), (double) Math.round(entity.getY()), entity.getZ());
-                return f > 0.5F && entity.world.isSkyVisible(blockPos);
-            }
-            return false;
-        }));
-        register(new ConditionFactory<>(Origins.identifier("in_rain"), new SerializableData(), (data, entity) -> entity.isBeingRainedOn()));
-        register(new ConditionFactory<>(Origins.identifier("invisible"), new SerializableData(), (data, entity) -> entity.isInvisible()));
-        register(new ConditionFactory<>(Origins.identifier("on_fire"), new SerializableData(), (data, entity) -> entity.isOnFire()));
-        register(new ConditionFactory<>(Origins.identifier("exposed_to_sky"), new SerializableData(), (data, entity) -> {
+        MetaFactories.defineMetaConditions(ModRegistriesArchitectury.ENTITY_CONDITION, OriginsCodecs.ENTITY_CONDITION);
+        register("block_collision", BlockCollisionCondition.CODEC);
+        register("brightness", FloatComparingCondition.codec(Entity::getBrightnessAtEyes));
+        register("daytime", entity -> entity.world.getTimeOfDay() % 24000L < 13000L);
+        register("brightness", IntComparingCondition.codec(entity -> Math.toIntExact(entity.world.getTimeOfDay() % 24000L)));
+        register("fall_flying", LivingEntity::isFallFlying);
+        register("exposed_to_sun",  entity -> {
+            if (!entity.world.isDay() || entity.isBeingRainedOn())
+                return false;
+            BlockPos bp = new BlockPos(entity.getX(), (double) Math.round(entity.getY()), entity.getZ());
+            if (entity.getVehicle() instanceof BoatEntity) bp = bp.up();
+            return entity.getBrightnessAtEyes() > 0.5F && entity.world.isSkyVisible(bp);
+        });
+        register("in_rain", Entity::isBeingRainedOn);
+        register("invisible", Entity::isInvisible);
+        register("on_fire", Entity::isOnFire);
+        register("exposed_to_sky", entity -> {
             BlockPos blockPos = entity.getVehicle() instanceof BoatEntity ? (new BlockPos(entity.getX(), (double) Math.round(entity.getY()), entity.getZ())).up() : new BlockPos(entity.getX(), (double) Math.round(entity.getY()), entity.getZ());
             return entity.world.isSkyVisible(blockPos);
-        }));
-        register(new ConditionFactory<>(Origins.identifier("sneaking"), new SerializableData(), (data, entity) -> entity.isSneaking()));
-        register(new ConditionFactory<>(Origins.identifier("sprinting"), new SerializableData(), (data, entity) -> entity.isSprinting()));
-        register(new ConditionFactory<>(Origins.identifier("power_active"), new SerializableData().add("power", SerializableDataType.POWER_TYPE),
-            (data, entity) -> ((PowerTypeReference<?>)data.get("power")).isActive(entity)));
+        });
+        register("sneaking", Entity::isSneaking);
+        register("sprinting", Entity::isSprinting);
+        register("power_active", PowerActiveCondition.CODEC);
         register(new ConditionFactory<>(Origins.identifier("status_effect"), new SerializableData()
             .add("effect", SerializableDataType.STATUS_EFFECT)
             .add("min_amplifier", SerializableDataType.INT, 0)
@@ -163,15 +140,8 @@ public class EntityConditions {
                     return false;
                 }
             }));
-        register(new ConditionFactory<>(Origins.identifier("food_level"), new SerializableData()
-            .add("comparison", SerializableDataType.COMPARISON)
-            .add("compare_to", SerializableDataType.INT),
-            (data, entity) -> {
-                if(entity instanceof PlayerEntity) {
-                    return ((Comparison)data.get("comparison")).compare(((PlayerEntity)entity).getHungerManager().getFoodLevel(), data.getInt("compare_to"));
-                }
-                return false;
-            }));
+        register("food_level", IntComparingCondition.codec(x -> x instanceof PlayerEntity ? ((PlayerEntity) x).getHungerManager().getFoodLevel() : Integer.MIN_VALUE));
+        register("saturation_level", FloatComparingCondition.codec(x -> x instanceof PlayerEntity ? ((PlayerEntity) x).getHungerManager().getSaturationLevel() : Float.NaN));
         register(new ConditionFactory<>(Origins.identifier("saturation_level"), new SerializableData()
             .add("comparison", SerializableDataType.COMPARISON)
             .add("compare_to", SerializableDataType.FLOAT),
@@ -203,7 +173,7 @@ public class EntityConditions {
                 }
                 return ((Comparison)data.get("comparison")).compare(attrValue, data.getDouble("compare_to"));
             }));
-        register(new ConditionFactory<>(Origins.identifier("swimming"), new SerializableData(), (data, entity) -> entity.isSwimming()));
+        register("swimming", Entity::isSwimming);
         register(new ConditionFactory<>(Origins.identifier("resource"), new SerializableData()
             .add("resource", SerializableDataType.POWER_TYPE)
             .add("comparison", SerializableDataType.COMPARISON)
@@ -219,10 +189,7 @@ public class EntityConditions {
                 }
                 return ((Comparison)data.get("comparison")).compare(resourceValue, data.getInt("compare_to"));
             }));
-        register(new ConditionFactory<>(Origins.identifier("air"), new SerializableData()
-            .add("comparison", SerializableDataType.COMPARISON)
-            .add("compare_to", SerializableDataType.INT),
-            (data, entity) -> ((Comparison)data.get("comparison")).compare(entity.getAir(), data.getInt("compare_to"))));
+        register("air", IntComparingCondition.codec(Entity::getAir));
         register(new ConditionFactory<>(Origins.identifier("in_block"), new SerializableData()
             .add("block_condition", SerializableDataType.BLOCK_CONDITION),
             (data, entity) ->((ConditionFactory<CachedBlockPosition>.Instance)data.get("block_condition")).test(
@@ -269,23 +236,9 @@ public class EntityConditions {
                 }
                 return false;
             }));
-        register(new ConditionFactory<>(Origins.identifier("xp_points"), new SerializableData()
-            .add("comparison", SerializableDataType.COMPARISON)
-            .add("compare_to", SerializableDataType.INT),
-            (data, entity) -> {
-                if(entity instanceof PlayerEntity) {
-                    return ((Comparison)data.get("comparison")).compare(((PlayerEntity)entity).totalExperience, data.getInt("compare_to"));
-                }
-                return false;
-            }));
-        register(new ConditionFactory<>(Origins.identifier("health"), new SerializableData()
-            .add("comparison", SerializableDataType.COMPARISON)
-            .add("compare_to", SerializableDataType.FLOAT),
-            (data, entity) -> ((Comparison)data.get("comparison")).compare(entity.getHealth(), data.getFloat("compare_to"))));
-        register(new ConditionFactory<>(Origins.identifier("relative_health"), new SerializableData()
-            .add("comparison", SerializableDataType.COMPARISON)
-            .add("compare_to", SerializableDataType.FLOAT),
-            (data, entity) -> ((Comparison)data.get("comparison")).compare(entity.getHealth() / entity.getMaxHealth(), data.getFloat("compare_to"))));
+        register("xp_points", IntComparingCondition.codec(t -> t instanceof PlayerEntity ? ((PlayerEntity) t).totalExperience : Integer.MIN_VALUE));
+        register("health",FloatComparingCondition.codec(LivingEntity::getHealth));
+        register("relative_health",FloatComparingCondition.codec(t -> t.getHealth() / t.getMaxHealth()));
         register(new ConditionFactory<>(Origins.identifier("biome"), new SerializableData()
             .add("biome", SerializableDataType.IDENTIFIER, null)
             .add("biomes", SerializableDataType.IDENTIFIERS, null)
@@ -365,12 +318,8 @@ public class EntityConditions {
                 return false;
             }
         ));
-        register(new ConditionFactory<>(Origins.identifier("fall_distance"), new SerializableData()
-            .add("comparison", SerializableDataType.COMPARISON)
-            .add("compare_to", SerializableDataType.FLOAT),
-            (data, entity) -> ((Comparison)data.get("comparison")).compare(entity.fallDistance, data.getFloat("compare_to"))));
-        register(new ConditionFactory<>(Origins.identifier("collided_horizontally"), new SerializableData(),
-            (data, entity) -> entity.horizontalCollision));
+        register("fall_distance", FloatComparingCondition.codec(t -> t.fallDistance));
+        register("collided_horizontally", t -> t.horizontalCollision);
         register(new ConditionFactory<>(Origins.identifier("in_block_anywhere"), new SerializableData()
             .add("block_condition", SerializableDataType.BLOCK_CONDITION)
             .add("comparison", SerializableDataType.COMPARISON, Comparison.GREATER_THAN_OR_EQUAL)
@@ -461,5 +410,13 @@ public class EntityConditions {
 
     private static void register(ConditionFactory<LivingEntity> conditionFactory) {
         ModRegistriesArchitectury.ENTITY_CONDITION.registerSupplied(conditionFactory.getSerializerId(), () -> conditionFactory);
+    }
+
+    private static void register(String name, Codec<? extends Predicate<LivingEntity>> codec) {
+        ModRegistriesArchitectury.ENTITY_CONDITION.registerSupplied(Origins.identifier(name), () -> new ConditionFactory<>(codec));
+    }
+
+    private static void register(String name, Predicate<LivingEntity> codec) {
+        register(name, Codec.unit(codec));
     }
 }

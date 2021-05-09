@@ -1,47 +1,28 @@
 package io.github.apace100.origins.power.factory.condition;
 
+import com.mojang.serialization.Codec;
 import io.github.apace100.origins.Origins;
+import io.github.apace100.origins.power.condition.MetaFactories;
+import io.github.apace100.origins.power.condition.biome.HighHumidityCondition;
+import io.github.apace100.origins.power.condition.biome.StringBiomeCondition;
+import io.github.apace100.origins.power.condition.meta.FloatComparingCondition;
 import io.github.apace100.origins.registry.ModRegistriesArchitectury;
-import io.github.apace100.origins.util.Comparison;
-import io.github.apace100.origins.util.SerializableData;
-import io.github.apace100.origins.util.SerializableDataType;
+import io.github.apace100.origins.util.OriginsCodecs;
 import net.minecraft.world.biome.Biome;
 
-import java.util.List;
+import java.util.function.Predicate;
 
 public class BiomeConditions {
 
-    @SuppressWarnings("unchecked")
-    public static void register() {
-        register(new ConditionFactory<>(Origins.identifier("constant"), new SerializableData()
-            .add("value", SerializableDataType.BOOLEAN),
-            (data, fluid) -> data.getBoolean("value")));
-        register(new ConditionFactory<>(Origins.identifier("and"), new SerializableData()
-            .add("conditions", SerializableDataType.BIOME_CONDITIONS),
-            (data, fluid) -> ((List<ConditionFactory<Biome>.Instance>)data.get("conditions")).stream().allMatch(
-                condition -> condition.test(fluid)
-            )));
-        register(new ConditionFactory<>(Origins.identifier("or"), new SerializableData()
-            .add("conditions", SerializableDataType.BIOME_CONDITIONS),
-            (data, fluid) -> ((List<ConditionFactory<Biome>.Instance>)data.get("conditions")).stream().anyMatch(
-                condition -> condition.test(fluid)
-            )));
+	public static void register() {
+		MetaFactories.defineMetaConditions(ModRegistriesArchitectury.BIOME_CONDITION, OriginsCodecs.BIOME_CONDITION);
+		register("high_humidity", HighHumidityCondition.CODEC);
+		register("temperature", FloatComparingCondition.codec(Biome::getTemperature));
+		register("category", StringBiomeCondition.codec("category", biome -> biome.getCategory().getName()));
+		register("precipitation", StringBiomeCondition.codec("precipitation", biome -> biome.getPrecipitation().getName()));
+	}
 
-        register(new ConditionFactory<>(Origins.identifier("high_humidity"), new SerializableData(),
-            (data, biome) -> biome.hasHighHumidity()));
-        register(new ConditionFactory<>(Origins.identifier("temperature"), new SerializableData()
-            .add("comparison", SerializableDataType.COMPARISON)
-            .add("compare_to", SerializableDataType.FLOAT),
-            (data, biome) -> ((Comparison)data.get("comparison")).compare(biome.getTemperature(), data.getFloat("compare_to"))));
-        register(new ConditionFactory<>(Origins.identifier("category"), new SerializableData()
-            .add("category", SerializableDataType.STRING),
-            (data, biome) -> biome.getCategory().getName().equals(data.getString("category"))));
-        register(new ConditionFactory<>(Origins.identifier("precipitation"), new SerializableData()
-            .add("precipitation", SerializableDataType.STRING),
-            (data, biome) -> biome.getPrecipitation().getName().equals(data.getString("precipitation"))));
-    }
-
-    private static void register(ConditionFactory<Biome> conditionFactory) {
-        ModRegistriesArchitectury.BIOME_CONDITION.registerSupplied(conditionFactory.getSerializerId(), () -> conditionFactory);
-    }
+	private static void register(String name, Codec<? extends Predicate<Biome>> codec) {
+		ModRegistriesArchitectury.BIOME_CONDITION.registerSupplied(Origins.identifier(name), () -> new ConditionFactory<>(codec));
+	}
 }

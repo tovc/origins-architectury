@@ -3,10 +3,17 @@ package io.github.apace100.origins.origin;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 
 public class OriginUpgrade {
+    public static final Codec<OriginUpgrade> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            Identifier.CODEC.fieldOf("condition").forGetter(OriginUpgrade::getAdvancementCondition),
+            Identifier.CODEC.fieldOf("origin").forGetter(OriginUpgrade::getUpgradeToOrigin),
+            Codec.STRING.optionalFieldOf("announcement", "").forGetter(OriginUpgrade::getAnnouncement)
+    ).apply(instance, OriginUpgrade::new));
 
     private final Identifier advancementCondition;
     private final Identifier upgradeToOrigin;

@@ -1,12 +1,14 @@
 package io.github.apace100.origins.power.factory.action;
 
 import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
 import io.github.apace100.origins.util.SerializableData;
 import io.github.apace100.origins.util.SerializableDataType;
 import me.shedaniel.architectury.core.RegistryEntry;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -21,6 +23,10 @@ public class ActionFactory<T> extends RegistryEntry<ActionFactory<T>> {
         this.effect = effect;
         this.data = data;
         this.data.add("inverted", SerializableDataType.BOOLEAN, false);
+    }
+
+    public Optional<Codec<SerializableData.Instance>> getCodec() {
+        return data.dataCodec();
     }
 
     public class Instance implements Consumer<T> {

@@ -3,6 +3,8 @@ package io.github.apace100.origins.power.factory.action;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
+import com.mojang.serialization.Codec;
+import io.github.apace100.origins.util.OriginsCodecs;
 import me.shedaniel.architectury.registry.Registry;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;

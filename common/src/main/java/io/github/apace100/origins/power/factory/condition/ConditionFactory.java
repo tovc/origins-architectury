@@ -1,64 +1,32 @@
 package io.github.apace100.origins.power.factory.condition;
 
-import com.google.gson.JsonObject;
-import io.github.apace100.origins.util.SerializableData;
-import io.github.apace100.origins.util.SerializableDataType;
-import me.shedaniel.architectury.core.RegistryEntry;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
+import com.mojang.serialization.Codec;
+import io.github.apace100.origins.power.factory.GenericFactory;
+import io.github.apace100.origins.power.factory.GenericInstance;
 
-import java.util.function.BiFunction;
 import java.util.function.Predicate;
 
-public class ConditionFactory<T> extends RegistryEntry<ConditionFactory<T>> {
+public final class ConditionFactory<T> extends GenericFactory<ConditionFactory.Instance<T>, ConditionFactory<T>> {
+	public ConditionFactory(Codec<? extends Predicate<T>> codec) {
+		super(codec, Instance::new, Instance::getPredicate);
+	}
 
-    private final Identifier identifier;
-    protected SerializableData data;
-    private final BiFunction<SerializableData.Instance, T, Boolean> condition;
+	public static final class Instance<T> extends GenericInstance<Instance<T>, ConditionFactory<T>> implements Predicate<T> {
 
-    public ConditionFactory(Identifier identifier, SerializableData data, BiFunction<SerializableData.Instance, T, Boolean> condition) {
-        this.identifier = identifier;
-        this.condition = condition;
-        this.data = data;
-        this.data.add("inverted", SerializableDataType.BOOLEAN, false);
-    }
+		private final Predicate<T> predicate;
 
-    public class Instance implements Predicate<T> {
+		public Instance(ConditionFactory<T> factory, Predicate<T> predicate) {
+			super(factory);
+			this.predicate = predicate;
+		}
 
-        private final SerializableData.Instance dataInstance;
+		public Predicate<T> getPredicate() {
+			return predicate;
+		}
 
-        private Instance(SerializableData.Instance data) {
-            this.dataInstance = data;
-        }
-
-        public final boolean test(T t) {
-            boolean fulfilled = isFulfilled(t);
-            if(dataInstance.getBoolean("inverted")) {
-                return !fulfilled;
-            } else {
-                return fulfilled;
-            }
-        }
-
-        public boolean isFulfilled(T t) {
-            return condition.apply(dataInstance, t);
-        }
-
-        public void write(PacketByteBuf buf) {
-            buf.writeIdentifier(identifier);
-            data.write(buf, dataInstance);
-        }
-    }
-
-    public Identifier getSerializerId() {
-        return identifier;
-    }
-
-    public Instance read(JsonObject json) {
-        return new Instance(data.read(json));
-    }
-
-    public Instance read(PacketByteBuf buffer) {
-        return new Instance(data.read(buffer));
-    }
+		@Override
+		public boolean test(T t) {
+			return this.predicate.test(t);
+		}
+	}
 }

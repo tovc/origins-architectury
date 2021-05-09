@@ -1,13 +1,12 @@
 package io.github.apace100.origins.registry;
 
 import io.github.apace100.origins.Origins;
-import io.github.apace100.origins.power.factory.PowerFactory;
 import io.github.apace100.origins.power.factory.condition.ConditionFactory;
+import io.github.apace100.origins.power.factory.PowerFactory;
 import io.github.apace100.origins.power.factory.action.ActionFactory;
 import io.github.apace100.origins.util.ArchitecturyWrappedRegistry;
 import me.shedaniel.architectury.registry.Registries;
 import me.shedaniel.architectury.registry.Registry;
-import me.shedaniel.architectury.registry.registries.RegistryOption;
 import net.minecraft.block.Block;
 import net.minecraft.block.pattern.CachedBlockPosition;
 import net.minecraft.enchantment.Enchantment;
