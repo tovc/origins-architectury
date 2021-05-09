@@ -62,6 +62,8 @@ public class ModPacketsS2C {
         boolean showDirtBackground = packetByteBuf.readBoolean();
         context.queue(() -> {
             MinecraftClient minecraftClient = MinecraftClient.getInstance();
+            if (minecraftClient.currentScreen instanceof ChooseOriginScreen)
+                return;
             ArrayList<OriginLayer> layers = new ArrayList<>();
             OriginComponent component = ModComponentsArchitectury.getOriginComponent(minecraftClient.player);
             OriginLayers.getLayers().forEach(layer -> {

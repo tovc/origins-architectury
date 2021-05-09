@@ -2,9 +2,12 @@ package io.github.apace100.origins;
 
 import io.github.apace100.origins.component.OriginComponent;
 import io.github.apace100.origins.components.ForgePlayerOriginComponent;
+import io.github.apace100.origins.networking.ModPackets;
 import io.github.apace100.origins.power.*;
 import io.github.apace100.origins.registry.ModComponentsArchitectury;
 import io.github.apace100.origins.registry.forge.ModComponentsArchitecturyImpl;
+import io.netty.buffer.Unpooled;
+import me.shedaniel.architectury.networking.NetworkManager;
 import net.minecraft.block.pattern.CachedBlockPosition;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
@@ -12,6 +15,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.Packet;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.tag.FluidTags;
 import net.minecraftforge.common.ForgeHooks;
@@ -103,8 +107,19 @@ public class OriginForgeEventHandler {
 
 	@SubscribeEvent
 	public static void playerRespawn(PlayerEvent.PlayerChangedDimensionEvent event) {
-		if (event.getPlayer() instanceof ServerPlayerEntity)
+		if (event.getPlayer() instanceof ServerPlayerEntity) {
 			ModComponentsArchitectury.syncWith((ServerPlayerEntity) event.getPlayer(), event.getPlayer());
+			checkOrigins((ServerPlayerEntity) event.getPlayer());
+		}
+	}
+
+	private static void checkOrigins(ServerPlayerEntity entity) {
+		OriginComponent component = ModComponentsArchitectury.getOriginComponent(entity);
+		if(!component.hasAllOrigins()) {
+			PacketByteBuf data = new PacketByteBuf(Unpooled.buffer());
+			data.writeBoolean(true);
+			NetworkManager.sendToPlayer(entity, ModPackets.OPEN_ORIGIN_SCREEN, data);
+		}
 	}
 
 	@SubscribeEvent
@@ -115,6 +130,8 @@ public class OriginForgeEventHandler {
 		Packet<?> packet = ModComponentsArchitecturyImpl.buildOtherPacket(entity);
 		if (packet != null)
 			PacketDistributor.TRACKING_ENTITY_AND_SELF.with(event::getEntity).send(packet);
+		if (entity instanceof ServerPlayerEntity)
+			checkOrigins((ServerPlayerEntity) entity);
 	}
 
 	@SubscribeEvent
