@@ -391,7 +391,7 @@ public class EntityConditions {
                 int count = 0;
                 Box box = entity.getBoundingBox();
                 BlockPos blockPos = new BlockPos(box.minX + 0.001D, box.minY + 0.001D, box.minZ + 0.001D);
-                BlockPos blockPos2 = new BlockPos(box.maxX - 0.001D, box.maxY - 0.001D, box.maxZ - 0.001D);
+                BlockPos blockPos2 = new BlockPos(box.maxX - 0.001D, Math.min(box.maxY - 0.001D, entity.world.getHeight()), box.maxZ - 0.001D);
                 BlockPos.Mutable mutable = new BlockPos.Mutable();
                 for(int i = blockPos.getX(); i <= blockPos2.getX() && count < stopAt; ++i) {
                     for(int j = blockPos.getY(); j <= blockPos2.getY() && count < stopAt; ++j) {

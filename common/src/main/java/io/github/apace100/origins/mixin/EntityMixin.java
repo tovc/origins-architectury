@@ -56,6 +56,8 @@ public abstract class EntityMixin implements MovingEntity {
 
     @Shadow protected boolean onGround;
 
+    @Shadow public abstract int getEntityId();
+
     @Inject(method = "isTouchingWater", at = @At("HEAD"), cancellable = true)
     private void makeEntitiesIgnoreWater(CallbackInfoReturnable<Boolean> cir) {
         if(OriginComponent.hasPower((Entity)(Object)this, IgnoreWaterPower.class)) {
@@ -68,7 +70,9 @@ public abstract class EntityMixin implements MovingEntity {
     private void makeEntitiesGlow(CallbackInfoReturnable<Boolean> cir) {
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         Entity thisEntity = (Entity)(Object)this;
-        if(player != null && player != thisEntity && thisEntity instanceof LivingEntity) {
+        //Bugfix: avoid entities that aren't currently in the world.
+        boolean exists = world != null && world.getEntityById(this.getEntityId()) != null;
+        if(player != null && player != thisEntity && thisEntity instanceof LivingEntity && exists) {
             if(OriginComponent.getPowers(player, EntityGlowPower.class).stream().anyMatch(p -> p.doesApply(thisEntity))) {
                 cir.setReturnValue(true);
             }
