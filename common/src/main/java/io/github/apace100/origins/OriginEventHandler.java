@@ -26,8 +26,6 @@ import java.util.List;
 
 public class OriginEventHandler {
 	public static void register() {
-		//Replaces BlockItemMixin
-		InteractionEvent.RIGHT_CLICK_BLOCK.register(OriginEventHandler::preventItemUse);
 		//Replaces ClientPlayerInteractionManagerMixin & ServerPlayerInteractionManagerMixin#preventBlockInteraction
 		InteractionEvent.RIGHT_CLICK_BLOCK.register(OriginEventHandler::preventBlockUse);
 		//Replaces ItemStackMixin
@@ -41,19 +39,6 @@ public class OriginEventHandler {
 	private static ActionResult preventBlockUse(PlayerEntity player, Hand hand, BlockPos blockPos, Direction direction) {
 		if(OriginComponent.getPowers(player, PreventBlockUsePower.class).stream().anyMatch(p -> p.doesPrevent(player.getEntityWorld(), blockPos))) {
 			return ActionResult.FAIL;
-		}
-		return ActionResult.PASS;
-	}
-
-	private static ActionResult preventItemUse(PlayerEntity user, Hand hand, BlockPos pos, Direction face) {
-		if (user != null) {
-			OriginComponent component = ModComponentsArchitectury.getOriginComponent(user);
-			ItemStack stackInHand = user.getStackInHand(hand);
-			for (PreventItemUsePower piup : component.getPowers(PreventItemUsePower.class)) {
-				if (piup.doesPrevent(stackInHand)) {
-					return ActionResult.FAIL;
-				}
-			}
 		}
 		return ActionResult.PASS;
 	}
@@ -120,10 +105,10 @@ public class OriginEventHandler {
 		playerList.forEach(spe -> ModComponentsArchitectury.syncWith(spe, player));
 		OriginComponent.sync(player);
 		if (!component.hasAllOrigins()) {
-			if(component.checkAutoChoosingLayers(player, true)) {
+			if (component.checkAutoChoosingLayers(player, true)) {
 				component.sync();
 			}
-			if(component.hasAllOrigins()) {
+			if (component.hasAllOrigins()) {
 				component.getOrigins().values().forEach(o -> {
 					o.getPowerTypes().forEach(powerType -> component.getPower(powerType).onChosen(false));
 				});

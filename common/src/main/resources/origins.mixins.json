@@ -6,6 +6,7 @@
 	"mixins": [
 		"AbstractBlockStateMixin",
 		"ArmorItemMixin",
+		"BlockItemMixin",
 		"ConduitBlockEntityMixin",
 		"CreeperEntityMixin",
 		"EntityMixin",
