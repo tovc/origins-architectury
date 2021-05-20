@@ -15,6 +15,8 @@ import io.github.apace100.origins.registry.*;
 import io.github.apace100.origins.util.ChoseOriginCriterion;
 import io.github.apace100.origins.util.GainedPowerCriterion;
 import io.github.apace100.origins.util.OriginsConfigSerializer;
+import me.shedaniel.architectury.Architectury;
+import me.shedaniel.architectury.platform.Platform;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
@@ -90,5 +92,11 @@ public class Origins {
 	@Config(name = Origins.MODID + "_server")
 	public static class ServerConfig implements ConfigData {
 		public boolean performVersionCheck = true;
+		/**
+		 * Ability to disable food restrictions.
+		 * Currently supporting just diet by default.
+		 * Might add spice of life.
+		 */
+		public boolean disableFoodRestrictions = Platform.isModLoaded("diet");
 	}
 }

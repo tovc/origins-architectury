@@ -26,6 +26,7 @@ import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.entity.player.PlayerSetSpawnEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
@@ -106,7 +107,7 @@ public class OriginForgeEventHandler {
 	}
 
 	@SubscribeEvent
-	public static void playerRespawn(PlayerEvent.PlayerChangedDimensionEvent event) {
+	public static void playerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
 		if (event.getPlayer() instanceof ServerPlayerEntity) {
 			ModComponentsArchitectury.syncWith((ServerPlayerEntity) event.getPlayer(), event.getPlayer());
 			checkOrigins((ServerPlayerEntity) event.getPlayer());

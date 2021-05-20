@@ -1,6 +1,7 @@
 package io.github.apace100.origins;
 
 import io.github.apace100.origins.component.OriginComponent;
+import io.github.apace100.origins.networking.forge.ModLoginNetworking;
 import io.github.apace100.origins.registry.forge.ModComponentsArchitecturyImpl;
 import me.shedaniel.architectury.platform.forge.EventBuses;
 import net.minecraftforge.api.distmarker.Dist;
@@ -21,13 +22,14 @@ import java.util.Arrays;
 
 @Mod(Origins.MODID)
 public class OriginsForge {
+	public static boolean SHOULD_QUEUE_SCREEN = false;
 
 	//This channel is used for version checking.
 	//It won't allow connection if the channels mismatch.
 	/**
 	 * Lowest version without networking changes.
 	 */
-	private static final String NETVERSION = "0.7.1";
+	private static final String NETVERSION = "0.7.1.4";
 	public static final SimpleChannel channel = NetworkRegistry.newSimpleChannel(Origins.identifier("handshake"), () -> NETVERSION, NetworkRegistry.acceptMissingOr(NETVERSION), NetworkRegistry.acceptMissingOr(NETVERSION));
 
 	public OriginsForge() {
@@ -40,6 +42,7 @@ public class OriginsForge {
 		FMLJavaModLoadingContext.get().getModEventBus().addListener((FMLCommonSetupEvent event) -> CapabilityManager.INSTANCE.register(OriginComponent.class, new ModComponentsArchitecturyImpl.OriginStorage(), () -> null));
 		MinecraftForge.EVENT_BUS.addListener((FMLServerAboutToStartEvent event) -> OriginsClient.isServerRunningOrigins = true);
 		MinecraftForge.EVENT_BUS.addListener((FMLServerStoppedEvent event) -> OriginsClient.isServerRunningOrigins = false);
+		//ModLoginNetworking.init();
 	}
 
 	private static boolean isRemoteValid(String remote) {

@@ -1,5 +1,6 @@
 package io.github.apace100.origins.power;
 
+import io.github.apace100.origins.Origins;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 
@@ -24,6 +25,6 @@ public class PreventItemUsePower extends Power {
     }
 
     public boolean doesPrevent(ItemStack stack) {
-        return predicate.test(stack);
+        return (stack.isFood() && Origins.config.disableFoodRestrictions) || predicate.test(stack);
     }
 }
