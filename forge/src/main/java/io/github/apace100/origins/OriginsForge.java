@@ -1,7 +1,6 @@
 package io.github.apace100.origins;
 
 import io.github.apace100.origins.component.OriginComponent;
-import io.github.apace100.origins.networking.forge.ModLoginNetworking;
 import io.github.apace100.origins.registry.forge.ModComponentsArchitecturyImpl;
 import me.shedaniel.architectury.platform.forge.EventBuses;
 import net.minecraftforge.api.distmarker.Dist;
@@ -42,7 +41,6 @@ public class OriginsForge {
 		FMLJavaModLoadingContext.get().getModEventBus().addListener((FMLCommonSetupEvent event) -> CapabilityManager.INSTANCE.register(OriginComponent.class, new ModComponentsArchitecturyImpl.OriginStorage(), () -> null));
 		MinecraftForge.EVENT_BUS.addListener((FMLServerAboutToStartEvent event) -> OriginsClient.isServerRunningOrigins = true);
 		MinecraftForge.EVENT_BUS.addListener((FMLServerStoppedEvent event) -> OriginsClient.isServerRunningOrigins = false);
-		//ModLoginNetworking.init();
 	}
 
 	private static boolean isRemoteValid(String remote) {

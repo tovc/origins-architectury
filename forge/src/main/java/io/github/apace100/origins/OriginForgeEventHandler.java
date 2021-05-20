@@ -18,16 +18,18 @@ import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.tag.FluidTags;
+import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
+import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.entity.player.PlayerSetSpawnEvent;
 import net.minecraftforge.event.world.BlockEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
@@ -68,6 +70,23 @@ public class OriginForgeEventHandler {
 	public static void modifyDamageTaken(LivingDamageEvent event) {
 		LivingEntity entityLiving = event.getEntityLiving();
 		event.setAmount(OriginComponent.modify(entityLiving, ModifyDamageTakenPower.class, event.getAmount(), p -> p.doesApply(event.getSource(), event.getAmount()), p -> p.executeActions(event.getSource().getAttacker())));
+	}
+
+	/**
+	 * This needs to be executed after COMBAT's jump overhaul.
+	 */
+	@SubscribeEvent(priority = EventPriority.LOW)
+	public static void livingJump(LivingEvent.LivingJumpEvent event) {
+		double modified = OriginComponent.modify(event.getEntityLiving(), ModifyJumpPower.class, event.getEntityLiving().getVelocity().y, p -> true, ModifyJumpPower::executeAction);
+		updateJumpHeight(modified, event.getEntityLiving());
+	}
+
+	private static void updateJumpHeight(double height, LivingEntity entity) {
+		Vec3d vel = entity.getVelocity();
+		double delta = height - vel.y;
+		if (delta == 0)
+			return;
+		entity.setVelocity(vel.add(0, delta, 0));
 	}
 
 	@SubscribeEvent

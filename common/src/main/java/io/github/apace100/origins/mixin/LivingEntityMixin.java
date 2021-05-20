@@ -99,17 +99,6 @@ public abstract class LivingEntityMixin extends Entity {
         }
     }
 
-    // SPRINT_JUMP
-    @Inject(at = @At("HEAD"), method = "getJumpVelocity", cancellable = true)
-    private void modifyJumpVelocity(CallbackInfoReturnable<Float> info) {
-        float base = 0.42F * this.getJumpVelocityMultiplier();
-        float modified = OriginComponent.modify(this, ModifyJumpPower.class, base, p -> {
-            p.executeAction();
-            return true;
-        });
-        info.setReturnValue(modified);
-    }
-
     // HOTBLOODED
     @Inject(at = @At("HEAD"), method= "canHaveStatusEffect", cancellable = true)
     private void preventStatusEffects(StatusEffectInstance effect, CallbackInfoReturnable<Boolean> info) {

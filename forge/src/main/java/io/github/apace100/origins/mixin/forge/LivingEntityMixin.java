@@ -1,5 +1,7 @@
 package io.github.apace100.origins.mixin.forge;
 
+import io.github.apace100.origins.component.OriginComponent;
+import io.github.apace100.origins.power.ModifyJumpPower;
 import io.github.apace100.origins.power.PowerTypes;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -15,6 +17,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(LivingEntity.class)
