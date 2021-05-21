@@ -71,49 +71,12 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Sc
         );
     }
 
-    @Inject(at = @At("HEAD"), method = "getSpawnPointDimension", cancellable = true)
-    private void modifySpawnPointDimension(CallbackInfoReturnable<RegistryKey<World>> info) {
-        if (!this.origins_isEndRespawning && (spawnPointPosition == null || hasObstructedSpawn()) && OriginComponent.getPowers(this, ModifyPlayerSpawnPower.class).size() > 0) {
-            ModifyPlayerSpawnPower power = OriginComponent.getPowers(this, ModifyPlayerSpawnPower.class).get(0);
-            info.setReturnValue(power.dimension);
-        }
-    }
-
-    @Inject(at = @At("HEAD"), method = "getSpawnPointPosition", cancellable = true)
-    private void modifyPlayerSpawnPosition(CallbackInfoReturnable<BlockPos> info) {
-        if(!this.origins_isEndRespawning && OriginComponent.getPowers(this, ModifyPlayerSpawnPower.class).size() > 0) {
-            if(spawnPointPosition == null) {
-                info.setReturnValue(findPlayerSpawn());
-            } else if(hasObstructedSpawn()) {
-                networkHandler.sendPacket(new GameStateChangeS2CPacket(GameStateChangeS2CPacket.NO_RESPAWN_BLOCK, 0.0F));
-                info.setReturnValue(findPlayerSpawn());
-            }
-        }
-    }
-
-
-    @Inject(at = @At("HEAD"), method = "isSpawnPointSet", cancellable = true)
-    private void modifySpawnPointSet(CallbackInfoReturnable<Boolean> info) {
-        if(!this.origins_isEndRespawning && (spawnPointPosition == null || hasObstructedSpawn()) && OriginComponent.hasPower(this, ModifyPlayerSpawnPower.class)) {
-            info.setReturnValue(true);
-        }
-    }
-
     private boolean hasObstructedSpawn() {
         ServerWorld world = server.getWorld(spawnPointDimension);
         if(spawnPointPosition != null && world != null) {
             return !PlayerEntity.findRespawnPosition(world, spawnPointPosition, 0F, spawnPointSet, true).isPresent();
         }
         return false;
-    }
-
-    private BlockPos findPlayerSpawn() {
-        ModifyPlayerSpawnPower power = OriginComponent.getPowers(this, ModifyPlayerSpawnPower.class).get(0);
-        Pair<ServerWorld, BlockPos> spawn = power.getSpawn(true);
-        if(spawn != null) {
-            return spawn.getRight();
-        }
-        return null;
     }
 
     @Unique
@@ -129,6 +92,7 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Sc
         return this.origins_isEndRespawning;
     }
 
+    //Kept to avoid backward compatibility issues.
     @Override
     public boolean hasRealRespawnPoint() {
         return spawnPointPosition != null && !hasObstructedSpawn();

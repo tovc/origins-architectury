@@ -25,6 +25,6 @@ public class PreventItemUsePower extends Power {
     }
 
     public boolean doesPrevent(ItemStack stack) {
-        return (stack.isFood() && Origins.config.disableFoodRestrictions) || predicate.test(stack);
+        return (!stack.isFood() || !Origins.config.disableFoodRestrictions) && predicate.test(stack);
     }
 }

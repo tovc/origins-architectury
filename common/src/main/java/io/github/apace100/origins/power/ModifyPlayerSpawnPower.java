@@ -20,6 +20,7 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.gen.feature.StructureFeature;
 
 import java.util.Optional;
@@ -160,6 +161,9 @@ public class ModifyPlayerSpawnPower extends Power {
     }
 
     private Vec3d getValidSpawn(BlockPos startPos, int range, ServerWorld world) {
+        //Force load the chunk in which we are working.
+        //This method will generate the chunk if it needs to.
+        world.getChunk(startPos.getX() >> 4, startPos.getZ() >> 4, ChunkStatus.FULL, true);
         // (di, dj) is a vector - direction in which we move right now
         int dx = 1;
         int dz = 0;
@@ -189,12 +193,13 @@ public class ModifyPlayerSpawnPower extends Power {
                 mutable.setZ(z);
                 mutable.setY(center + i);
                 tpPos = Dismounting.method_30769(EntityType.PLAYER, world, mutable, true);
-                if (tpPos != null) {
+                //Avoid spawning on the nether roof.
+                if (tpPos != null && tpPos.getY() < world.getDimensionHeight()) {
                     return(tpPos);
                 } else {
                     mutable.setY(center + d);
                     tpPos = Dismounting.method_30769(EntityType.PLAYER, world, mutable, true);
-                    if (tpPos != null) {
+                    if (tpPos != null && tpPos.getY() < world.getDimensionHeight()) {
                         return(tpPos);
                     }
                 }
