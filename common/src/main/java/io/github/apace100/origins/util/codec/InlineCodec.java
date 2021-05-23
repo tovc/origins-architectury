@@ -37,7 +37,7 @@ public class InlineCodec<E, A> implements Codec<E> {
 			return DataResult.error(codec.error().get().message(), Pair.of(null, input));
 		Codec<E> codecAccess = codec.result().map(x -> (Codec<E>) x).get();
 		DataResult<Pair<E, T>> target = ops.get(input, this.value).flatMap(x -> codecAccess.decode(ops, x));
-		if (target.error().isPresent() && ops instanceof InlineOps && !ops.compressMaps())
+		if (target.error().isPresent() && !ops.compressMaps())
 			target = codecAccess.decode(ops, input);
 		return target;
 	}
@@ -48,7 +48,7 @@ public class InlineCodec<E, A> implements Codec<E> {
 		Codec<E> apply = (Codec<E>) this.child.apply(res);
 		RecordBuilder<T> builder = ops.mapBuilder();
 		builder.add(this.key, this.type.encode(res, ops, prefix));
-		if (ops instanceof InlineOps && !ops.compressMaps()) {
+		if (!ops.compressMaps()) {
 			DataResult<T> result = builder.build(prefix).flatMap(x -> apply.encode(input, ops, x));
 			if (result.result().isPresent())
 				return result;

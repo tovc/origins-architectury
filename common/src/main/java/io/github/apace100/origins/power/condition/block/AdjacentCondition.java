@@ -28,6 +28,7 @@ public class AdjacentCondition implements Predicate<CachedBlockPosition> {
 		this.compareTo = compareTo;
 		this.condition = condition;
 	}
+
 	@Override
 	public boolean test(CachedBlockPosition pos) {
 		int count = Math.toIntExact(Arrays.stream(Direction.values())

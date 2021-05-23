@@ -1,41 +1,29 @@
 package io.github.apace100.origins.power.factory.condition;
 
+import com.mojang.serialization.Codec;
 import io.github.apace100.origins.Origins;
+import io.github.apace100.origins.power.factory.MetaFactories;
+import io.github.apace100.origins.power.condition.fluid.InTagCondition;
 import io.github.apace100.origins.registry.ModRegistriesArchitectury;
-import io.github.apace100.origins.util.SerializableData;
-import io.github.apace100.origins.util.SerializableDataType;
+import io.github.apace100.origins.util.OriginsCodecs;
 import net.minecraft.fluid.FluidState;
 
-import java.util.List;
+import java.util.function.Predicate;
 
 public class FluidConditions {
 
-    @SuppressWarnings("unchecked")
-    public static void register() {
-        register(new ConditionFactory<>(Origins.identifier("constant"), new SerializableData()
-            .add("value", SerializableDataType.BOOLEAN),
-            (data, fluid) -> data.getBoolean("value")));
-        register(new ConditionFactory<>(Origins.identifier("and"), new SerializableData()
-            .add("conditions", SerializableDataType.FLUID_CONDITIONS),
-            (data, fluid) -> ((List<ConditionFactory<FluidState>.Instance>)data.get("conditions")).stream().allMatch(
-                condition -> condition.test(fluid)
-            )));
-        register(new ConditionFactory<>(Origins.identifier("or"), new SerializableData()
-            .add("conditions", SerializableDataType.FLUID_CONDITIONS),
-            (data, fluid) -> ((List<ConditionFactory<FluidState>.Instance>)data.get("conditions")).stream().anyMatch(
-                condition -> condition.test(fluid)
-            )));
+	public static void register() {
+		MetaFactories.defineMetaConditions(ModRegistriesArchitectury.FLUID_CONDITION, OriginsCodecs.FLUID_CONDITION);
+		register("empty", FluidState::isEmpty);
+		register("still", FluidState::isStill);
+		register("in_tag", InTagCondition.CODEC);
+	}
 
-        register(new ConditionFactory<>(Origins.identifier("empty"), new SerializableData(),
-            (data, fluid) -> fluid.isEmpty()));
-        register(new ConditionFactory<>(Origins.identifier("still"), new SerializableData(),
-            (data, fluid) -> fluid.isStill()));
-        register(new ConditionFactory<>(Origins.identifier("in_tag"), new SerializableData()
-            .add("tag", SerializableDataType.FLUID_TAG),
-            (data, fluid) -> fluid.isIn(data.get("tag"))));
-    }
+	private static void register(String name, Codec<? extends Predicate<FluidState>> codec) {
+		ModRegistriesArchitectury.FLUID_CONDITION.registerSupplied(Origins.identifier(name), () -> new ConditionFactory<>(codec));
+	}
 
-    private static void register(ConditionFactory<FluidState> conditionFactory) {
-        ModRegistriesArchitectury.FLUID_CONDITION.register(conditionFactory.getSerializerId(), () -> conditionFactory);
-    }
+	private static void register(String name, Predicate<FluidState> predicate) {
+		register(name, Codec.unit(predicate));
+	}
 }

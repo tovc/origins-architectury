@@ -1,7 +1,6 @@
 package io.github.apace100.origins.power.condition.block;
 
 import com.mojang.serialization.Codec;
-import io.github.apace100.origins.power.condition.ConditionCodecs;
 import net.minecraft.block.pattern.CachedBlockPosition;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;

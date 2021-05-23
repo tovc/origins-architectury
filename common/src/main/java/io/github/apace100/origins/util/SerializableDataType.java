@@ -68,6 +68,7 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -284,7 +285,7 @@ public class SerializableDataType<T> {
 					dataInst.getBoolean("should_render"),
 					dataInst.getInt("bar_index"),
 					dataInst.getId("sprite_location"),
-					(ConditionFactory<LivingEntity>.Instance) dataInst.get("condition")),
+					dataInst.get("condition")),
 			(data, inst) -> {
 				SerializableData.Instance dataInst = data.new Instance();
 				dataInst.set("should_render", inst.shouldRender());

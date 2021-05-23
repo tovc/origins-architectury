@@ -1,4 +1,4 @@
-package io.github.apace100.origins.power.condition.meta;
+package io.github.apace100.origins.power.factory.meta.condition;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;

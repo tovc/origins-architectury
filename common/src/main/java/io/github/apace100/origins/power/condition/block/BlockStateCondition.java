@@ -7,7 +7,6 @@ import io.github.apace100.origins.util.OriginsCodecs;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.pattern.CachedBlockPosition;
 import net.minecraft.state.property.Property;
-import net.minecraft.world.LightType;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -35,24 +34,25 @@ public class BlockStateCondition implements Predicate<CachedBlockPosition> {
 		this.value = value;
 		this.e = e;
 	}
+
 	@Override
 	public boolean test(CachedBlockPosition block) {
 		BlockState state = block.getBlockState();
 		Collection<Property<?>> properties = state.getProperties();
 		Property<?> property = null;
-		for(Property<?> p : properties) {
-			if(p.getName().equals(this.property)) {
+		for (Property<?> p : properties) {
+			if (p.getName().equals(this.property)) {
 				property = p;
 				break;
 			}
 		}
-		if(property != null) {
+		if (property != null) {
 			Object value = state.get(property);
-			if(e.isPresent() && value instanceof Enum) {
-				return ((Enum<?>)value).name().equalsIgnoreCase(e.get());
-			} else if(this.value.isPresent() && value instanceof Boolean) {
+			if (e.isPresent() && value instanceof Enum) {
+				return ((Enum<?>) value).name().equalsIgnoreCase(e.get());
+			} else if (this.value.isPresent() && value instanceof Boolean) {
 				return value == this.value.get();
-			} else if(comparison.isPresent() && compareTo.isPresent() && value instanceof Integer) {
+			} else if (comparison.isPresent() && compareTo.isPresent() && value instanceof Integer) {
 				return comparison.get().compare((Integer) value, compareTo.get());
 			}
 		}

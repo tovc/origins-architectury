@@ -26,6 +26,7 @@ public class LightLevelCondition implements Predicate<CachedBlockPosition> {
 		this.compareTo = compareTo;
 		this.type = type;
 	}
+
 	@Override
 	public boolean test(CachedBlockPosition pos) {
 		int value = this.type.map(x -> pos.getWorld().getLightLevel(x, pos.getBlockPos())).orElseGet(() -> pos.getWorld().getLightLevel(pos.getBlockPos()));

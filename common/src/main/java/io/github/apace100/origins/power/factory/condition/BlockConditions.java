@@ -2,9 +2,9 @@ package io.github.apace100.origins.power.factory.condition;
 
 import com.mojang.serialization.Codec;
 import io.github.apace100.origins.Origins;
-import io.github.apace100.origins.power.condition.MetaFactories;
 import io.github.apace100.origins.power.condition.block.*;
-import io.github.apace100.origins.power.condition.meta.IntComparingCondition;
+import io.github.apace100.origins.power.factory.MetaFactories;
+import io.github.apace100.origins.power.factory.meta.condition.IntComparingCondition;
 import io.github.apace100.origins.registry.ModRegistriesArchitectury;
 import io.github.apace100.origins.util.OriginsCodecs;
 import net.minecraft.block.pattern.CachedBlockPosition;

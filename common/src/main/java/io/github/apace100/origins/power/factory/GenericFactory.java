@@ -2,6 +2,7 @@ package io.github.apace100.origins.power.factory;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.apace100.origins.util.OriginsCodecs;
 import me.shedaniel.architectury.registry.Registry;
 import net.minecraft.util.Identifier;
@@ -28,6 +29,10 @@ public abstract class GenericFactory<I extends GenericInstance<I, F>, F extends 
 
 	protected GenericFactory(Codec<I> codec) {
 		this.codec = codec;
+	}
+
+	protected GenericFactory(Function<F, Codec<I>> codec) {
+		this.codec = codec.apply((F) this);
 	}
 
 	protected <T> GenericFactory(Codec<? extends T> codec, BiFunction<F, T, I> to, Function<I, ? super T> from) {

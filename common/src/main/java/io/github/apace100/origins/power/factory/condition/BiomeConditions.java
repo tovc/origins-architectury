@@ -2,10 +2,10 @@ package io.github.apace100.origins.power.factory.condition;
 
 import com.mojang.serialization.Codec;
 import io.github.apace100.origins.Origins;
-import io.github.apace100.origins.power.condition.MetaFactories;
 import io.github.apace100.origins.power.condition.biome.HighHumidityCondition;
 import io.github.apace100.origins.power.condition.biome.StringBiomeCondition;
-import io.github.apace100.origins.power.condition.meta.FloatComparingCondition;
+import io.github.apace100.origins.power.factory.MetaFactories;
+import io.github.apace100.origins.power.factory.meta.condition.FloatComparingCondition;
 import io.github.apace100.origins.registry.ModRegistriesArchitectury;
 import io.github.apace100.origins.util.OriginsCodecs;
 import net.minecraft.world.biome.Biome;

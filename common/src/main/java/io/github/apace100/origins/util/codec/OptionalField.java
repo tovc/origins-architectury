@@ -8,20 +8,18 @@ import net.minecraft.util.Identifier;
 import java.util.Optional;
 import java.util.function.Function;
 
-public class PlatformedRegistryEntry {
+public class OptionalField {
 	public final Identifier value;
-	public final String platform;
 	public final boolean optional;
 
-	public PlatformedRegistryEntry(Identifier value, String platform, boolean optional) {
+	public OptionalField(Identifier value, boolean optional) {
 		this.value = value;
-		this.platform = platform;
 		this.optional = optional;
 	}
 
 	public <T> DataResult<Optional<T>> get(Function<Identifier, Optional<T>> accessor) {
 		Optional<T> apply = accessor.apply(this.value);
-		if (optional || (!Strings.isNullOrEmpty(this.platform) && !Platform.getModLoader().equalsIgnoreCase(this.platform)))
+		if (optional)
 			return DataResult.success(apply);
 		if (!apply.isPresent())
 			return DataResult.error("Object \"" + this.value + "\" couldn't be found.", apply);

@@ -1,62 +1,32 @@
 package io.github.apace100.origins.power.factory.action;
 
-import com.google.gson.JsonObject;
 import com.mojang.serialization.Codec;
-import io.github.apace100.origins.util.SerializableData;
-import io.github.apace100.origins.util.SerializableDataType;
-import me.shedaniel.architectury.core.RegistryEntry;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
+import io.github.apace100.origins.power.factory.GenericFactory;
+import io.github.apace100.origins.power.factory.GenericInstance;
 
-import java.util.Optional;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public class ActionFactory<T> extends RegistryEntry<ActionFactory<T>> {
+public class ActionFactory<T> extends GenericFactory<ActionFactory.Instance<T>, ActionFactory<T>> {
+	public ActionFactory(Codec<? extends Consumer<T>> codec) {
+		super(codec, Instance::new, Instance::getConsumer);
+	}
 
-    private final Identifier identifier;
-    protected SerializableData data;
-    private final BiConsumer<SerializableData.Instance, T> effect;
+	public static class Instance<T> extends GenericInstance<Instance<T>, ActionFactory<T>> implements Consumer<T> {
 
-    public ActionFactory(Identifier identifier, SerializableData data, BiConsumer<SerializableData.Instance, T> effect) {
-        this.identifier = identifier;
-        this.effect = effect;
-        this.data = data;
-        this.data.add("inverted", SerializableDataType.BOOLEAN, false);
-    }
+		private final Consumer<T> consumer;
 
-    public Optional<Codec<SerializableData.Instance>> getCodec() {
-        return data.dataCodec();
-    }
+		public Instance(ActionFactory<T> factory, Consumer<T> consumer) {
+			super(factory);
+			this.consumer = consumer;
+		}
 
-    public class Instance implements Consumer<T> {
+		public Consumer<T> getConsumer() {
+			return consumer;
+		}
 
-        private final SerializableData.Instance dataInstance;
+		@Override
+		public void accept(T t) {
 
-        private Instance(SerializableData.Instance data) {
-            this.dataInstance = data;
-        }
-
-        public void write(PacketByteBuf buf) {
-            buf.writeIdentifier(identifier);
-            data.write(buf, dataInstance);
-        }
-
-        @Override
-        public void accept(T t) {
-            effect.accept(dataInstance, t);
-        }
-    }
-
-    public Identifier getSerializerId() {
-        return identifier;
-    }
-
-    public Instance read(JsonObject json) {
-        return new Instance(data.read(json));
-    }
-
-    public Instance read(PacketByteBuf buffer) {
-        return new Instance(data.read(buffer));
-    }
+		}
+	}
 }
