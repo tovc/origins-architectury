@@ -336,7 +336,7 @@ public class PowerFactories {
                         (type, player) ->
                                 new ModifyPlayerSpawnPower(type, player,
                                         data.get("dimension"),
-                                        (int)data.getFloat("dimension_distance_multiplier"),
+                                        data.getFloat("dimension_distance_multiplier"),
                                         data.get("biome"),
                                         data.get("spawn_strategy"),
                                         data.isPresent("structure") ? data.get("structure") : null,

@@ -97,12 +97,29 @@ public class OriginCommand {
 						})))
 					)
 				)
+			.then(literal("get")
+				.then(argument("target", EntityArgumentType.player())
+					.then(argument("layer", LayerArgument.layer())
+						.executes((command) -> {
+							ServerPlayerEntity target = EntityArgumentType.getPlayer(command, "target");
+							OriginLayer layer = command.getArgument("layer", OriginLayer.class);
+							OriginComponent component = ModComponentsArchitectury.getOriginComponent(target);
+							Origin origin = component.getOrigin(layer);
+							command.getSource().sendFeedback(new TranslatableText("commands.origin.get.result", target.getDisplayName(), new TranslatableText(layer.getTranslationKey()), origin.getName(), origin.getIdentifier()), false);
+							return 1;
+						})
+					)
+				)
+			)
 		);
 	}
 
 	private static void setOrigin(PlayerEntity player, OriginLayer layer, Origin origin) {
-		ModComponentsArchitectury.getOriginComponent(player).setOrigin(layer, origin);
+		OriginComponent component = ModComponents.getOriginComponent(player);
+		component.setOrigin(layer, origin);
 		OriginComponent.sync(player);
+		boolean hadOriginBefore = component.hadOriginBefore();
+		origin.getPowerTypes().forEach(powerType -> component.getPower(powerType).onChosen(hadOriginBefore));
 	}
 
 	private static boolean hasOrigin(PlayerEntity player, OriginLayer layer, Origin origin) {
