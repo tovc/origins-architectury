@@ -115,7 +115,7 @@ public class OriginCommand {
 	}
 
 	private static void setOrigin(PlayerEntity player, OriginLayer layer, Origin origin) {
-		OriginComponent component = ModComponents.getOriginComponent(player);
+		OriginComponent component = ModComponentsArchitectury.getOriginComponent(player);
 		component.setOrigin(layer, origin);
 		OriginComponent.sync(player);
 		boolean hadOriginBefore = component.hadOriginBefore();
