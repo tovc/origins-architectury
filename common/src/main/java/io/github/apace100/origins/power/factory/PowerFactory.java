@@ -57,7 +57,7 @@ public class PowerFactory<P extends Power> extends RegistryEntry<PowerFactory<?>
             BiFunction<PowerType<P>, PlayerEntity, P> powerFactory = factoryConstructor.apply(dataInstance);
             P p = powerFactory.apply(pPowerType, playerEntity);
             if(hasConditions && dataInstance.isPresent("condition")) {
-                p.addCondition(dataInstance.<ConditionFactory<PlayerEntity>.Instance>get("condition"));
+                p.addCondition(dataInstance.<ConditionFactory.Instance<PlayerEntity>>get("condition"));
             }
             return p;
         }

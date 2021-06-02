@@ -165,7 +165,7 @@ public class PowerFactories {
                 .add("damage_condition", SerializableDataType.DAMAGE_CONDITION),
             data ->
                 (type, player) -> {
-                    ConditionFactory<Pair<DamageSource, Float>>.Instance damageCondition =
+                    ConditionFactory.Instance<Pair<DamageSource, Float>> damageCondition =
                             data.get("damage_condition");
                     return new InvulnerablePower(type, player, ds -> damageCondition.test(new Pair<>(ds, null)));
                 })

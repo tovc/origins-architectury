@@ -8,7 +8,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.origin.Impact;
@@ -17,12 +19,7 @@ import io.github.apace100.origins.power.Active;
 import io.github.apace100.origins.power.PowerType;
 import io.github.apace100.origins.power.PowerTypeReference;
 import io.github.apace100.origins.power.factory.action.ActionFactory;
-import io.github.apace100.origins.power.factory.action.ActionType;
-import io.github.apace100.origins.power.factory.action.ActionTypes;
 import io.github.apace100.origins.power.factory.condition.ConditionFactory;
-import io.github.apace100.origins.power.factory.condition.ConditionType;
-import io.github.apace100.origins.power.factory.condition.ConditionTypes;
-import io.github.apace100.origins.util.codec.InlineJsonOps;
 import me.shedaniel.architectury.hooks.TagHooks;
 import me.shedaniel.architectury.platform.Platform;
 import net.minecraft.block.Block;
@@ -68,7 +65,6 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -102,77 +98,16 @@ public class SerializableDataType<T> {
 
 	public static final SerializableDataType<Enchantment> ENCHANTMENT = SerializableDataType.registry(Enchantment.class, Registry.ENCHANTMENT);
 
-	public static final SerializableDataType<DamageSource> DAMAGE_SOURCE = SerializableDataType.compound(DamageSource.class, new SerializableData()
-					.add("name", STRING)
-					.add("bypasses_armor", BOOLEAN, false)
-					.add("fire", BOOLEAN, false)
-					.add("unblockable", BOOLEAN, false)
-					.add("magic", BOOLEAN, false)
-					.add("out_of_world", BOOLEAN, false),
-			(data) -> {
-				DamageSource damageSource = new DamageSource(data.get("name"));
-				if (data.getBoolean("bypasses_armor")) {
-					damageSource.setBypassesArmor();
-				}
-				if (data.getBoolean("fire")) {
-					damageSource.setFire();
-				}
-				if (data.getBoolean("unblockable")) {
-					damageSource.setUnblockable();
-				}
-				if (data.getBoolean("magic")) {
-					damageSource.setUsesMagic();
-				}
-				if (data.getBoolean("out_of_world")) {
-					damageSource.setOutOfWorld();
-				}
-				return damageSource;
-			},
-			(data, ds) -> {
-				SerializableData.Instance inst = data.new Instance();
-				inst.set("name", ds.name);
-				inst.set("fire", ds.isFire());
-				inst.set("unblockable", ds.isUnblockable());
-				inst.set("bypasses_armor", ds.bypassesArmor());
-				inst.set("out_of_world", ds.isOutOfWorld());
-				inst.set("magic", ds.getMagic());
-				return inst;
-			});
+	public static final SerializableDataType<DamageSource> DAMAGE_SOURCE = new SerializableDataType<>(DamageSource.class, OriginsCodecs.DAMAGE_SOURCE);
 
 	public static final SerializableDataType<EntityAttribute> ATTRIBUTE = SerializableDataType.registry(EntityAttribute.class, Registry.ATTRIBUTE);
 
 	public static final SerializableDataType<EntityAttributeModifier> ATTRIBUTE_MODIFIER = new SerializableDataType<>(
-			EntityAttributeModifier.class,
-			SerializationHelper::writeAttributeModifier,
-			SerializationHelper::readAttributeModifier,
-			SerializationHelper::readAttributeModifier);
+			EntityAttributeModifier.class, OriginsCodecs.ENTITY_ATTRIBUTE_MODIFIER_MAP_CODEC.codec());
 
 	public static final SerializableDataType<EntityAttributeModifier.Operation> MODIFIER_OPERATION = SerializableDataType.enumValue(EntityAttributeModifier.Operation.class);
 
-	public static final SerializableDataType<AttributedEntityAttributeModifier> ATTRIBUTED_ATTRIBUTE_MODIFIER = SerializableDataType.compound(
-			AttributedEntityAttributeModifier.class,
-			new SerializableData()
-					.add("attribute", ATTRIBUTE)
-					.add("operation", MODIFIER_OPERATION)
-					.add("value", DOUBLE)
-					.add("name", STRING, "Unnamed EntityAttributeModifier"),
-			dataInst -> {
-				EntityAttribute attribute = dataInst.get("attribute");
-				if (attribute == null)
-					return null;
-				return new AttributedEntityAttributeModifier(attribute, new EntityAttributeModifier(
-						dataInst.get("name"),
-						dataInst.getDouble("value"),
-						dataInst.get("operation")));
-			},
-			(data, inst) -> {
-				SerializableData.Instance dataInst = data.new Instance();
-				dataInst.set("attribute", inst.getAttribute());
-				dataInst.set("operation", inst.getModifier().getOperation());
-				dataInst.set("value", inst.getModifier().getValue());
-				dataInst.set("name", inst.getModifier().getName());
-				return dataInst;
-			});
+	public static final SerializableDataType<AttributedEntityAttributeModifier> ATTRIBUTED_ATTRIBUTE_MODIFIER = new SerializableDataType<>(AttributedEntityAttributeModifier.class, OriginsCodecs.OPTIONAL_ATTRIBUTED_ATTRIBUTE_MODIFIER.xmap(x -> x.orElse(null), Optional::ofNullable));
 
 	public static final SerializableDataType<List<EntityAttributeModifier>> ATTRIBUTE_MODIFIERS =
 			SerializableDataType.list(ATTRIBUTE_MODIFIER);
@@ -180,92 +115,61 @@ public class SerializableDataType<T> {
 	public static final SerializableDataType<List<AttributedEntityAttributeModifier>> ATTRIBUTED_ATTRIBUTE_MODIFIERS =
 			SerializableDataType.list(ATTRIBUTED_ATTRIBUTE_MODIFIER);
 
-	public static final SerializableDataType<PowerTypeReference> POWER_TYPE = SerializableDataType.wrap(
-			PowerTypeReference.class, IDENTIFIER,
-			PowerType::getIdentifier, PowerTypeReference::new);
+	public static final SerializableDataType<PowerType<?>> POWER_TYPE = new SerializableDataType<>(ClassUtil.castClass(PowerType.class), OriginsCodecs.POWER_TYPE);
 
 	public static final SerializableDataType<Item> ITEM = SerializableDataType.registry(Item.class, Registry.ITEM);
 
 	public static final SerializableDataType<StatusEffect> STATUS_EFFECT = SerializableDataType.registry(StatusEffect.class, Registry.STATUS_EFFECT);
 
-	public static final SerializableDataType<List<StatusEffect>> STATUS_EFFECTS =
-			SerializableDataType.list(STATUS_EFFECT);
+	public static final SerializableDataType<List<StatusEffect>> STATUS_EFFECTS = SerializableDataType.list(STATUS_EFFECT);
 
-	public static final SerializableDataType<StatusEffectInstance> STATUS_EFFECT_INSTANCE = new SerializableDataType<>(
-			StatusEffectInstance.class,
-			SerializationHelper::writeStatusEffect,
-			SerializationHelper::readStatusEffect,
-			SerializationHelper::readStatusEffect);
+	public static final SerializableDataType<StatusEffectInstance> STATUS_EFFECT_INSTANCE = new SerializableDataType<>(StatusEffectInstance.class, OriginsCodecs.STATUS_EFFECT_INSTANCE);
 
-	public static final SerializableDataType<List<StatusEffectInstance>> STATUS_EFFECT_INSTANCES =
-			SerializableDataType.list(STATUS_EFFECT_INSTANCE);
+	public static final SerializableDataType<List<StatusEffectInstance>> STATUS_EFFECT_INSTANCES = SerializableDataType.list(STATUS_EFFECT_INSTANCE);
 
-	public static final SerializableDataType<Tag<Fluid>> FLUID_TAG = SerializableDataType.wrap(ClassUtil.castClass(Tag.class), IDENTIFIER,
-			fluid -> ServerTagManagerHolder.getTagManager().getFluids().getTagId(fluid),
-			SerializationHelper::getFluidTagFromId);
+	public static final SerializableDataType<Tag<Fluid>> FLUID_TAG = new SerializableDataType<>(ClassUtil.castClass(Tag.class), OriginsCodecs.FLUID_TAG);
 
-	public static final SerializableDataType<Tag<Block>> BLOCK_TAG = SerializableDataType.wrap(ClassUtil.castClass(Tag.class), IDENTIFIER,
-			block -> ServerTagManagerHolder.getTagManager().getBlocks().getTagId(block),
-			SerializationHelper::getBlockTagFromId);
+	public static final SerializableDataType<Tag<Block>> BLOCK_TAG = new SerializableDataType<>(ClassUtil.castClass(Tag.class), OriginsCodecs.BLOCK_TAG);
 
 	public static final SerializableDataType<Comparison> COMPARISON = SerializableDataType.enumValue(Comparison.class,
 			SerializationHelper.buildEnumMap(Comparison.class, Comparison::getComparisonString));
 
 	public static final SerializableDataType<Space> SPACE = SerializableDataType.enumValue(Space.class);
 
-	public static final SerializableDataType<ConditionFactory<LivingEntity>.Instance> ENTITY_CONDITION =
-			SerializableDataType.condition(ClassUtil.castClass(ConditionFactory.Instance.class), ConditionTypes.ENTITY);
+	public static final SerializableDataType<ConditionFactory.Instance<LivingEntity>> ENTITY_CONDITION = new SerializableDataType<>(ClassUtil.castClass(ConditionFactory.Instance.class), OriginsCodecs.ENTITY_CONDITION);
+	public static final SerializableDataType<List<ConditionFactory.Instance<LivingEntity>>> ENTITY_CONDITIONS = SerializableDataType.list(ENTITY_CONDITION);
 
-	public static final SerializableDataType<List<ConditionFactory<LivingEntity>.Instance>> ENTITY_CONDITIONS =
-			SerializableDataType.list(ENTITY_CONDITION);
+	public static final SerializableDataType<ConditionFactory.Instance<ItemStack>> ITEM_CONDITION = new SerializableDataType<>(ClassUtil.castClass(ConditionFactory.Instance.class), OriginsCodecs.ITEM_CONDITION);
 
-	public static final SerializableDataType<ConditionFactory<ItemStack>.Instance> ITEM_CONDITION =
-			SerializableDataType.condition(ClassUtil.castClass(ConditionFactory.Instance.class), ConditionTypes.ITEM);
+	public static final SerializableDataType<List<ConditionFactory.Instance<ItemStack>>> ITEM_CONDITIONS = SerializableDataType.list(ITEM_CONDITION);
 
-	public static final SerializableDataType<List<ConditionFactory<ItemStack>.Instance>> ITEM_CONDITIONS =
-			SerializableDataType.list(ITEM_CONDITION);
+	public static final SerializableDataType<ConditionFactory.Instance<CachedBlockPosition>> BLOCK_CONDITION = new SerializableDataType<>(ClassUtil.castClass(ConditionFactory.Instance.class), OriginsCodecs.BLOCK_CONDITION);
 
-	public static final SerializableDataType<ConditionFactory<CachedBlockPosition>.Instance> BLOCK_CONDITION =
-			SerializableDataType.condition(ClassUtil.castClass(ConditionFactory.Instance.class), ConditionTypes.BLOCK);
+	public static final SerializableDataType<List<ConditionFactory.Instance<CachedBlockPosition>>> BLOCK_CONDITIONS = SerializableDataType.list(BLOCK_CONDITION);
 
-	public static final SerializableDataType<List<ConditionFactory<CachedBlockPosition>.Instance>> BLOCK_CONDITIONS =
-			SerializableDataType.list(BLOCK_CONDITION);
+	public static final SerializableDataType<ConditionFactory.Instance<FluidState>> FLUID_CONDITION = new SerializableDataType<>(ClassUtil.castClass(ConditionFactory.Instance.class), OriginsCodecs.FLUID_CONDITION);
 
-	public static final SerializableDataType<ConditionFactory<FluidState>.Instance> FLUID_CONDITION =
-			SerializableDataType.condition(ClassUtil.castClass(ConditionFactory.Instance.class), ConditionTypes.FLUID);
+	public static final SerializableDataType<List<ConditionFactory.Instance<FluidState>>> FLUID_CONDITIONS = SerializableDataType.list(FLUID_CONDITION);
 
-	public static final SerializableDataType<List<ConditionFactory<FluidState>.Instance>> FLUID_CONDITIONS =
-			SerializableDataType.list(FLUID_CONDITION);
+	public static final SerializableDataType<ConditionFactory.Instance<Pair<DamageSource, Float>>> DAMAGE_CONDITION = new SerializableDataType<>(ClassUtil.castClass(ConditionFactory.Instance.class), OriginsCodecs.DAMAGE_CONDITION);
 
-	public static final SerializableDataType<ConditionFactory<Pair<DamageSource, Float>>.Instance> DAMAGE_CONDITION =
-			SerializableDataType.condition(ClassUtil.castClass(ConditionFactory.Instance.class), ConditionTypes.DAMAGE);
+	public static final SerializableDataType<List<ConditionFactory.Instance<Pair<DamageSource, Float>>>> DAMAGE_CONDITIONS = SerializableDataType.list(DAMAGE_CONDITION);
 
-	public static final SerializableDataType<List<ConditionFactory<Pair<DamageSource, Float>>.Instance>> DAMAGE_CONDITIONS =
-			SerializableDataType.list(DAMAGE_CONDITION);
+	public static final SerializableDataType<ConditionFactory.Instance<Biome>> BIOME_CONDITION = new SerializableDataType<>(ClassUtil.castClass(ConditionFactory.Instance.class), OriginsCodecs.BIOME_CONDITION);
 
-	public static final SerializableDataType<ConditionFactory<Biome>.Instance> BIOME_CONDITION =
-			SerializableDataType.condition(ClassUtil.castClass(ConditionFactory.Instance.class), ConditionTypes.BIOME);
+	public static final SerializableDataType<List<ConditionFactory.Instance<Biome>>> BIOME_CONDITIONS = SerializableDataType.list(BIOME_CONDITION);
 
-	public static final SerializableDataType<List<ConditionFactory<Biome>.Instance>> BIOME_CONDITIONS =
-			SerializableDataType.list(BIOME_CONDITION);
+	public static final SerializableDataType<ActionFactory.Instance<Entity>> ENTITY_ACTION = new SerializableDataType<>(ClassUtil.castClass(ActionFactory.Instance.class), OriginsCodecs.ENTITY_ACTION);
 
-	public static final SerializableDataType<ActionFactory<Entity>.Instance> ENTITY_ACTION =
-			SerializableDataType.effect(ClassUtil.castClass(ActionFactory.Instance.class), ActionTypes.ENTITY);
+	public static final SerializableDataType<List<ActionFactory.Instance<Entity>>> ENTITY_ACTIONS = SerializableDataType.list(ENTITY_ACTION);
 
-	public static final SerializableDataType<List<ActionFactory<Entity>.Instance>> ENTITY_ACTIONS =
-			SerializableDataType.list(ENTITY_ACTION);
+	public static final SerializableDataType<ActionFactory.Instance<Triple<World, BlockPos, Direction>>> BLOCK_ACTION = new SerializableDataType<>(ClassUtil.castClass(ActionFactory.Instance.class), OriginsCodecs.BLOCK_ACTION);
 
-	public static final SerializableDataType<ActionFactory<Triple<World, BlockPos, Direction>>.Instance> BLOCK_ACTION =
-			SerializableDataType.effect(ClassUtil.castClass(ActionFactory.Instance.class), ActionTypes.BLOCK);
+	public static final SerializableDataType<List<ActionFactory.Instance<Triple<World, BlockPos, Direction>>>> BLOCK_ACTIONS = SerializableDataType.list(BLOCK_ACTION);
 
-	public static final SerializableDataType<List<ActionFactory<Triple<World, BlockPos, Direction>>.Instance>> BLOCK_ACTIONS =
-			SerializableDataType.list(BLOCK_ACTION);
+	public static final SerializableDataType<ActionFactory.Instance<ItemStack>> ITEM_ACTION = new SerializableDataType<>(ClassUtil.castClass(ActionFactory.Instance.class), OriginsCodecs.ITEM_ACTION);
 
-	public static final SerializableDataType<ActionFactory<ItemStack>.Instance> ITEM_ACTION =
-			SerializableDataType.effect(ClassUtil.castClass(ActionFactory.Instance.class), ActionTypes.ITEM);
-
-	public static final SerializableDataType<List<ActionFactory<ItemStack>.Instance>> ITEM_ACTIONS =
-			SerializableDataType.list(ITEM_ACTION);
+	public static final SerializableDataType<List<ActionFactory.Instance<ItemStack>>> ITEM_ACTIONS = SerializableDataType.list(ITEM_ACTION);
 
 	public static final SerializableDataType<Ingredient> INGREDIENT = new SerializableDataType<>(
 			Ingredient.class,
@@ -419,14 +323,8 @@ public class SerializableDataType<T> {
 				RecipeSerializer serializer = Registry.RECIPE_SERIALIZER.get(recipeSerializerId);
 				return serializer.read(recipeId, json);
 			});
-	public static final SerializableDataType<ItemStack> ITEM_OR_ITEM_STACK = new SerializableDataType<>(ItemStack.class,
-			ITEM_STACK.send, ITEM_STACK.receive, jsonElement -> {
-		if (jsonElement.isJsonPrimitive() && jsonElement.getAsJsonPrimitive().isString()) {
-			Item item = ITEM.read(jsonElement);
-			return new ItemStack(item);
-		}
-		return ITEM_STACK.read.apply(jsonElement);
-	});
+	public static final SerializableDataType<ItemStack> ITEM_OR_ITEM_STACK = new SerializableDataType<ItemStack>(ItemStack.class,
+			Codec.either(OriginsCodecs.ITEM_STACK, Registry.ITEM).xmap(x -> x.map(y -> y.orElse(null), ItemStack::new), y -> Either.left(Optional.ofNullable(y))));
 
 	/**
 	 * Generates a serializable data type representing a list out of a single data type.<br>
@@ -484,7 +382,8 @@ public class SerializableDataType<T> {
 	 */
 	@Deprecated
 	public static <T> SerializableDataType<T> registry(Class<T> dataClass, Registry<T> registry) {
-		return new SerializableDataType<>(dataClass,
+		return new SerializableDataType<>(dataClass, OriginsCodecs.optionalRegistry(registry::getOrEmpty, registry::getId).xmap(x -> x.orElse(null), Optional::ofNullable));
+		/*return new SerializableDataType<>(dataClass,
 				(buf, t) -> buf.writeIdentifier(registry.getId(t)),
 				(buf) -> registry.get(buf.readIdentifier()),
 				(json) -> {
@@ -509,7 +408,7 @@ public class SerializableDataType<T> {
 								"Identifier \"" + id + "\" was not registered in registry \"" + registry.getKey().getValue() + "\".");
 					}
 					return registry.get(id);
-				});
+				});*/
 	}
 
 	public static <T> SerializableDataType<T> compound(Class<T> dataClass, SerializableData data, Function<SerializableData.Instance, T> toInstance, BiFunction<SerializableData, T, SerializableData.Instance> toData) {
@@ -533,19 +432,21 @@ public class SerializableDataType<T> {
 		return new SerializableDataType<>(dataClass, Codec.STRING.xmap(map::get, map.inverse()::get));
 	}
 
+	/*
+	//TODO Recreate ConditionTypes.
 	public static <T> SerializableDataType<ConditionFactory<T>.Instance> condition(Class<ConditionFactory<T>.Instance> dataClass, ConditionType<T> conditionType) {
 		return new SerializableDataType<>(dataClass, conditionType::write, conditionType::read, conditionType::read);
 	}
 
 	public static <T> SerializableDataType<ActionFactory<T>.Instance> effect(Class<ActionFactory<T>.Instance> dataClass, ActionType<T> actionType) {
 		return new SerializableDataType<>(dataClass, actionType::write, actionType::read, actionType::read);
-	}
+	}*/
 
 	public static <T, U> SerializableDataType<T> wrap(Class<T> dataClass, SerializableDataType<U> base, Function<T, U> toFunction, Function<U, T> fromFunction) {
-		return new SerializableDataType<>(dataClass,
+		return base.getCodec().map(x -> new SerializableDataType<T>(dataClass, x.xmap(fromFunction, toFunction))).orElseGet(() -> new SerializableDataType<>(dataClass,
 				(buf, t) -> base.send(buf, toFunction.apply(t)),
 				(buf) -> fromFunction.apply(base.receive(buf)),
-				(json) -> fromFunction.apply(base.read(json)));
+				(json) -> fromFunction.apply(base.read(json))));
 	}
 
 	public static <T> SerializableDataType<FilterableWeightedList<T>> weightedList(SerializableDataType<T> base) {
@@ -559,35 +460,35 @@ public class SerializableDataType<T> {
 		}, x -> x.entryStream().map(p -> new Pair<>(p.getElement(), p.weight)).collect(Collectors.toList())))
 				.map(x -> new SerializableDataType<>(ClassUtil.castClass(FilterableWeightedList.class), x))
 				.orElseGet(() -> new SerializableDataType<>(ClassUtil.castClass(FilterableWeightedList.class), (buf, list) -> {
-			buf.writeInt(list.size());
-			list.entryStream().forEach((entry) -> {
-				base.send(buf, entry.getElement());
-				buf.writeInt(entry.weight);
-			});
-		}, (buf) -> {
-			int count = buf.readInt();
-			FilterableWeightedList<T> list = new FilterableWeightedList<>();
+					buf.writeInt(list.size());
+					list.entryStream().forEach((entry) -> {
+						base.send(buf, entry.getElement());
+						buf.writeInt(entry.weight);
+					});
+				}, (buf) -> {
+					int count = buf.readInt();
+					FilterableWeightedList<T> list = new FilterableWeightedList<>();
 
-			for (int i = 0; i < count; ++i) {
-				T t = base.receive(buf);
-				int weight = buf.readInt();
-				list.add(t, weight);
-			}
+					for (int i = 0; i < count; ++i) {
+						T t = base.receive(buf);
+						int weight = buf.readInt();
+						list.add(t, weight);
+					}
 
-			return list;
-		}, (json) -> {
-			FilterableWeightedList<T> list = new FilterableWeightedList<>();
-			if (json.isJsonArray()) {
-				for (JsonElement je : json.getAsJsonArray()) {
-					JsonObject weightedObj = je.getAsJsonObject();
-					T elem = base.read(weightedObj.get("element"));
-					int weight = JsonHelper.getInt(weightedObj, "weight");
-					list.add(elem, weight);
-				}
-			}
+					return list;
+				}, (json) -> {
+					FilterableWeightedList<T> list = new FilterableWeightedList<>();
+					if (json.isJsonArray()) {
+						for (JsonElement je : json.getAsJsonArray()) {
+							JsonObject weightedObj = je.getAsJsonObject();
+							T elem = base.read(weightedObj.get("element"));
+							int weight = JsonHelper.getInt(weightedObj, "weight");
+							list.add(elem, weight);
+						}
+					}
 
-			return list;
-		}));
+					return list;
+				}));
 	}
 
 	private static <T> BiConsumer<PacketByteBuf, T> networkWriter(Codec<T> codec) {
@@ -613,7 +514,7 @@ public class SerializableDataType<T> {
 	}
 
 	private static <T> Function<JsonElement, T> jsonReader(Codec<T> codec) {
-		return jsonElement -> codec.parse(InlineJsonOps.INSTANCE, jsonElement).getOrThrow(false, s -> {});
+		return jsonElement -> codec.parse(JsonOps.INSTANCE, jsonElement).getOrThrow(false, s -> {});
 	}
 
 	public static SerializableDataType<RegistryKey<World>> DIMENSION = SerializableDataType.wrap(
@@ -621,6 +522,7 @@ public class SerializableDataType<T> {
 			SerializableDataType.IDENTIFIER,
 			RegistryKey::getValue, identifier -> RegistryKey.of(Registry.DIMENSION, identifier)
 	);
+
 	private final Class<T> dataClass;
 	private final BiConsumer<PacketByteBuf, T> send;
 	private final Function<PacketByteBuf, T> receive;
@@ -644,9 +546,12 @@ public class SerializableDataType<T> {
 		this.receive = receive;
 		this.read = read;
 		this.codec = null;
+		Origins.LOGGER.warn("No codecs were created for {}", dataClass.getSimpleName());
 	}
 
 	public void send(PacketByteBuf buffer, Object value) {
+		if (!this.hasCodec())
+			Origins.LOGGER.warn("Serializing {} for class {} without a codec", value, dataClass.getSimpleName());
 		send.accept(buffer, cast(value));
 	}
 
@@ -673,6 +578,6 @@ public class SerializableDataType<T> {
 	public JsonElement write(T object) {
 		if (!this.hasCodec())
 			throw new IllegalArgumentException("Writing for type: " + this.dataClass + " isn't implemented.");
-		return this.codec.encodeStart(InlineJsonOps.INSTANCE, object).getOrThrow(false, s -> Origins.LOGGER.error("Failed to serialize: \"{}\": {}", object, s));
+		return this.codec.encodeStart(JsonOps.INSTANCE, object).getOrThrow(false, s -> Origins.LOGGER.error("Failed to serialize: \"{}\": {}", object, s));
 	}
 }

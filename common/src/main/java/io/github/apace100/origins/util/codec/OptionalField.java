@@ -1,8 +1,6 @@
 package io.github.apace100.origins.util.codec;
 
 import com.mojang.serialization.DataResult;
-import jdk.internal.joptsimple.internal.Strings;
-import me.shedaniel.architectury.platform.Platform;
 import net.minecraft.util.Identifier;
 
 import java.util.Optional;

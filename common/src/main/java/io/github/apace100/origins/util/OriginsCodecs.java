@@ -4,16 +4,14 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.mojang.datafixers.kinds.App;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.sun.tools.javac.jvm.Code;
 import io.github.apace100.origins.power.PowerType;
 import io.github.apace100.origins.power.PowerTypeReference;
 import io.github.apace100.origins.power.PowerTypes;
-import io.github.apace100.origins.power.action.entity.PlaySoundAction;
 import io.github.apace100.origins.power.factory.GenericFactory;
 import io.github.apace100.origins.power.factory.action.ActionFactory;
 import io.github.apace100.origins.power.factory.condition.ConditionFactory;
@@ -26,6 +24,7 @@ import net.minecraft.block.pattern.CachedBlockPosition;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.*;
 import net.minecraft.entity.attribute.EntityAttribute;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -33,14 +32,12 @@ import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.tag.ServerTagManagerHolder;
 import net.minecraft.tag.Tag;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.InvalidIdentifierException;
-import net.minecraft.util.Pair;
-import net.minecraft.util.StringIdentifiable;
+import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.registry.BuiltinRegistries;
@@ -89,7 +86,7 @@ public class OriginsCodecs {
 	}, x -> DataResult.success(x.toString()));
 
 	public static final Codec<OptionalField> REGISTRY_ENTRY = RecordCodecBuilder.create(instance -> instance.group(
-			Identifier.CODEC.fieldOf("type").forGetter(x -> x.value),
+			Identifier.CODEC.fieldOf("name").forGetter(x -> x.value),
 			Codec.BOOL.optionalFieldOf("optional", false).forGetter(x -> x.optional)
 	).apply(instance, OptionalField::new));
 
@@ -118,13 +115,23 @@ public class OriginsCodecs {
 			Codec.BOOL.optionalFieldOf("show_particles", false).forGetter(StatusEffectInstance::shouldShowParticles),
 			Codec.BOOL.optionalFieldOf("show_icon", false).forGetter(StatusEffectInstance::shouldShowIcon)
 	).apply(instance, StatusEffectInstance::new));
+
 	//Enum Codec
 	public static final Codec<Comparison> COMPARISON = enumCodec(Comparison.values(), Arrays.stream(Comparison.values()).collect(ImmutableMap.toImmutableMap(Comparison::getComparisonString, Function.identity())));
 	public static final Codec<LightType> LIGHT_TYPE = enumCodec(LightType.values(), ImmutableMap.of());
 	public static final Codec<GameMode> GAME_MODE = enumCodec(GameMode.values(), Arrays.stream(GameMode.values()).collect(Collectors.toMap(GameMode::getName, Function.identity())));
 	public static final Codec<EquipmentSlot> EQUIPMENT_SLOT = enumCodec(EquipmentSlot.values(), ImmutableMap.of());
+	public static final Codec<EntityAttributeModifier.Operation> MODIFIER_OPERATION = enumCodec(EntityAttributeModifier.Operation.values(), ImmutableMap.of());
 	public static final Codec<Shape> SHAPE = enumCodec(Shape.values(), ImmutableMap.of());
 	public static final Codec<Space> SPACE = enumCodec(Space.values(), ImmutableMap.of());
+
+
+	public static final MapCodec<EntityAttributeModifier> ENTITY_ATTRIBUTE_MODIFIER_MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+			Codec.STRING.optionalFieldOf("name", "Unnamed attribute modifier").forGetter(EntityAttributeModifier::getName),
+			Codec.DOUBLE.fieldOf("operation").forGetter(EntityAttributeModifier::getValue),
+			MODIFIER_OPERATION.fieldOf("operation").forGetter(EntityAttributeModifier::getOperation)
+	).apply(instance, EntityAttributeModifier::new));
+
 	//Tag Codecs
 	public static final Codec<Tag<Block>> BLOCK_TAG = Tag.codec(() -> ServerTagManagerHolder.getTagManager().getBlocks());
 	public static final Codec<Tag<Item>> ITEM_TAG = Tag.codec(() -> ServerTagManagerHolder.getTagManager().getItems());
@@ -161,12 +168,27 @@ public class OriginsCodecs {
 	public static final Codec<Optional<Block>> OPTIONAL_BLOCK = optionalRegistry(Registry.BLOCK::getOrEmpty, Registry.BLOCK::getId);
 	public static final Codec<Optional<EntityType<?>>> OPTIONAL_ENTITY_TYPE = optionalRegistry(Registry.ENTITY_TYPE::getOrEmpty, Registry.ENTITY_TYPE::getId);
 	public static final Codec<Optional<Enchantment>> OPTIONAL_ENCHANTMENT = optionalRegistry(Registry.ENCHANTMENT::getOrEmpty, Registry.ENCHANTMENT::getId);
+	public static final Codec<Optional<Item>> OPTIONAL_ITEM = optionalRegistry(Registry.ITEM::getOrEmpty, Registry.ITEM::getId);
 	public static final Codec<Optional<StatusEffect>> OPTIONAL_STATUS_EFFECT = optionalRegistry(Registry.STATUS_EFFECT::getOrEmpty, Registry.STATUS_EFFECT::getId);
 	public static final Codec<Optional<SoundEvent>> OPTIONAL_SOUND_EVENT = optionalRegistry(Registry.SOUND_EVENT::getOrEmpty, Registry.SOUND_EVENT::getId);
 
+	public static final Codec<Optional<AttributedEntityAttributeModifier>> OPTIONAL_ATTRIBUTED_ATTRIBUTE_MODIFIER = RecordCodecBuilder.create(instance -> instance.group(
+			OPTIONAL_ATTRIBUTE.fieldOf("attribute").forGetter(x -> x.map(AttributedEntityAttributeModifier::getAttribute)),
+			ENTITY_ATTRIBUTE_MODIFIER_MAP_CODEC.forGetter(x -> x.map(AttributedEntityAttributeModifier::getModifier).get())
+	).apply(instance, (entityAttribute, entityAttributeModifier) -> entityAttribute.map(x -> new AttributedEntityAttributeModifier(x, entityAttributeModifier))));
+
+	public static final Codec<Optional<ItemStack>> ITEM_STACK = RecordCodecBuilder.create(instance -> instance.group(
+			OPTIONAL_ITEM.fieldOf("item").forGetter(x -> x.map(ItemStack::getItem)),
+			Codec.INT.optionalFieldOf("amount", 1).forGetter(x -> x.map(ItemStack::getCount).orElse(1)),
+			CompoundTag.CODEC.optionalFieldOf("tag").forGetter(x -> x.map(ItemStack::getTag))
+	).apply(instance, (item, integer, compoundTag) -> item.map(i -> {
+		ItemStack is = new ItemStack(i, integer);
+		compoundTag.ifPresent(is::setTag);
+		return is;
+	})));
+
 	public static <T extends Enum<T>> Codec<T> enumCodec(T[] values, Map<String, T> additional) {
-		ImmutableMap.Builder<String, T> builder = ImmutableMap.builder();
-		builder.putAll(additional);
+		Map<String, T> builder = new HashMap<>(additional);
 		for (T value : values) {
 			String key = value.name().toLowerCase(Locale.ROOT);
 			builder.put(key, value);
@@ -176,7 +198,7 @@ public class OriginsCodecs {
 					builder.put(name, value);
 			}
 		}
-		ImmutableMap<String, T> map = builder.build();
+		ImmutableMap<String, T> map = ImmutableMap.copyOf(builder);
 		return Codec.either(
 				Codec.intRange(0, values.length - 1).xmap(i -> values[i], Enum::ordinal),
 				Codec.STRING.flatXmap(
@@ -213,10 +235,12 @@ public class OriginsCodecs {
 
 	/**
 	 * A dispatch codec whose second part will be inlined if no maps aren't being compressed.
-	 * @param typeKey The name of the master type.
-	 * @param sourceCodec The codec for the factory type.
-	 * @param accessor A way to access the factory from the instance.
+	 *
+	 * @param typeKey       The name of the master type.
+	 * @param sourceCodec   The codec for the factory type.
+	 * @param accessor      A way to access the factory from the instance.
 	 * @param codecAccessor A way to access the codec of the instance from the master.
+	 *
 	 * @return The new codec.
 	 */
 	public static <E, A> Codec<E> inlineDispatch(String typeKey, Codec<A> sourceCodec, final Function<? super E, ? extends A> accessor, final Function<? super A, ? extends Codec<? extends E>> codecAccessor) {

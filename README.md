@@ -1,8 +1,8 @@
-# Origins Forge for Minecraft
+# Origins Forge: Experimental
 
-## Disclaimer
+This branch is an experimental branch that focuses on moving away from SerializableDataTypes and towards Codecs.
+Using codecs would allow for writing, as well as reading json files, it would also increase the possibilities of
+comparison to grant them the ability to basically work on any bit of code.
 
-This branch is experimental, and most changes are breaking changes to allow for data generation on forge.
-Addons **WILL NOT WORK** with this branch. Datapack compatibility should be retained.
-
-This branch is made with no promises of being merged.
+Another goal of this branch, will be to use something akin to dynamic registries to store powers, and then later on
+actions and conditions, though this may be more complex.

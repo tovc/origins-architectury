@@ -13,9 +13,9 @@ public class HudRender {
     private final boolean shouldRender;
     private final int barIndex;
     private final Identifier spriteLocation;
-    private final ConditionFactory<LivingEntity>.Instance playerCondition;
+    private final ConditionFactory.Instance<LivingEntity> playerCondition;
 
-    public HudRender(boolean shouldRender, int barIndex, Identifier spriteLocation, ConditionFactory<LivingEntity>.Instance condition) {
+    public HudRender(boolean shouldRender, int barIndex, Identifier spriteLocation, ConditionFactory.Instance<LivingEntity> condition) {
         this.shouldRender = shouldRender;
         this.barIndex = barIndex;
         this.spriteLocation = spriteLocation;
@@ -38,7 +38,7 @@ public class HudRender {
         return shouldRender && (playerCondition == null || playerCondition.test(player));
     }
 
-    public ConditionFactory<LivingEntity>.Instance getCondition() {
+    public ConditionFactory.Instance<LivingEntity> getCondition() {
         return playerCondition;
     }
 }

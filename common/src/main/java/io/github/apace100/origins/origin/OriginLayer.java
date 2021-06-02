@@ -3,7 +3,7 @@ package io.github.apace100.origins.origin;
 import com.google.common.collect.Lists;
 import com.google.gson.*;
 import io.github.apace100.origins.power.factory.condition.ConditionFactory;
-import io.github.apace100.origins.power.factory.condition.ConditionTypes;
+import io.github.apace100.origins.util.OriginsCodecs;
 import io.github.apace100.origins.util.SerializableData;
 import io.github.apace100.origins.util.SerializableDataType;
 import net.fabricmc.api.EnvType;
@@ -14,6 +14,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -264,10 +265,10 @@ public class OriginLayer implements Comparable<OriginLayer> {
     }
 
     public static class ConditionedOrigin {
-        private final ConditionFactory<LivingEntity>.Instance condition;
+        private final ConditionFactory.Instance<LivingEntity> condition;
         private final List<Identifier> origins;
 
-        public ConditionedOrigin(ConditionFactory<LivingEntity>.Instance condition, List<Identifier> origins) {
+        public ConditionedOrigin(ConditionFactory.Instance<LivingEntity> condition, List<Identifier> origins) {
             this.condition = condition;
             this.origins = origins;
         }
@@ -285,17 +286,26 @@ public class OriginLayer implements Comparable<OriginLayer> {
 
         public void write(PacketByteBuf buffer) {
             buffer.writeBoolean(condition != null);
-            if(condition != null)
-                condition.write(buffer);
+            if(condition != null) {
+                try {
+                    buffer.encode(OriginsCodecs.ENTITY_CONDITION, this.condition);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
             buffer.writeInt(origins.size());
             origins.forEach(buffer::writeIdentifier);
         }
 
         @Environment(EnvType.CLIENT)
         public static ConditionedOrigin read(PacketByteBuf buffer) {
-            ConditionFactory<LivingEntity>.Instance condition = null;
+            ConditionFactory.Instance<LivingEntity> condition = null;
             if(buffer.readBoolean()) {
-                condition = ConditionTypes.ENTITY.read(buffer);
+                try {
+                    condition = buffer.decode(OriginsCodecs.ENTITY_CONDITION);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
             int originCount = buffer.readInt();
             List<Identifier> originList = new ArrayList<>(originCount);

@@ -5,7 +5,7 @@
       "name": "Extra Reach block reach",
       "attribute": {
         "name": "reach-entity-attributes:reach",
-        "platform": "fabric"
+        "optional": true
       },
       "value": 1.5,
       "operation": "addition"
@@ -14,7 +14,7 @@
       "name": "Extra Reach entity reach",
       "attribute": {
         "name": "reach-entity-attributes:attack_range",
-        "platform": "fabric"
+        "optional": true
       },
       "value": 1.5,
       "operation": "addition"
@@ -23,7 +23,7 @@
       "name": "Extra Reach forge",
       "attribute": {
         "name": "forge:reach_distance",
-        "platform": "forge"
+        "optional": true
       },
       "value": 1.5,
       "operation": "addition"
