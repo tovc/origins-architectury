@@ -1,5 +1,6 @@
 package io.github.apace100.origins.power.forge;
 
+import net.minecraft.entity.attribute.EntityAttributeInstance;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.player.PlayerEntity;
 import top.theillusivec4.caelus.api.CaelusApi;
@@ -12,13 +13,17 @@ public class ElytraFlightPowerImpl {
 
 	public static void enableFlight(PlayerEntity player) {
 		if(player.getAttributes().hasAttribute(CaelusApi.ELYTRA_FLIGHT.get())) {
-			player.getAttributeInstance(CaelusApi.ELYTRA_FLIGHT.get()).addTemporaryModifier(FLIGHT_MODIFIER);
+			EntityAttributeInstance attributeInstance = player.getAttributeInstance(CaelusApi.ELYTRA_FLIGHT.get());
+			if (!attributeInstance.hasModifier(FLIGHT_MODIFIER))
+				attributeInstance.addTemporaryModifier(FLIGHT_MODIFIER);
 		}
 	}
 
 	public static void disableFlight(PlayerEntity player) {
 		if(player.getAttributes().hasAttribute(CaelusApi.ELYTRA_FLIGHT.get())) {
-			player.getAttributeInstance(CaelusApi.ELYTRA_FLIGHT.get()).removeModifier(FLIGHT_MODIFIER);
+			EntityAttributeInstance attributeInstance = player.getAttributeInstance(CaelusApi.ELYTRA_FLIGHT.get());
+			if (attributeInstance.hasModifier(FLIGHT_MODIFIER))
+				attributeInstance.removeModifier(FLIGHT_MODIFIER);
 		}
 	}
 }

@@ -4,9 +4,9 @@ import io.github.apace100.origins.component.OriginComponent;
 import io.github.apace100.origins.networking.ModPackets;
 import io.github.apace100.origins.origin.Origin;
 import io.github.apace100.origins.origin.OriginLayers;
-import io.github.apace100.origins.origin.OriginRegistry;
-import io.github.apace100.origins.power.*;
-import io.github.apace100.origins.power.factory.PowerFactory;
+import io.github.apace100.origins.power.Power;
+import io.github.apace100.origins.power.PreventBlockUsePower;
+import io.github.apace100.origins.power.PreventItemUsePower;
 import io.github.apace100.origins.registry.ModComponentsArchitectury;
 import io.netty.buffer.Unpooled;
 import me.shedaniel.architectury.event.events.InteractionEvent;
@@ -37,7 +37,7 @@ public class OriginEventHandler {
 	}
 
 	private static ActionResult preventBlockUse(PlayerEntity player, Hand hand, BlockPos blockPos, Direction direction) {
-		if(OriginComponent.getPowers(player, PreventBlockUsePower.class).stream().anyMatch(p -> p.doesPrevent(player.getEntityWorld(), blockPos))) {
+		if (OriginComponent.getPowers(player, PreventBlockUsePower.class).stream().anyMatch(p -> p.doesPrevent(player.getEntityWorld(), blockPos))) {
 			return ActionResult.FAIL;
 		}
 		return ActionResult.PASS;
@@ -63,43 +63,8 @@ public class OriginEventHandler {
 	private static void playerJoin(ServerPlayerEntity player) {
 		OriginComponent component = ModComponentsArchitectury.getOriginComponent(player);
 
-		PacketByteBuf powerListData = new PacketByteBuf(Unpooled.buffer());
-		powerListData.writeInt(PowerTypeRegistry.size());
-		PowerTypeRegistry.entries().forEach((entry) -> {
-			PowerType<?> type = entry.getValue();
-			PowerFactory<?>.Instance factory = type.getFactory();
-			if (factory != null) {
-				powerListData.writeIdentifier(entry.getKey());
-				factory.write(powerListData);
-				powerListData.writeString(type.getOrCreateNameTranslationKey());
-				powerListData.writeString(type.getOrCreateDescriptionTranslationKey());
-				powerListData.writeBoolean(type.isHidden());
-			}
-		});
-
-		PacketByteBuf originListData = new PacketByteBuf(Unpooled.buffer());
-		originListData.writeInt(OriginRegistry.size() - 1);
-		OriginRegistry.entries().forEach((entry) -> {
-			if (entry.getValue() != Origin.EMPTY) {
-				originListData.writeIdentifier(entry.getKey());
-				entry.getValue().write(originListData);
-			}
-		});
-
-		PacketByteBuf originLayerData = new PacketByteBuf(Unpooled.buffer());
-		originLayerData.writeInt(OriginLayers.size());
-		OriginLayers.getLayers().forEach((layer) -> {
-			layer.write(originLayerData);
-			if (layer.isEnabled()) {
-				if (!component.hasOrigin(layer)) {
-					component.setOrigin(layer, Origin.EMPTY);
-				}
-			}
-		});
-
-		NetworkManager.sendToPlayer(player, ModPackets.POWER_LIST, powerListData);
-		NetworkManager.sendToPlayer(player, ModPackets.ORIGIN_LIST, originListData);
-		NetworkManager.sendToPlayer(player, ModPackets.LAYER_LIST, originLayerData);
+		OriginLayers.getLayers().stream().filter(x -> x.isEnabled() && !component.hasOrigin(x))
+				.forEach(layer -> component.setOrigin(layer, Origin.EMPTY));
 
 		List<ServerPlayerEntity> playerList = player.getServer().getPlayerManager().getPlayerList();
 		playerList.forEach(spe -> ModComponentsArchitectury.syncWith(spe, player));

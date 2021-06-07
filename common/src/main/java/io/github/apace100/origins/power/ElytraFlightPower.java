@@ -17,6 +17,14 @@ public class ElytraFlightPower extends Power {
     }
 
     @Override
+    public void tick() {
+        if (this.isActive())
+            enableFlight(player);
+        else
+            disableFlight(player);
+    }
+
+    @Override
     public void onAdded() {
         enableFlight(player);
     }

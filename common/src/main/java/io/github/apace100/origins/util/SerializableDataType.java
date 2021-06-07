@@ -59,6 +59,7 @@ import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import org.apache.commons.lang3.tuple.Triple;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -68,6 +69,13 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+/**
+ * When this mod will update to 1.17, this class will go away and be replaced by
+ * {@link com.mojang.serialization.Codec Codecs}. This will allow me to rewrite network
+ * completely to work with forge.
+ */
+@Deprecated
+@ApiStatus.ScheduledForRemoval(inVersion = "MC 1.17")
 public class SerializableDataType<T> {
 
     public static final SerializableDataType<Integer> INT = new SerializableDataType<>(

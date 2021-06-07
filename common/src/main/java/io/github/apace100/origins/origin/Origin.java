@@ -195,6 +195,10 @@ public class Origin {
     }
 
     public void write(PacketByteBuf buffer) {
+        DATA.write(buffer, this.dataInstance());
+    }
+
+    public SerializableData.Instance dataInstance() {
         SerializableData.Instance data = DATA.new Instance();
         data.set("icon", displayItem);
         data.set("impact", impact);
@@ -205,7 +209,7 @@ public class Origin {
         data.set("name", getOrCreateNameTranslationKey());
         data.set("description", getOrCreateDescriptionTranslationKey());
         data.set("upgrades", upgrades);
-        DATA.write(buffer, data);
+        return data;
     }
 
     @SuppressWarnings("unchecked")
