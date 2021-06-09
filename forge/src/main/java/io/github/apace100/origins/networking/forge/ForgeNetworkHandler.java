@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import io.github.apace100.origins.OriginsForge;
 import io.github.apace100.origins.networking.packet.AcknowledgeMessage;
 import io.github.apace100.origins.networking.packet.DynamicRegistryMessage;
+import io.github.apace100.origins.networking.packet.OriginSynchronizationMessage;
 import io.github.apace100.origins.origin.Origin;
 import io.github.apace100.origins.origin.OriginLayers;
 import io.github.apace100.origins.origin.OriginRegistry;
@@ -34,6 +35,12 @@ public class ForgeNetworkHandler {
 				.decoder(DynamicRegistryMessage::decode)
 				.consumer(DynamicRegistryMessage::handle)
 				.buildLoginPacketList(ForgeNetworkHandler::createRegistries)
+				.add();
+
+		channel.messageBuilder(OriginSynchronizationMessage.class, 2, NetworkDirection.PLAY_TO_CLIENT)
+				.encoder(OriginSynchronizationMessage::encode)
+				.decoder(OriginSynchronizationMessage::decode)
+				.consumer(OriginSynchronizationMessage::handle)
 				.add();
 	}
 

@@ -147,9 +147,7 @@ public class OriginForgeEventHandler {
 		if (event.getWorld().isClient())
 			return;
 		Entity entity = event.getEntity();
-		Packet<?> packet = ModComponentsArchitecturyImpl.buildOtherPacket(entity);
-		if (packet != null)
-			PacketDistributor.TRACKING_ENTITY_AND_SELF.with(event::getEntity).send(packet);
+		ModComponentsArchitectury.syncOriginComponent(event.getEntity());
 		if (entity instanceof ServerPlayerEntity)
 			checkOrigins((ServerPlayerEntity) entity);
 	}

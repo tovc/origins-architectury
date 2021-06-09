@@ -28,7 +28,7 @@ import java.util.function.Supplier;
 public class DynamicRegistryMessage implements IntSupplier {
 	public static DynamicRegistryMessage decode(PacketByteBuf buf) {
 		int size = buf.readVarInt();
-		Origins.LOGGER.info("Server sent {} powers", size);
+		Origins.LOGGER.debug("Server sent {} powers", size);
 		Map<Identifier, PowerType<?>> powers = new HashMap<>(size);
 		for (int i = 0; i < size; i++) {
 			if (!buf.readBoolean()) continue;
@@ -42,13 +42,13 @@ public class DynamicRegistryMessage implements IntSupplier {
 			powers.put(powerId, type);
 		}
 		size = buf.readVarInt();
-		Origins.LOGGER.info("Server sent {} origins", size);
+		Origins.LOGGER.debug("Server sent {} origins", size);
 		Map<Identifier, SerializableData.Instance> origins = new HashMap<>(size);
 		for (int i = 0; i < size; i++) {
 			origins.put(buf.readIdentifier(), Origin.DATA.read(buf));
 		}
 		size = buf.readVarInt();
-		Origins.LOGGER.info("Server sent {} layers", size);
+		Origins.LOGGER.debug("Server sent {} layers", size);
 		List<OriginLayer> layers = new ArrayList<>(size);
 		for (int i = 0; i < size; i++) layers.add(OriginLayer.read(buf));
 		return new DynamicRegistryMessage(powers, origins, layers);
@@ -99,15 +99,15 @@ public class DynamicRegistryMessage implements IntSupplier {
 			OriginLayers.clear();
 
 			this.powers.forEach(PowerTypeRegistry::register);
-			Origins.LOGGER.info("Loaded {} powers from server on client", this.powers.size());
+			Origins.LOGGER.debug("Loaded {} powers from server on client", this.powers.size());
 			OriginEventsArchitectury.POWER_TYPES_LOADED.invoker().onDataLoaded(true);
 
 			this.origins.forEach((id, data) -> OriginRegistry.register(id, Origin.createFromData(id, data)));
-			Origins.LOGGER.info("Loaded {} origins from server on client", this.origins.size());
+			Origins.LOGGER.debug("Loaded {} origins from server on client", this.origins.size());
 			OriginEventsArchitectury.ORIGINS_LOADED.invoker().onDataLoaded(true);
 
 			this.layers.forEach(OriginLayers::add);
-			Origins.LOGGER.info("Loaded {} layers from server on client", this.layers.size());
+			Origins.LOGGER.debug("Loaded {} layers from server on client", this.layers.size());
 			OriginEventsArchitectury.ORIGIN_LAYERS_LOADED.invoker().onDataLoaded(true);
 		});
 		OriginsForge.channel.reply(new AcknowledgeMessage(), contextSupplier.get());

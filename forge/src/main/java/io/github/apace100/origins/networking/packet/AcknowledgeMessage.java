@@ -25,7 +25,7 @@ public class AcknowledgeMessage implements IntSupplier {
 	}
 
 	public void handle(Supplier<NetworkEvent.Context> contextSupplier) {
-		Origins.LOGGER.info("Received ACK");
+		Origins.LOGGER.debug("Client successfully received a login packet.");
 		contextSupplier.get().setPacketHandled(true);
 	}
 

@@ -23,7 +23,7 @@ public class OriginsForge {
 	/**
 	 * Lowest version without networking changes.
 	 */
-	private static final String NETVERSION = "0.7.3.2";
+	private static final String NETVERSION = "0.7.3.3";
 
 	//This channel is used for version checking.
 	//It won't allow connection if the channels mismatch.
