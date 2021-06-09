@@ -34,13 +34,13 @@ public class ModComponentsArchitecturyImpl {
 	public static void syncOriginComponent(Entity player) {
 		if (!(player.getEntityWorld().getChunkManager() instanceof ServerChunkManager))
 			return; //Skip client side calls.
-		OriginSynchronizationMessage.self(player).map(x -> OriginsForge.channel.toVanillaPacket(x, NetworkDirection.PLAY_TO_CLIENT)).ifPresent(packet -> {
-			if (player instanceof ServerPlayerEntity) {
-				PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player).send(packet);
+		if (player instanceof ServerPlayerEntity)
+			OriginSynchronizationMessage.self(player).map(x -> OriginsForge.channel.toVanillaPacket(x, NetworkDirection.PLAY_TO_CLIENT)).ifPresent(packet -> PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player));
+		OriginSynchronizationMessage.other(player).map(x -> OriginsForge.channel.toVanillaPacket(x, NetworkDirection.PLAY_TO_CLIENT)).ifPresent(packet -> {
+			if (player instanceof ServerPlayerEntity)
 				PacketDistributor.TRACKING_ENTITY.with(() -> player).send(packet);
-			} else {
+			else
 				PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player).send(packet);
-			}
 		});
 	}
 

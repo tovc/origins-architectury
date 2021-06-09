@@ -58,9 +58,9 @@ public class EnderianPearlEntity extends EnderPearlEntity {
 		//super.onCollision(hitResult);
 		HitResult.Type type = hitResult.getType();
 		if (type == HitResult.Type.ENTITY)
-			this.onEntityHit((EntityHitResult)hitResult);
+			this.onEntityHit((EntityHitResult) hitResult);
 		else if (type == HitResult.Type.BLOCK)
-			this.onBlockHit((BlockHitResult)hitResult);
+			this.onBlockHit((BlockHitResult) hitResult);
 
 		Entity entity = this.getOwner();
 
@@ -80,7 +80,7 @@ public class EnderianPearlEntity extends EnderPearlEntity {
 						entity.requestTeleport(target.x, target.y, target.z);
 						entity.fallDistance = 0.0F;
 						if (pair.getRight() > 0)
-						   entity.damage(DamageSource.FALL, pair.getRight());
+							entity.damage(DamageSource.FALL, pair.getRight());
 					});
 				}
 			} else if (entity != null) {
