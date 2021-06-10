@@ -111,6 +111,8 @@ public class OriginForgeEventHandler {
 	public static void playerTick(TickEvent.PlayerTickEvent event) {
 		if (event.phase == TickEvent.Phase.START && event.side == LogicalSide.SERVER) {
 			ModComponentsArchitectury.getOriginComponent(event.player).serverTick();
+			if((event.player.age & 0x7F) == 0 && event.player instanceof ServerPlayerEntity)
+				ModComponentsArchitectury.syncWith((ServerPlayerEntity) event.player, event.player);
 		}
 	}
 

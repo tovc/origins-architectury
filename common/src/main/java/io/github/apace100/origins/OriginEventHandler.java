@@ -68,6 +68,7 @@ public class OriginEventHandler {
 
 		List<ServerPlayerEntity> playerList = player.getServer().getPlayerManager().getPlayerList();
 		playerList.forEach(spe -> ModComponentsArchitectury.syncWith(spe, player));
+		ModComponentsArchitectury.syncWith(player, player);
 		OriginComponent.sync(player);
 		if (!component.hasAllOrigins()) {
 			if (component.checkAutoChoosingLayers(player, true)) {

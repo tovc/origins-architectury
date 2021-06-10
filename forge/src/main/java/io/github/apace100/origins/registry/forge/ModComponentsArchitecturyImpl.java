@@ -45,8 +45,13 @@ public class ModComponentsArchitecturyImpl {
 	}
 
 	public static void syncWith(ServerPlayerEntity player, Entity provider) {
-		(player == provider ? OriginSynchronizationMessage.self(provider) : OriginSynchronizationMessage.other(provider))
-				.map(x -> OriginsForge.channel.toVanillaPacket(x, NetworkDirection.PLAY_TO_CLIENT))
+		Optional<OriginSynchronizationMessage> message;
+		if (player == provider)
+			message = OriginSynchronizationMessage.self(provider);
+		else
+			message = OriginSynchronizationMessage.other(provider);
+
+		message.map(x -> OriginsForge.channel.toVanillaPacket(x, NetworkDirection.PLAY_TO_CLIENT))
 				.ifPresent(packet -> PacketDistributor.PLAYER.with(() -> player).send(packet));
 	}
 
