@@ -1,10 +1,12 @@
 package io.github.apace100.origins;
 
-import io.github.apace100.origins.component.OriginComponent;
+import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.components.ForgePlayerOriginComponent;
 import io.github.apace100.origins.networking.ModPackets;
 import io.github.apace100.origins.power.*;
+import io.github.apace100.origins.power.factories.ActionOnBlockBreakPower;
 import io.github.apace100.origins.registry.ModComponentsArchitectury;
+import io.github.apace100.origins.registry.ModPowers;
 import io.github.apace100.origins.registry.forge.ModComponentsArchitecturyImpl;
 import io.netty.buffer.Unpooled;
 import me.shedaniel.architectury.networking.NetworkManager;
@@ -14,7 +16,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.tag.FluidTags;
@@ -33,7 +34,6 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.network.PacketDistributor;
 
 @Mod.EventBusSubscriber(modid = Origins.MODID)
 public class OriginForgeEventHandler {
@@ -59,11 +59,8 @@ public class OriginForgeEventHandler {
 
 	@SubscribeEvent
 	public static void breakBlock(BlockEvent.BreakEvent event) {
-		if (event.getPlayer() instanceof ServerPlayerEntity) {
-			CachedBlockPosition cachedBlockPosition = new CachedBlockPosition(event.getWorld(), event.getPos(), true);
-			OriginComponent.getPowers(event.getPlayer(), ActionOnBlockBreakPower.class).stream().filter(p -> p.doesApply(cachedBlockPosition))
-					.forEach(aobbp -> aobbp.executeActions(!event.isCanceled(), event.getPos(), null));
-		}
+		if (event.getPlayer() instanceof ServerPlayerEntity)
+			ActionOnBlockBreakPower.execute(event.getPlayer(), new CachedBlockPosition(event.getWorld(), event.getPos(), true), !event.isCanceled());
 	}
 
 	@SubscribeEvent

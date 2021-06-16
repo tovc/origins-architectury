@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.OriginsClient;
-import io.github.apace100.origins.origin.Impact;
+import io.github.apace100.origins.api.origin.Impact;
 import io.github.apace100.origins.origin.Origin;
 import io.github.apace100.origins.origin.OriginLayer;
 import io.github.apace100.origins.power.PowerType;

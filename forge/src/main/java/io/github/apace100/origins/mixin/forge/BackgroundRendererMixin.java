@@ -1,7 +1,7 @@
 package io.github.apace100.origins.mixin.forge;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import io.github.apace100.origins.component.OriginComponent;
+import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.power.LavaVisionPower;
 import io.github.apace100.origins.power.PhasingPower;
 import io.github.apace100.origins.util.ClientHooks;

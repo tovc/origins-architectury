@@ -1,6 +1,6 @@
 package io.github.apace100.origins.power;
 
-import io.github.apace100.origins.component.OriginComponent;
+import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.power.factory.PowerFactory;
 import io.github.apace100.origins.registry.ModComponentsArchitectury;
 import net.minecraft.entity.Entity;

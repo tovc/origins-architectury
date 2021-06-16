@@ -1,11 +1,10 @@
 package io.github.apace100.origins.registry;
 
 import io.github.apace100.origins.Origins;
-import io.github.apace100.origins.component.OriginComponent;
+import io.github.apace100.origins.api.OriginsAPI;
+import io.github.apace100.origins.api.component.OriginComponent;
+import io.github.apace100.origins.api.origin.OriginLayer;
 import io.github.apace100.origins.networking.ModPackets;
-import io.github.apace100.origins.origin.Origin;
-import io.github.apace100.origins.origin.OriginLayer;
-import io.github.apace100.origins.origin.OriginLayers;
 import io.netty.buffer.Unpooled;
 import me.shedaniel.architectury.networking.NetworkManager;
 import net.minecraft.entity.player.PlayerEntity;
@@ -27,9 +26,10 @@ public class ModItems {
         public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
             if(!world.isClient && user instanceof ServerPlayerEntity) { //Avoid fake players (Mainly a forge check)
                 OriginComponent component = ModComponentsArchitectury.getOriginComponent(user);
-                for (OriginLayer layer : OriginLayers.getLayers()) {
-                    if(layer.isEnabled()) {
-                        component.setOrigin(layer, Origin.EMPTY);
+
+                for (OriginLayer layer : OriginsAPI.getLayers()) {
+                    if(layer.enabled()) {
+                        component.setOrigin(layer, ModOrigins.EMPTY);
                     }
                 }
                 component.checkAutoChoosingLayers(user, false);

@@ -2,7 +2,7 @@ package io.github.apace100.origins.mixin;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.apace100.origins.OriginsClient;
-import io.github.apace100.origins.component.OriginComponent;
+import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.power.NightVisionPower;
 import io.github.apace100.origins.power.PhasingPower;
 import io.github.apace100.origins.power.ShaderPower;

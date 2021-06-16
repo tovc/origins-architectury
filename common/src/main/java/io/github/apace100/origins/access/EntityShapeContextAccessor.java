@@ -1,6 +1,6 @@
 package io.github.apace100.origins.access;
 
-import me.shedaniel.architectury.annotations.ExpectPlatform;
+import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.minecraft.block.EntityShapeContext;
 import net.minecraft.entity.Entity;
 

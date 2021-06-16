@@ -3,13 +3,9 @@ package io.github.apace100.origins.mixin;
 import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Either;
 import io.github.apace100.origins.access.EndRespawningEntity;
-import io.github.apace100.origins.component.OriginComponent;
-import io.github.apace100.origins.power.ModifyDamageTakenPower;
-import io.github.apace100.origins.power.ModifyPlayerSpawnPower;
+import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.power.PreventSleepPower;
-import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.packet.s2c.play.GameStateChangeS2CPacket;
 import net.minecraft.screen.ScreenHandlerListener;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
@@ -17,10 +13,8 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
-import net.minecraft.util.Pair;
 import net.minecraft.util.Unit;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Final;
@@ -29,10 +23,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import java.util.Optional;
 
 @Mixin(ServerPlayerEntity.class)
 public abstract class ServerPlayerEntityMixin extends PlayerEntity implements ScreenHandlerListener, EndRespawningEntity {

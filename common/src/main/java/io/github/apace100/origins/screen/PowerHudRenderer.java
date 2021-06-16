@@ -2,11 +2,10 @@ package io.github.apace100.origins.screen;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.apace100.origins.OriginsClient;
-import io.github.apace100.origins.component.OriginComponent;
+import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.power.HudRendered;
 import io.github.apace100.origins.registry.ModComponentsArchitectury;
 import io.github.apace100.origins.util.HudRender;
-import me.shedaniel.architectury.event.events.GuiEvent;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;

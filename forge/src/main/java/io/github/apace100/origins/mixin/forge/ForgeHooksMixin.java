@@ -1,6 +1,6 @@
 package io.github.apace100.origins.mixin.forge;
 
-import io.github.apace100.origins.component.OriginComponent;
+import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.power.ClimbingPower;
 import io.github.apace100.origins.power.ModifyHarvestPower;
 import io.github.apace100.origins.registry.ModComponentsArchitectury;

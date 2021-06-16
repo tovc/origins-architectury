@@ -1,8 +1,9 @@
 package io.github.apace100.origins.mixin.fabric;
 
-import io.github.apace100.origins.component.OriginComponent;
-import io.github.apace100.origins.power.ActionOnBlockBreakPower;
+import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.power.ModifyHarvestPower;
+import io.github.apace100.origins.power.factories.ActionOnBlockBreakPower;
+import io.github.apace100.origins.registry.ModPowers;
 import io.github.apace100.origins.util.SavedBlockPosition;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -44,7 +45,6 @@ public class ServerPlayerInteractionManagerMixin {
 
     @Inject(method = "tryBreakBlock", at = @At(value = "RETURN", ordinal = 4), locals = LocalCapture.CAPTURE_FAILHARD)
     private void actionOnBlockBreak(BlockPos pos, CallbackInfoReturnable<Boolean> cir, BlockState blockState, BlockEntity blockEntity, Block block, boolean bl, ItemStack itemStack, ItemStack itemStack2, boolean bl2) {
-        OriginComponent.getPowers(player, ActionOnBlockBreakPower.class).stream().filter(p -> p.doesApply(savedBlockPosition))
-            .forEach(aobbp -> aobbp.executeActions(bl && bl2, pos, null));
+        ActionOnBlockBreakPower.execute(this.player, this.savedBlockPosition, bl && bl2);
     }
 }

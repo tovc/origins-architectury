@@ -1,10 +1,10 @@
 package io.github.apace100.origins.mixin;
 
 import io.github.apace100.origins.Origins;
-import io.github.apace100.origins.component.OriginComponent;
+import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.origin.Origin;
 import io.github.apace100.origins.origin.OriginRegistry;
-import io.github.apace100.origins.origin.OriginUpgrade;
+import io.github.apace100.origins.api.origin.OriginUpgrade;
 import io.github.apace100.origins.registry.ModComponentsArchitectury;
 import net.minecraft.advancement.Advancement;
 import net.minecraft.advancement.AdvancementProgress;
@@ -33,18 +33,18 @@ public class PlayerAdvancementTrackerMixin {
                 Optional<OriginUpgrade> upgrade = o.getUpgrade(advancement);
                 if(upgrade.isPresent()) {
                     try {
-                        Origin upgradeTo = OriginRegistry.get(upgrade.get().getUpgradeToOrigin());
+                        Origin upgradeTo = OriginRegistry.get(upgrade.get().upgradeToOrigin());
                         if(upgradeTo != null) {
                             OriginComponent component = ModComponentsArchitectury.getOriginComponent(owner);
                             component.setOrigin(layer, upgradeTo);
                             component.sync();
-                            String announcement = upgrade.get().getAnnouncement();
+                            String announcement = upgrade.get().announcement();
                             if (!announcement.isEmpty()) {
                                 owner.sendMessage(new TranslatableText(announcement).formatted(Formatting.GOLD), false);
                             }
                         }
                     } catch(IllegalArgumentException e) {
-                        Origins.LOGGER.error("Could not perform Origins upgrade from " + o.getIdentifier().toString() + " to " + upgrade.get().getUpgradeToOrigin().toString() + ", as the upgrade origin did not exist!");
+                        Origins.LOGGER.error("Could not perform Origins upgrade from " + o.getIdentifier().toString() + " to " + upgrade.get().upgradeToOrigin().toString() + ", as the upgrade origin did not exist!");
                     }
                 }
             });

@@ -2,9 +2,10 @@ package io.github.apace100.origins.mixin;
 
 import io.github.apace100.origins.access.MovingEntity;
 import io.github.apace100.origins.access.WaterMovingEntity;
-import io.github.apace100.origins.component.OriginComponent;
+import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.networking.ModPackets;
 import io.github.apace100.origins.power.*;
+import io.github.apace100.origins.power.factories.ActionOnLandPower;
 import io.github.apace100.origins.registry.ModComponentsArchitectury;
 import io.netty.buffer.Unpooled;
 import me.shedaniel.architectury.networking.NetworkManager;
@@ -96,7 +97,7 @@ public abstract class EntityMixin implements MovingEntity {
     @Inject(method = "fall", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/Entity;fallDistance:F", opcode = Opcodes.PUTFIELD, ordinal = 0))
     private void invokeActionOnSoftLand(double heightDifference, boolean onGround, BlockState landedState, BlockPos landedPosition, CallbackInfo ci) {
         if(!wasGrounded && (Object)this instanceof PlayerEntity) {
-            OriginComponent.getPowers((Entity)(Object)this, ActionOnLandPower.class).forEach(ActionOnLandPower::executeAction);
+            ActionOnLandPower.execute((PlayerEntity)(Object)this);
             NetworkManager.sendToServer(ModPackets.PLAYER_LANDED, new PacketByteBuf(Unpooled.buffer()));
         }
     }

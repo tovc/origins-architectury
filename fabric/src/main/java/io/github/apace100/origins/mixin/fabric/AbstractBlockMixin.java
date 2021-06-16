@@ -1,8 +1,7 @@
 package io.github.apace100.origins.mixin.fabric;
 
-import io.github.apace100.origins.access.EntityShapeContextAccess;
 import io.github.apace100.origins.access.EntityShapeContextAccessor;
-import io.github.apace100.origins.component.OriginComponent;
+import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.power.ModifyBreakSpeedPower;
 import io.github.apace100.origins.power.PreventBlockSelectionPower;
 import net.minecraft.block.AbstractBlock;

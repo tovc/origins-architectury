@@ -8,7 +8,7 @@ public interface Active {
 
     class Key {
 
-        public String key = "key.origins.primary_active";
+        public String key = "key.conditionedOrigins.primary_active";
         public boolean continuous = false;
     }
 }

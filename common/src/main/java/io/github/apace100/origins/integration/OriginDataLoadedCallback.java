@@ -4,7 +4,7 @@ import me.shedaniel.architectury.event.Event;
 
 /**
  * Callback which is called when all of Origins data is loaded.
- * This includes powers, origins and layers.
+ * This includes powers, conditionedOrigins and layers.
  * It is not only called on the server, but also on the client when they
  * have received this data from the server and incorporated it into the registries.
  *

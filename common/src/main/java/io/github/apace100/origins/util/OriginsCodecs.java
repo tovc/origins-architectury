@@ -1,26 +1,19 @@
 package io.github.apace100.origins.util;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.ImmutableBiMap;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
+import com.google.common.collect.*;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.github.apace100.origins.api.origin.Impact;
 import io.github.apace100.origins.power.PowerType;
 import io.github.apace100.origins.power.PowerTypeReference;
 import io.github.apace100.origins.power.PowerTypes;
-import io.github.apace100.origins.power.factory.GenericFactory;
-import io.github.apace100.origins.power.factory.action.ActionFactory;
-import io.github.apace100.origins.power.factory.condition.ConditionFactory;
-import io.github.apace100.origins.registry.ModRegistriesArchitectury;
 import io.github.apace100.origins.util.codec.IngredientCodec;
 import io.github.apace100.origins.util.codec.InlineCodec;
 import io.github.apace100.origins.util.codec.OptionalField;
 import net.minecraft.block.Block;
-import net.minecraft.block.pattern.CachedBlockPosition;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.*;
 import net.minecraft.entity.attribute.EntityAttribute;
@@ -29,7 +22,6 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.fluid.Fluid;
-import net.minecraft.fluid.FluidState;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
@@ -38,8 +30,6 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.tag.ServerTagManagerHolder;
 import net.minecraft.tag.Tag;
 import net.minecraft.util.*;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
 import net.minecraft.util.registry.BuiltinRegistries;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
@@ -47,7 +37,6 @@ import net.minecraft.world.GameMode;
 import net.minecraft.world.LightType;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
-import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.*;
 import java.util.function.Function;
@@ -124,7 +113,7 @@ public class OriginsCodecs {
 	public static final Codec<EntityAttributeModifier.Operation> MODIFIER_OPERATION = enumCodec(EntityAttributeModifier.Operation.values(), ImmutableMap.of());
 	public static final Codec<Shape> SHAPE = enumCodec(Shape.values(), ImmutableMap.of());
 	public static final Codec<Space> SPACE = enumCodec(Space.values(), ImmutableMap.of());
-
+	public static final Codec<Impact> IMPACT = enumCodec(Impact.values(), ImmutableMap.of());
 
 	public static final MapCodec<EntityAttributeModifier> ENTITY_ATTRIBUTE_MODIFIER_MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
 			Codec.STRING.optionalFieldOf("name", "Unnamed attribute modifier").forGetter(EntityAttributeModifier::getName),
@@ -142,26 +131,6 @@ public class OriginsCodecs {
 	public static final Codec<RegistryKey<World>> DIMENSION = Identifier.CODEC.xmap(x -> RegistryKey.of(Registry.DIMENSION, x), RegistryKey::getValue);
 	public static final Codec<EntityGroup> ENTITY_GROUP = mappedCodec(Codec.STRING, ImmutableBiMap.of("default", EntityGroup.DEFAULT, "undead", EntityGroup.UNDEAD, "arthropod", EntityGroup.ARTHROPOD, "illager", EntityGroup.ILLAGER, "aquatic", EntityGroup.AQUATIC));
 	public static final Codec<Ingredient> INGREDIENT = new IngredientCodec();
-	//Condition Codecs
-	public static final Codec<ConditionFactory<LivingEntity>> ENTITY_CONDITION_FACTORY = GenericFactory.factoryCodec(ModRegistriesArchitectury.ENTITY_CONDITION);
-	public static final Codec<ConditionFactory<ItemStack>> ITEM_CONDITION_FACTORY = GenericFactory.factoryCodec(ModRegistriesArchitectury.ITEM_CONDITION);
-	public static final Codec<ConditionFactory<CachedBlockPosition>> BLOCK_CONDITION_FACTORY = GenericFactory.factoryCodec(ModRegistriesArchitectury.BLOCK_CONDITION);
-	public static final Codec<ConditionFactory<Pair<DamageSource, Float>>> DAMAGE_CONDITION_FACTORY = GenericFactory.factoryCodec(ModRegistriesArchitectury.DAMAGE_CONDITION);
-	public static final Codec<ConditionFactory<FluidState>> FLUID_CONDITION_FACTORY = GenericFactory.factoryCodec(ModRegistriesArchitectury.FLUID_CONDITION);
-	public static final Codec<ConditionFactory<Biome>> BIOME_CONDITION_FACTORY = GenericFactory.factoryCodec(ModRegistriesArchitectury.BIOME_CONDITION);
-	public static final Codec<ConditionFactory.Instance<LivingEntity>> ENTITY_CONDITION = GenericFactory.instanceCodec(ENTITY_CONDITION_FACTORY);
-	public static final Codec<ConditionFactory.Instance<ItemStack>> ITEM_CONDITION = GenericFactory.instanceCodec(ITEM_CONDITION_FACTORY);
-	public static final Codec<ConditionFactory.Instance<CachedBlockPosition>> BLOCK_CONDITION = GenericFactory.instanceCodec(BLOCK_CONDITION_FACTORY);
-	public static final Codec<ConditionFactory.Instance<Pair<DamageSource, Float>>> DAMAGE_CONDITION = GenericFactory.instanceCodec(DAMAGE_CONDITION_FACTORY);
-	public static final Codec<ConditionFactory.Instance<FluidState>> FLUID_CONDITION = GenericFactory.instanceCodec(FLUID_CONDITION_FACTORY);
-	public static final Codec<ConditionFactory.Instance<Biome>> BIOME_CONDITION = GenericFactory.instanceCodec(BIOME_CONDITION_FACTORY);
-	//Action Codecs
-	public static final Codec<ActionFactory<Triple<World, BlockPos, Direction>>> BLOCK_ACTION_FACTORY = GenericFactory.factoryCodec(ModRegistriesArchitectury.BLOCK_ACTION);
-	public static final Codec<ActionFactory<Entity>> ENTITY_ACTION_FACTORY = GenericFactory.factoryCodec(ModRegistriesArchitectury.ENTITY_ACTION);
-	public static final Codec<ActionFactory<ItemStack>> ITEM_ACTION_FACTORY = GenericFactory.factoryCodec(ModRegistriesArchitectury.ITEM_ACTION);
-	public static final Codec<ActionFactory.Instance<Triple<World, BlockPos, Direction>>> BLOCK_ACTION = GenericFactory.instanceCodec(BLOCK_ACTION_FACTORY);
-	public static final Codec<ActionFactory.Instance<Entity>> ENTITY_ACTION = GenericFactory.instanceCodec(ENTITY_ACTION_FACTORY);
-	public static final Codec<ActionFactory.Instance<ItemStack>> ITEM_ACTION = GenericFactory.instanceCodec(ITEM_ACTION_FACTORY);
 	//Registry Codecs
 	public static final Codec<Optional<EntityAttribute>> OPTIONAL_ATTRIBUTE = optionalRegistry(Registry.ATTRIBUTE::getOrEmpty, Registry.ATTRIBUTE::getId);
 	public static final Codec<Optional<Biome>> OPTIONAL_BIOME = optionalRegistry(BuiltinRegistries.BIOME::getOrEmpty, BuiltinRegistries.BIOME::getId);
@@ -186,6 +155,9 @@ public class OriginsCodecs {
 		compoundTag.ifPresent(is::setTag);
 		return is;
 	})));
+
+	public static final Codec<ItemStack> ITEM_OR_ITEM_STACK = Codec.either(OPTIONAL_ITEM.xmap(x -> x.map(ItemStack::new), x -> x.map(ItemStack::getItem)), ITEM_STACK)
+			.xmap(x -> x.map(Function.identity(), Function.identity()).orElse(ItemStack.EMPTY), x -> Either.right(x.isEmpty() ? Optional.empty() : Optional.of(x)));
 
 	public static <T extends Enum<T>> Codec<T> enumCodec(T[] values, Map<String, T> additional) {
 		Map<String, T> builder = new HashMap<>(additional);
@@ -218,6 +190,10 @@ public class OriginsCodecs {
 	 */
 	public static <T> Codec<List<T>> listOf(Codec<T> source) {
 		return Codec.either(source, source.listOf()).xmap(x -> x.map(Lists::newArrayList, Function.identity()), Either::right);
+	}
+
+	public static <T> Codec<Set<T>> setOf(Codec<T> source) {
+		return Codec.either(source, source.listOf()).xmap(x -> x.map(Sets::newHashSet, HashSet::new), x -> Either.right(new ArrayList<>(x)));
 	}
 
 	/**

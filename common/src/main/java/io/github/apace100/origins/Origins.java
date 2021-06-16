@@ -1,5 +1,6 @@
 package io.github.apace100.origins;
 
+import io.github.apace100.origins.api.OriginsAPI;
 import io.github.apace100.origins.command.*;
 import io.github.apace100.origins.networking.ModPacketsC2S;
 import io.github.apace100.origins.origin.Origin;
@@ -7,15 +8,11 @@ import io.github.apace100.origins.origin.OriginLayers;
 import io.github.apace100.origins.origin.OriginManager;
 import io.github.apace100.origins.power.PowerTypes;
 import io.github.apace100.origins.power.factory.PowerFactories;
-import io.github.apace100.origins.power.factory.action.BlockActions;
-import io.github.apace100.origins.power.factory.action.EntityActions;
-import io.github.apace100.origins.power.factory.action.ItemActions;
 import io.github.apace100.origins.power.factory.condition.*;
 import io.github.apace100.origins.registry.*;
 import io.github.apace100.origins.util.ChoseOriginCriterion;
 import io.github.apace100.origins.util.GainedPowerCriterion;
 import io.github.apace100.origins.util.OriginsConfigSerializer;
-import me.shedaniel.architectury.Architectury;
 import me.shedaniel.architectury.platform.Platform;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.ConfigData;
@@ -23,7 +20,6 @@ import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.architectury.event.events.CommandRegistrationEvent;
 import me.shedaniel.architectury.registry.CriteriaTriggersRegistry;
 import me.shedaniel.architectury.registry.ReloadListeners;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.command.argument.ArgumentTypes;
 import net.minecraft.command.argument.serialize.ConstantArgumentSerializer;
 import net.minecraft.resource.ResourceType;
@@ -33,7 +29,7 @@ import org.apache.logging.log4j.Logger;
 
 public class Origins {
 
-	public static final String MODID = "origins";
+	public static final String MODID = OriginsAPI.MODID;
 	public static String VERSION = "";
 	public static int[] SEMVER;
 	public static final Logger LOGGER = LogManager.getLogger(Origins.class);
@@ -75,10 +71,10 @@ public class Origins {
 		});
 		CriteriaTriggersRegistry.register(ChoseOriginCriterion.INSTANCE);
 		CriteriaTriggersRegistry.register(GainedPowerCriterion.INSTANCE);
-		ArgumentTypes.register("origins:origin", OriginArgument.class, new ConstantArgumentSerializer<>(OriginArgument::origin));
-		ArgumentTypes.register("origins:layer", LayerArgument.class, new ConstantArgumentSerializer<>(LayerArgument::layer));
-		ArgumentTypes.register("origins:power", PowerArgument.class, new ConstantArgumentSerializer<>(PowerArgument::power));
-		ArgumentTypes.register("origins:power_operation", PowerOperation.class, new ConstantArgumentSerializer<>(PowerOperation::operation));
+		ArgumentTypes.register("conditionedOrigins:origin", OriginArgument.class, new ConstantArgumentSerializer<>(OriginArgument::origin));
+		ArgumentTypes.register("conditionedOrigins:layer", LayerArgument.class, new ConstantArgumentSerializer<>(LayerArgument::layer));
+		ArgumentTypes.register("conditionedOrigins:power", PowerArgument.class, new ConstantArgumentSerializer<>(PowerArgument::power));
+		ArgumentTypes.register("conditionedOrigins:power_operation", PowerOperation.class, new ConstantArgumentSerializer<>(PowerOperation::operation));
 		ReloadListeners.registerReloadListener(ResourceType.SERVER_DATA, new PowerTypes());
 		ReloadListeners.registerReloadListener(ResourceType.SERVER_DATA, new OriginManager());
 		ReloadListeners.registerReloadListener(ResourceType.SERVER_DATA, new OriginLayers());

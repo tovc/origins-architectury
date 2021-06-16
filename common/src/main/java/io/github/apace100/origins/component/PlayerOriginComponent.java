@@ -1,287 +1,286 @@
 package io.github.apace100.origins.component;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import io.github.apace100.origins.Origins;
-import io.github.apace100.origins.origin.Origin;
-import io.github.apace100.origins.origin.OriginLayer;
-import io.github.apace100.origins.origin.OriginLayers;
-import io.github.apace100.origins.origin.OriginRegistry;
-import io.github.apace100.origins.power.*;
+import io.github.apace100.origins.api.IOriginsFeatureConfiguration;
+import io.github.apace100.origins.api.OriginsAPI;
+import io.github.apace100.origins.api.component.OriginComponent;
+import io.github.apace100.origins.api.origin.Origin;
+import io.github.apace100.origins.api.origin.OriginLayer;
+import io.github.apace100.origins.api.power.configuration.ConfiguredPower;
+import io.github.apace100.origins.api.power.factory.PowerFactory;
+import io.github.apace100.origins.registry.ModOrigins;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import me.shedaniel.architectury.utils.NbtType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
+import net.minecraft.util.registry.Registry;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class PlayerOriginComponent implements OriginComponent {
+	private final Map<OriginLayer, Origin> origins;
+	private final Map<Identifier, ConfiguredPower<?, ?>> powerCache;
+	private final Map<Identifier, Object> dataContainers;
+	private final PlayerEntity player;
 
-    private final PlayerEntity player;
-    private final HashMap<OriginLayer, Origin> origins = new HashMap<>();
-    private final ConcurrentHashMap<PowerType<?>, Power> powers = new ConcurrentHashMap<>();
+	private boolean hadOriginBefore = false;
 
-    private boolean hadOriginBefore = false;
+	public PlayerOriginComponent(PlayerEntity player) {
+		this.player = player;
+		this.origins = Util.make(() -> {
+			Object2ObjectOpenHashMap<OriginLayer, Origin> map = new Object2ObjectOpenHashMap<>();
+			map.defaultReturnValue(ModOrigins.EMPTY);
+			return Object2ObjectMaps.synchronize(map);
+		});
+		this.powerCache = new ConcurrentHashMap<>();
+		this.dataContainers = new ConcurrentHashMap<>();
+	}
 
-    public PlayerOriginComponent(PlayerEntity player) {
-        this.player = player;
-    }
+	@Override
+	public boolean hasOrigin(OriginLayer layer) {
+		synchronized (this.origins) {
+			return !Objects.equals(ModOrigins.EMPTY, this.origins.get(layer));
+		}
+	}
 
-    @Override
-    public boolean hasAllOrigins() {
-        return OriginLayers.getLayers().stream().allMatch(layer -> !layer.isEnabled() || layer.getOrigins(player).size() == 0 ||
-                                                                   (origins.containsKey(layer) && origins.get(layer) != null && origins.get(layer) != Origin.EMPTY));
-    }
+	@Override
+	public boolean hasAllOrigins() {
+		return OriginsAPI.getLayers().stream().allMatch(this::hasOrigin);
+	}
 
-    @Override
-    public HashMap<OriginLayer, Origin> getOrigins() {
-        return origins;
-    }
+	@Override
+	public Map<OriginLayer, Origin> getOrigins() {
+		synchronized (this.origins) {
+			return ImmutableMap.copyOf(this.origins);
+		}
+	}
 
-    @Override
-    public boolean hasOrigin(OriginLayer layer) {
-        return origins.containsKey(layer) && origins.get(layer) != null && origins.get(layer) != Origin.EMPTY;
-    }
+	@Override
+	public Origin getOrigin(OriginLayer layer) {
+		synchronized (this.origins) {
+			return this.origins.get(layer);
+		}
+	}
 
-    @Override
-    public Origin getOrigin(OriginLayer layer) {
-        if(!origins.containsKey(layer)) {
-            return null;
-        }
-        return origins.get(layer);
-    }
+	@Override
+	public boolean hadOriginBefore() {
+		return this.hadOriginBefore;
+	}
 
-    @Override
-    public boolean hadOriginBefore() {
-        return hadOriginBefore;
-    }
+	@Override
+	public boolean hasPower(ConfiguredPower<?, ?> powerType) {
+		return this.hasPower(OriginsAPI.getPowers().getId(powerType));
+	}
 
-    @Override
-    public boolean hasPower(PowerType<?> powerType) {
-        return powers.containsKey(powerType);
-    }
+	@Override
+	public boolean hasPower(Identifier powerType) {
+		if (powerType == null) return false;
+		return this.powerCache.containsKey(powerType);
+	}
 
-    private boolean hasPowerType(PowerType<?> powerType) {
-        return origins.values().stream().anyMatch(o -> o.hasPowerType(powerType));
-    }
+	@Override
+	public @Nullable ConfiguredPower<?, ?> getPower(Identifier identifier) {
+		return this.powerCache.get(identifier);
+	}
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public <T extends Power> T getPower(PowerType<T> powerType) {
-        if(powers.containsKey(powerType)) {
-            return (T)powers.get(powerType);
-        }
-        return null;
-    }
+	@Override
+	public List<ConfiguredPower<?, ?>> getPowers() {
+		return ImmutableList.copyOf(this.powerCache.values());
+	}
 
-    @Override
-    public List<Power> getPowers() {
-        return new LinkedList<>(powers.values());
-    }
+	@Override
+	public <T extends IOriginsFeatureConfiguration, F extends PowerFactory<T>> List<ConfiguredPower<T, F>> getPowers(F factory) {
+		return this.getPowers(factory, false);
+	}
 
-    private Set<PowerType<?>> getPowerTypes() {
-        Set<PowerType<?>> powerTypes = new HashSet<>();
-        origins.values().forEach(origin -> {
-            if(origin != null) {
-                origin.getPowerTypes().forEach(powerTypes::add);
-            }
-        });
-        return powerTypes;
-    }
+	@Override
+	@SuppressWarnings("unchecked")
+	public <T extends IOriginsFeatureConfiguration, F extends PowerFactory<T>> List<ConfiguredPower<T, F>> getPowers(F factory, boolean includeInactive) {
+		return this.powerCache.values().stream().filter(x -> Objects.equals(factory, x.getFactory())).map(x -> (ConfiguredPower<T, F>) x)
+				.filter(x -> includeInactive || x.isActive(this.player)).toList();
+	}
 
-    @Override
-    public <T extends Power> List<T> getPowers(Class<T> powerClass) {
-        return getPowers(powerClass, false);
-    }
+	@Override
+	public void setOrigin(OriginLayer layer, Origin origin) {
+		synchronized (this.origins) {
+			Origin previous = this.origins.put(layer, origin);
+			assert previous != null; // Should never happen since I'm using an Obj2ObjMap with a default value.
+			previous.powers().stream().filter(x -> !origin.powers().contains(x))
+					.map(this.powerCache::remove).filter(Objects::nonNull)
+					.forEach(removed -> {
+						removed.onRemoved(this.player);
+						removed.onLost(this.player);
+					});
+			origin.powers().forEach(identifier -> OriginsAPI.getPowers().getOrEmpty(identifier).ifPresentOrElse(
+					power -> {
+						this.powerCache.put(identifier, power);
+						power.onAdded(this.player);
+					},
+					() -> Origins.LOGGER.warn("Tried to add missing power \"{}\" to \"{}\"", identifier, player.getName())
+			));
+			if (this.hasAllOrigins())
+				this.hadOriginBefore = true;
+		}
+	}
 
-    @Override
-    public <T extends Power> List<T> getPowers(Class<T> powerClass, boolean includeInactive) {
-        List<T> list = new LinkedList<>();
-        for(Power power : powers.values()) {
-            if(powerClass.isAssignableFrom(power.getClass()) && (includeInactive || power.isActive())) {
-                list.add(powerClass.cast(power));
-            }
-        }
-        return list;
-    }
+	@Override
+	public void serverTick() {
+		this.powerCache.values().forEach(x -> x.tick(this.player));
 
-    @Override
-    public void setOrigin(OriginLayer layer, Origin origin) {
-        Origin oldOrigin = getOrigin(layer);
-        if(oldOrigin == origin) {
-            return;
-        }
-        this.origins.put(layer, origin);
-        if(oldOrigin != null) {
-            List<PowerType<?>> powersToRemove = new LinkedList<>();
-            for (Map.Entry<PowerType<?>, Power> powerEntry: powers.entrySet()) {
-                if(!hasPowerType(powerEntry.getKey())) {
-                    powerEntry.getValue().onRemoved();
-                    powerEntry.getValue().onLost();
-                    powersToRemove.add(powerEntry.getKey());
-                }
-            }
-            for(PowerType<?> toRemove : powersToRemove) {
-                powers.remove(toRemove);
-            }
-        }
-        origin.getPowerTypes().forEach(powerType -> {
-            if(!powers.containsKey(powerType)) {
-                Power power = powerType.create(player);
-                this.powers.put(powerType, power);
-                power.onAdded();
-            }
-        });
-        if(this.hasAllOrigins()) {
-            this.hadOriginBefore = true;
-        }
-    }
+		//FIXME: SimpleStatusEffectPower & StackingStatusEffectPower should be moved to the new system.
+	}
 
-    @Override
-    public void serverTick() {
-        this.getPowers(Power.class, true).stream().filter(p -> p.shouldTick() && (p.shouldTickWhenInactive() || p.isActive())).forEach(Power::tick);
-        if(this.player.age % 10 == 0) {
-            this.getPowers(SimpleStatusEffectPower.class).forEach(SimpleStatusEffectPower::applyEffects);
-            this.getPowers(StackingStatusEffectPower.class, true).forEach(StackingStatusEffectPower::tick);
-        }
-    }
+	@Override
+	public void readFromNbt(CompoundTag compoundTag) {
+		this.fromTag(compoundTag, true);
+	}
 
-    @Override
-    public void readFromNbt(CompoundTag compoundTag) {
-        this.fromTag(compoundTag, true);
-    }
+	@Override
+	@Contract("null -> fail; _ -> param1")
+	public CompoundTag writeToNbt(CompoundTag compoundTag) {
+		Registry<OriginLayer> layerRegistry = OriginsAPI.getLayers();
+		Registry<Origin> originsRegistry = OriginsAPI.getOrigins();
+		CompoundTag origins = new CompoundTag();
+		this.origins.forEach((layer, origin) -> {
+			Identifier l = layerRegistry.getId(layer);
+			if (l == null) {
+				Origins.LOGGER.error("Cannot serialize unregistered layer \"{}\" for player: \"{}\"", layer, this.player);
+				return;
+			}
+			Identifier o = originsRegistry.getId(origin);
+			if (o == null) {
+				Origins.LOGGER.error("Cannot serialize unregistered origin \"{}\" on layer \"{}\" for player: \"{}\"", origin, layer, this.player);
+				return;
+			}
+			origins.putString(l.toString(), o.toString());
+		});
 
-    private void fromTag(CompoundTag compoundTag, boolean callPowerOnAdd) {
-        if(player == null) {
-            Origins.LOGGER.error("Player was null in `fromTag`! This is a bug!");
-        }
-        if(this.origins != null) {
-            if(callPowerOnAdd) {
-                for (Power power: powers.values()) {
-                    power.onRemoved();
-                    power.onLost();
-                }
-            }
-            powers.clear();
-        }
+		CompoundTag powers = new CompoundTag();
+		this.powerCache.forEach((identifier, power) -> powers.put(identifier.toString(), power.serialize(this.player)));
 
-        this.origins.clear();
+		compoundTag.putBoolean("HadOriginBefore", this.hadOriginBefore);
+		compoundTag.put("Origins", origins);
+		compoundTag.put("Powers", powers);
 
-        if(compoundTag.contains("Origin")) {
-            try {
-                OriginLayer defaultOriginLayer = OriginLayers.getLayer(new Identifier(Origins.MODID, "origin"));
-                this.origins.put(defaultOriginLayer, OriginRegistry.get(Identifier.tryParse(compoundTag.getString("Origin"))));
-            } catch(IllegalArgumentException e) {
-                Origins.LOGGER.warn("Player " + player.getDisplayName().asString() + " had old origin which could not be migrated: " + compoundTag.getString("Origin"));
-            }
-        } else {
-            ListTag originLayerList = (ListTag)compoundTag.get("OriginLayers");
-            if(originLayerList != null) {
-                for(int i = 0; i < originLayerList.size(); i++) {
-                    CompoundTag layerTag = originLayerList.getCompound(i);
-                    Identifier layerId = Identifier.tryParse(layerTag.getString("Layer"));
-                    OriginLayer layer = null;
-                    try {
-                        layer = OriginLayers.getLayer(layerId);
-                    } catch(IllegalArgumentException e) {
-                        Origins.LOGGER.warn("Could not find origin layer with id " + layerId + ", which existed on the data of player " + player.getDisplayName().asString() + ".");
-                    }
-                    if(layer != null) {
-                        Identifier originId = Identifier.tryParse(layerTag.getString("Origin"));
-                        Origin origin = null;
-                        try {
-                            origin = OriginRegistry.get(originId);
-                        } catch(IllegalArgumentException e) {
-                            Origins.LOGGER.warn("Could not find origin with id " + originId + ", which existed on the data of player " + player.getDisplayName().asString() + ".");
-                        }
-                        if(origin != null) {
-                            if(!layer.contains(origin) && !origin.isSpecial()) {
-                                Origins.LOGGER.warn("Origin with id " + origin.getIdentifier().toString() + " is not in layer " + layer.getIdentifier().toString() + " and is not special, but was found on " + player.getDisplayName().asString() + ", setting to EMPTY.");
-                                origin = Origin.EMPTY;
-                            }
-                            this.origins.put(layer, origin);
-                        }
-                    }
-                }
-            }
-        }
-        this.hadOriginBefore = compoundTag.getBoolean("HadOriginBefore");
-        ListTag powerList = compoundTag.getList("Powers", NbtType.COMPOUND);
-        for(int i = 0; i < powerList.size(); i++) {
-            CompoundTag powerTag = powerList.getCompound(i);
-            Identifier powerTypeId = Identifier.tryParse(powerTag.getString("Type"));
-            try {
-                PowerType<?> type = PowerTypeRegistry.get(powerTypeId);
-                if(hasPowerType(type)) {
-                    Tag data = powerTag.get("Data");
-                    Power power = type.create(player);
-                    try {
-                        power.fromTag(data);
-                    } catch(ClassCastException e) {
-                        // Occurs when power was overriden by data pack since last world load
-                        // to be a power type which uses different data class.
-                        Origins.LOGGER.warn("Data type of \"" + powerTypeId + "\" changed, skipping data for that power on player " + player.getName().asString());
-                    }
-                    this.powers.put(type, power);
-                    if(callPowerOnAdd) {
-                        power.onAdded();
-                    }
-                }
-            } catch(IllegalArgumentException e) {
-                Origins.LOGGER.warn("Power data of unregistered power \"" + powerTypeId + "\" found on player, skipping...");
-            }
-        }
-        this.getPowerTypes().forEach(pt -> {
-            if(!this.powers.containsKey(pt)) {
-                Power power = pt.create(player);
-                this.powers.put(pt, power);
-            }
-        });
-    }
+		return compoundTag;
+	}
 
-    @Override
-    public void writeToNbt(CompoundTag compoundTag) {
-        ListTag originLayerList = new ListTag();
-        for(Map.Entry<OriginLayer, Origin> entry : origins.entrySet()) {
-            CompoundTag layerTag = new CompoundTag();
-            layerTag.putString("Layer", entry.getKey().getIdentifier().toString());
-            layerTag.putString("Origin", entry.getValue().getIdentifier().toString());
-            originLayerList.add(layerTag);
-        }
-        compoundTag.put("OriginLayers", originLayerList);
-        compoundTag.putBoolean("HadOriginBefore", this.hadOriginBefore);
-        ListTag powerList = new ListTag();
-        for(Map.Entry<PowerType<?>, Power> powerEntry : powers.entrySet()) {
-            CompoundTag powerTag = new CompoundTag();
-            powerTag.putString("Type", PowerTypeRegistry.getId(powerEntry.getKey()).toString());
-            powerTag.put("Data", powerEntry.getValue().toTag());
-            powerList.add(powerTag);
-        }
-        compoundTag.put("Powers", powerList);
-    }
+	@Override
+	public void applySyncPacket(PacketByteBuf buf) {
+		CompoundTag compoundTag = buf.readCompoundTag();
+		if (compoundTag != null)
+			this.fromTag(compoundTag, false);
+	}
 
-    @Override
-    public void applySyncPacket(PacketByteBuf buf) {
-        CompoundTag compoundTag = buf.readCompoundTag();
-        if(compoundTag != null) {
-            this.fromTag(compoundTag, false);
-        }
-    }
+	@Override
+	public void sync() {
+		OriginComponent.sync(this.player);
+	}
 
-    @Override
-    public void sync() {
-        OriginComponent.sync(this.player);
-    }
+	@Override
+	@NotNull
+	@SuppressWarnings("unchecked")
+	public <T> T getPowerData(Identifier power, Supplier<? extends T> builder) {
+		try {
+			return (T) this.dataContainers.computeIfAbsent(power, t -> builder.get());
+		} catch (ClassCastException cce) {
+			this.dataContainers.remove(power);
+			return (T) this.dataContainers.computeIfAbsent(power, t -> builder.get());
+		}
+	}
 
-    @Override
-    public String toString() {
-        StringBuilder str = new StringBuilder("OriginComponent[\n");
-        for (Map.Entry<PowerType<?>, Power> powerEntry : powers.entrySet()) {
-            str.append("\t").append(PowerTypeRegistry.getId(powerEntry.getKey())).append(": ").append(powerEntry.getValue().toTag().toString()).append("\n");
-        }
-        str.append("]");
-        return str.toString();
-    }
+	@Override
+	@NotNull
+	public <T> T getPowerData(ConfiguredPower<?, ?> power, Supplier<? extends T> builder) {
+		return this.getPowerData(OriginsAPI.getPowers().getId(power), builder);
+	}
+
+	private void fromTag(CompoundTag compoundTag, boolean callPowerOnAdd) {
+		if (player == null) {
+			Origins.LOGGER.error("Player was null in `fromTag`! This is a bug!");
+			return; //Stop reading right here. There's no point in going forward with this.
+		}
+		if (callPowerOnAdd) {
+			for (ConfiguredPower<?, ?> power : this.powerCache.values()) {
+				power.onRemoved(this.player);
+				power.onLost(this.player);
+			}
+		}
+		this.powerCache.clear();
+		synchronized (this.origins) {
+			this.origins.clear();
+
+			//Fabric: Support for worlds prior to the data system is dropped.
+			//FIXME Make a DataFixer for 1.16 -> 1.17 worlds.
+			this.hadOriginBefore = compoundTag.getBoolean("HadOriginBefore");
+			Registry<OriginLayer> layerRegistry = OriginsAPI.getLayers();
+			Registry<Origin> originsRegistry = OriginsAPI.getOrigins();
+			Registry<ConfiguredPower<?, ?>> powerRegistry = OriginsAPI.getPowers();
+
+			CompoundTag origins = compoundTag.getCompound("Origins");
+			for (String layerName : origins.getKeys()) {
+				Optional.ofNullable(Identifier.tryParse(layerName)).flatMap(layerRegistry::getOrEmpty).ifPresentOrElse(
+						layer -> Optional.ofNullable(Identifier.tryParse(origins.getString(layerName))).flatMap(originsRegistry::getOrEmpty).ifPresentOrElse(
+								origin -> {
+									Identifier identifier = new Identifier(origins.getString(layerName));
+									if (!origin.special() && layer.origins().noneMatch(identifier::equals)) {
+										Origins.LOGGER.warn("Origin \"{}\" for isn't contained in layer \"{}\" for player: {}.", identifier, layerName, player.getName());
+										origin = ModOrigins.EMPTY;
+									}
+									this.origins.put(layer, origin);
+								},
+								() -> Origins.LOGGER.warn("Couldn't find origin \"{}\" for layer \"{}\" for player: {}.", origins.getString(layerName), layerName, player.getName())
+						),
+						() -> Origins.LOGGER.warn("Couldn't find layer \"{}\" for player: {}.", layerName, player.getName())
+				);
+			}
+
+
+			Set<Identifier> knownPowers = this.origins.values().stream().flatMap(origin -> origin.powers().stream()).collect(Collectors.toSet());
+			if (compoundTag.contains("Powers", NbtType.COMPOUND)) {
+				CompoundTag powers = compoundTag.getCompound("Powers");
+				for (String key : powers.getKeys()) {
+					Optional.ofNullable(Identifier.tryParse(key)).flatMap(powerRegistry::getOrEmpty).ifPresentOrElse(
+							power -> {
+								try {
+									Identifier name = new Identifier(key);
+									if (knownPowers.contains(name)) {
+										power.deserialize(this.player, powers.get(key));
+										this.powerCache.put(name, power);
+										if (callPowerOnAdd)
+											power.onAdded(this.player);
+									} else
+										Origins.LOGGER.debug("Removing power \"{}\" from player: {}", key, player.getName());
+								} catch (Exception e) {
+									Origins.LOGGER.warn("Deserialization of power \"{}\" failed for player: {} (Data:{})", key, player.getName(), powers.get(key));
+									Origins.LOGGER.debug("Deserialization failed with error: ", e);
+								}
+							}, () -> Origins.LOGGER.warn("Couldn't find power \"{}\" for player: {}", key, player.getName())
+					);
+				}
+			}
+
+			knownPowers.forEach(power -> this.powerCache.computeIfAbsent(power, powerRegistry::get));
+		}
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder str = new StringBuilder("OriginComponent[\n");
+		this.powerCache.forEach((key, value) -> str.append("\t").append(key).append(": ").append(value.serialize(this.player).toString()).append("\n"));
+		str.append("]");
+		return str.toString();
+	}
 }

@@ -1,16 +1,13 @@
 package io.github.apace100.origins.mixin.fabric;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import io.github.apace100.origins.component.OriginComponent;
+import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.power.LavaVisionPower;
 import io.github.apace100.origins.power.PhasingPower;
 import io.github.apace100.origins.util.ClientHooks;
-import net.minecraft.block.BlockRenderType;
-import net.minecraft.block.BlockState;
 import net.minecraft.client.render.BackgroundRenderer;
 import net.minecraft.client.render.Camera;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.BlockPos;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Constant;

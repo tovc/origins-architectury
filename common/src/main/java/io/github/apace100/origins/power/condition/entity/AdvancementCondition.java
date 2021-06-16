@@ -39,7 +39,7 @@ public class AdvancementCondition implements Predicate<LivingEntity> {
 		if (entity instanceof ServerPlayerEntity) {
 			Advancement advancement = entity.getServer().getAdvancementLoader().get(this.advancement);
 			if (advancement == null) {
-				Origins.LOGGER.warn("Advancement \"" + this.advancement + "\" did not exist, but was referenced in an \"origins:advancement\" condition.");
+				Origins.LOGGER.warn("Advancement \"" + this.advancement + "\" did not exist, but was referenced in an \"conditionedOrigins:advancement\" condition.");
 			} else {
 				return ((ServerPlayerEntity) entity).getAdvancementTracker().getProgress(advancement).isDone();
 			}

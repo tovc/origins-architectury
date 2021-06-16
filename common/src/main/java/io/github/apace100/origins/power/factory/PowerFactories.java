@@ -1,6 +1,8 @@
 package io.github.apace100.origins.power.factory;
 
 import io.github.apace100.origins.Origins;
+import io.github.apace100.origins.api.IOriginsFeatureConfiguration;
+import io.github.apace100.origins.api.power.factory.PowerFactory;
 import io.github.apace100.origins.power.*;
 import io.github.apace100.origins.power.factory.condition.ConditionFactory;
 import io.github.apace100.origins.registry.ModDamageSources;
@@ -380,7 +382,7 @@ public class PowerFactories {
         register(new PowerFactory<>(Origins.identifier("prevent_sleep"),
             new SerializableData()
                 .add("block_condition", SerializableDataType.BLOCK_CONDITION, null)
-                .add("message", SerializableDataType.STRING, "origins.cant_sleep")
+                .add("message", SerializableDataType.STRING, "conditionedOrigins.cant_sleep")
                 .add("set_spawn_point", SerializableDataType.BOOLEAN, false),
             data ->
                 (type, player) ->
@@ -565,16 +567,6 @@ public class PowerFactories {
                     return power;
                 })
             .allowCondition());
-        register(new PowerFactory<>(Origins.identifier("action_over_time"),
-            new SerializableData()
-                .add("entity_action", SerializableDataType.ENTITY_ACTION, null)
-                .add("rising_action", SerializableDataType.ENTITY_ACTION, null)
-                .add("falling_action", SerializableDataType.ENTITY_ACTION, null)
-                .add("interval", SerializableDataType.INT),
-            data ->
-                (type, player) -> new ActionOverTimePower(type, player, data.getInt("interval"),
-                    data.get("entity_action"), data.get("rising_action"), data.get("falling_action")))
-            .allowCondition());
         register(new PowerFactory<>(Origins.identifier("self_action_when_hit"),
             new SerializableData()
                 .add("entity_action", SerializableDataType.ENTITY_ACTION)
@@ -654,23 +646,6 @@ public class PowerFactories {
                     power.setRecurrent(data.getBoolean("recurrent"));
                     return power;
                 }));
-        register(new PowerFactory<>(Origins.identifier("action_on_callback"),
-            new SerializableData()
-                .add("entity_action_respawned", SerializableDataType.ENTITY_ACTION, null)
-                .add("entity_action_removed", SerializableDataType.ENTITY_ACTION, null)
-                .add("entity_action_chosen", SerializableDataType.ENTITY_ACTION, null)
-                .add("entity_action_lost", SerializableDataType.ENTITY_ACTION, null)
-                .add("entity_action_added", SerializableDataType.ENTITY_ACTION, null)
-                .add("execute_chosen_when_orb", SerializableDataType.BOOLEAN, true),
-            data ->
-                (type, player) -> new ActionOnCallbackPower(type, player,
-                        data.get("entity_action_respawned"),
-                        data.get("entity_action_removed"),
-                        data.get("entity_action_chosen"),
-                        data.get("entity_action_lost"),
-                        data.get("entity_action_added"),
-                    data.getBoolean("execute_chosen_when_orb")))
-            .allowCondition());
         register(new PowerFactory<>(Origins.identifier("walk_on_fluid"),
             new SerializableData()
                 .add("fluid", SerializableDataType.FLUID_TAG),
@@ -750,26 +725,6 @@ public class PowerFactories {
                     }
                     return power;
                 })
-            .allowCondition());
-        register(new PowerFactory<>(Origins.identifier("action_on_block_break"),
-            new SerializableData()
-                .add("entity_action", SerializableDataType.ENTITY_ACTION, null)
-                .add("block_action", SerializableDataType.BLOCK_ACTION, null)
-                .add("block_condition", SerializableDataType.BLOCK_CONDITION, null)
-                .add("only_when_harvested", SerializableDataType.BOOLEAN, true),
-            data ->
-                (type, player) -> new ActionOnBlockBreakPower(type, player,
-                    data.get("block_condition"),
-                    data.get("entity_action"),
-                    data.get("block_action"),
-                    data.getBoolean("only_when_harvested")))
-            .allowCondition());
-        register(new PowerFactory<>(Origins.identifier("action_on_land"),
-            new SerializableData()
-                .add("entity_action", SerializableDataType.ENTITY_ACTION, null),
-            data ->
-                (type, player) -> new ActionOnLandPower(type, player,
-                    data.get("entity_action")))
             .allowCondition());
         register(new PowerFactory<>(Origins.identifier("prevent_entity_render"),
             new SerializableData()
@@ -854,17 +809,6 @@ public class PowerFactories {
                     return power;
                 })
             .allowCondition());
-        register(new PowerFactory<>(Origins.identifier("action_on_wake_up"),
-            new SerializableData()
-                .add("entity_action", SerializableDataType.ENTITY_ACTION, null)
-                .add("block_action", SerializableDataType.BLOCK_ACTION, null)
-                .add("block_condition", SerializableDataType.BLOCK_CONDITION, null),
-            data ->
-                (type, player) -> new ActionOnWakeUp(type, player,
-                    data.get("block_condition"),
-                    data.get("entity_action"),
-                    data.get("block_action")))
-            .allowCondition());
         register(new PowerFactory<>(Origins.identifier("prevent_block_use"),
             new SerializableData()
                 .add("block_condition", SerializableDataType.BLOCK_CONDITION, null),
@@ -873,24 +817,13 @@ public class PowerFactories {
                     data.get("block_condition")))
             .allowCondition());
         register(new PowerFactory<>(Origins.identifier("prevent_death"),
-            new SerializableData()
-                .add("entity_action", SerializableDataType.ENTITY_ACTION, null)
-                .add("damage_condition", SerializableDataType.DAMAGE_CONDITION, null),
-            data ->
-                (type, player) -> new PreventDeathPower(type, player,
-                    data.get("entity_action"),
-                    data.get("damage_condition")))
-            .allowCondition());
-        register(new PowerFactory<>(Origins.identifier("action_on_item_use"),
-            new SerializableData()
-                .add("entity_action", SerializableDataType.ENTITY_ACTION, null)
-                .add("item_action", SerializableDataType.ITEM_ACTION, null)
-                .add("item_condition", SerializableDataType.ITEM_CONDITION, null),
-            data ->
-                (type, player) -> new ActionOnItemUsePower(type, player,
-                    data.get("item_condition"),
-                    data.get("entity_action"),
-                    data.get("item_action")))
+                new SerializableData()
+                        .add("entity_action", SerializableDataType.ENTITY_ACTION, null)
+                        .add("damage_condition", SerializableDataType.DAMAGE_CONDITION, null),
+                data ->
+                        (type, player) -> new PreventDeathPower(type, player,
+                                data.get("entity_action"),
+                                data.get("damage_condition"))) {}
             .allowCondition());
     }
 

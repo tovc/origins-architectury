@@ -1,6 +1,6 @@
 package io.github.apace100.origins;
 
-import io.github.apace100.origins.component.OriginComponent;
+import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.networking.forge.ForgeNetworkHandler;
 import io.github.apace100.origins.registry.forge.ModComponentsArchitecturyImpl;
 import me.shedaniel.architectury.platform.forge.EventBuses;

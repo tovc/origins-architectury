@@ -1,7 +1,7 @@
 package io.github.apace100.origins.mixin.fabric;
 
 import com.mojang.authlib.GameProfile;
-import io.github.apace100.origins.component.OriginComponent;
+import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.power.ModifyDamageTakenPower;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;

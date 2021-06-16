@@ -1,6 +1,6 @@
 package io.github.apace100.origins.power;
 
-import io.github.apace100.origins.component.OriginComponent;
+import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.util.HudRender;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.LongTag;

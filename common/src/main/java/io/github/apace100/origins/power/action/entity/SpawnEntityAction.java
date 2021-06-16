@@ -2,7 +2,7 @@ package io.github.apace100.origins.power.action.entity;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.github.apace100.origins.power.factory.action.ActionFactory;
+import io.github.apace100.origins.api.power.IFactory;
 import io.github.apace100.origins.util.OriginsCodecs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -21,9 +21,9 @@ public class SpawnEntityAction implements Consumer<Entity> {
 
 	private final Optional<EntityType<?>> type;
 	private final Optional<CompoundTag> tag;
-	private final Optional<ActionFactory.Instance<Entity>> action;
+	private final Optional<IFactory.Instance<Entity>> action;
 
-	public SpawnEntityAction(Optional<EntityType<?>> type, Optional<CompoundTag> tag, Optional<ActionFactory.Instance<Entity>> action) {
+	public SpawnEntityAction(Optional<EntityType<?>> type, Optional<CompoundTag> tag, Optional<IFactory.Instance<Entity>> action) {
 		this.type = type;
 		this.tag = tag;
 		this.action = action;

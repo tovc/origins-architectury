@@ -1,12 +1,13 @@
 package io.github.apace100.origins.networking;
 
 import io.github.apace100.origins.Origins;
-import io.github.apace100.origins.component.OriginComponent;
+import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.origin.Origin;
 import io.github.apace100.origins.origin.OriginLayer;
 import io.github.apace100.origins.origin.OriginLayers;
 import io.github.apace100.origins.origin.OriginRegistry;
 import io.github.apace100.origins.power.*;
+import io.github.apace100.origins.power.factories.ActionOnLandPower;
 import io.github.apace100.origins.registry.ModComponentsArchitectury;
 import io.netty.buffer.Unpooled;
 import me.shedaniel.architectury.annotations.ExpectPlatform;
@@ -36,9 +37,7 @@ public class ModPacketsC2S {
 
     private static void playerLanded(PacketByteBuf packetByteBuf, NetworkManager.PacketContext context) {
         PlayerEntity playerEntity = context.getPlayer();
-        context.queue(() -> {
-            OriginComponent.getPowers(playerEntity, ActionOnLandPower.class).forEach(ActionOnLandPower::executeAction);
-        });
+        context.queue(() -> ActionOnLandPower.execute(playerEntity));
     }
 
     private static void useActivePowers(PacketByteBuf packetByteBuf, NetworkManager.PacketContext context) {

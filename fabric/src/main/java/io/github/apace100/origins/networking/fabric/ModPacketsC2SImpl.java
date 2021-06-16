@@ -42,7 +42,7 @@ public class ModPacketsC2SImpl {
 						clientVersionString.append(".");
 					}
 				}
-				serverLoginNetworkHandler.disconnect(new TranslatableText("origins.gui.version_mismatch", Origins.VERSION, clientVersionString));
+				serverLoginNetworkHandler.disconnect(new TranslatableText("conditionedOrigins.gui.version_mismatch", Origins.VERSION, clientVersionString));
 			}
 		} else {
 			serverLoginNetworkHandler.disconnect(new LiteralText("This server requires you to install the Origins mod (v" + Origins.VERSION + ") to play."));

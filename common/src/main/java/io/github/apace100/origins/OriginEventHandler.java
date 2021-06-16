@@ -1,15 +1,23 @@
 package io.github.apace100.origins;
 
-import io.github.apace100.origins.component.OriginComponent;
+import io.github.apace100.origins.api.OriginsAPI;
+import io.github.apace100.origins.api.component.OriginComponent;
+import io.github.apace100.origins.api.event.OriginsDynamicRegistryEvent;
+import io.github.apace100.origins.api.origin.Origin;
+import io.github.apace100.origins.api.origin.OriginLayer;
+import io.github.apace100.origins.api.power.configuration.ConfiguredPower;
+import io.github.apace100.origins.api.registry.OriginsBuiltinRegistries;
+import io.github.apace100.origins.api.registry.OriginsDynamicRegistries;
 import io.github.apace100.origins.networking.ModPackets;
-import io.github.apace100.origins.origin.Origin;
-import io.github.apace100.origins.origin.OriginLayers;
 import io.github.apace100.origins.power.Power;
 import io.github.apace100.origins.power.PreventBlockUsePower;
 import io.github.apace100.origins.power.PreventItemUsePower;
 import io.github.apace100.origins.registry.ModComponentsArchitectury;
+import io.github.apace100.origins.registry.ModOrigins;
+import io.github.apace100.origins.registry.OriginsDynamicRegistryManager;
 import io.netty.buffer.Unpooled;
 import me.shedaniel.architectury.event.events.InteractionEvent;
+import me.shedaniel.architectury.event.events.LifecycleEvent;
 import me.shedaniel.architectury.event.events.PlayerEvent;
 import me.shedaniel.architectury.networking.NetworkManager;
 import net.minecraft.entity.player.PlayerEntity;
@@ -34,6 +42,15 @@ public class OriginEventHandler {
 		PlayerEvent.PLAYER_JOIN.register(OriginEventHandler::playerJoin);
 		//Replaces LoginMixin#invokePowerRespawnCallback
 		PlayerEvent.PLAYER_RESPAWN.register(OriginEventHandler::respawn);
+		LifecycleEvent.SERVER_BEFORE_START.register(OriginsDynamicRegistryManager::addInstance);
+		LifecycleEvent.SERVER_STOPPED.register(OriginsDynamicRegistryManager::removeInstance);
+
+		OriginsDynamicRegistryEvent.INITIALIZE_EVENT.register(t -> {
+			//Registers builtin registries.
+			t.add(OriginsDynamicRegistries.CONFIGURED_POWER_KEY, () -> OriginsBuiltinRegistries.CONFIGURED_POWERS, ConfiguredPower.CODEC);
+			t.add(OriginsDynamicRegistries.ORIGIN_KEY, () -> OriginsBuiltinRegistries.ORIGINS, Origin.CODEC);
+			t.add(OriginsDynamicRegistries.ORIGIN_LAYER_KEY, () -> OriginsBuiltinRegistries.ORIGIN_LAYERS, OriginLayer.CODEC);
+		});
 	}
 
 	private static ActionResult preventBlockUse(PlayerEntity player, Hand hand, BlockPos blockPos, Direction direction) {
@@ -63,8 +80,8 @@ public class OriginEventHandler {
 	private static void playerJoin(ServerPlayerEntity player) {
 		OriginComponent component = ModComponentsArchitectury.getOriginComponent(player);
 
-		OriginLayers.getLayers().stream().filter(x -> x.isEnabled() && !component.hasOrigin(x))
-				.forEach(layer -> component.setOrigin(layer, Origin.EMPTY));
+		OriginsAPI.getLayers().stream().filter(x -> x.enabled() && !component.hasOrigin(x))
+				.forEach(layer -> component.setOrigin(layer, ModOrigins.EMPTY));
 
 		List<ServerPlayerEntity> playerList = player.getServer().getPlayerManager().getPlayerList();
 		playerList.forEach(spe -> ModComponentsArchitectury.syncWith(spe, player));

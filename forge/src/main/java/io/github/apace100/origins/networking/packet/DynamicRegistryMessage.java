@@ -4,9 +4,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.OriginsForge;
+import io.github.apace100.origins.api.IOriginsDynamicRegistryManager;
+import io.github.apace100.origins.api.origin.Origin;
+import io.github.apace100.origins.api.origin.OriginLayer;
+import io.github.apace100.origins.api.power.configuration.ConfiguredPower;
+import io.github.apace100.origins.api.registry.OriginsDynamicRegistries;
 import io.github.apace100.origins.integration.OriginEventsArchitectury;
-import io.github.apace100.origins.origin.Origin;
-import io.github.apace100.origins.origin.OriginLayer;
 import io.github.apace100.origins.origin.OriginLayers;
 import io.github.apace100.origins.origin.OriginRegistry;
 import io.github.apace100.origins.power.PowerType;
@@ -16,6 +19,7 @@ import io.github.apace100.origins.registry.ModRegistriesArchitectury;
 import io.github.apace100.origins.util.SerializableData;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.MutableRegistry;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.ArrayList;
@@ -42,7 +46,7 @@ public class DynamicRegistryMessage implements IntSupplier {
 			powers.put(powerId, type);
 		}
 		size = buf.readVarInt();
-		Origins.LOGGER.debug("Server sent {} origins", size);
+		Origins.LOGGER.debug("Server sent {} conditionedOrigins", size);
 		Map<Identifier, SerializableData.Instance> origins = new HashMap<>(size);
 		for (int i = 0; i < size; i++) {
 			origins.put(buf.readIdentifier(), Origin.DATA.read(buf));
@@ -55,13 +59,13 @@ public class DynamicRegistryMessage implements IntSupplier {
 	}
 
 	//Those three need to be initialized sequentially, as such there is no reason to send 3 separate packets.
-	//Origins are required for layers, and powers are required for origins.
+	//Origins are required for layers, and powers are required for conditionedOrigins.
 	private final Map<Identifier, PowerType<?>> powers;
-	private final Map<Identifier, SerializableData.Instance> origins;
+	private final Map<Identifier, Origin> origins;
 	private final List<OriginLayer> layers;
 	private int loginIndex;
 
-	public DynamicRegistryMessage(Map<Identifier, PowerType<?>> powers, Map<Identifier, SerializableData.Instance> origins, List<OriginLayer> layers) {
+	public DynamicRegistryMessage(Map<Identifier, PowerType<?>> powers, Map<Identifier, Origin> origins, List<OriginLayer> layers) {
 		this.powers = ImmutableMap.copyOf(powers);
 		this.origins = ImmutableMap.copyOf(origins);
 		this.layers = ImmutableList.copyOf(layers);
@@ -94,6 +98,12 @@ public class DynamicRegistryMessage implements IntSupplier {
 
 	public void handle(Supplier<NetworkEvent.Context> contextSupplier) {
 		contextSupplier.get().enqueueWork(() -> {
+			IOriginsDynamicRegistryManager clientManager = OriginsDynamicRegistries.get(null);
+			if (clientManager == null)
+				throw new NullPointerException();
+			MutableRegistry<ConfiguredPower<?>> powers = clientManager.get(OriginsDynamicRegistries.CONFIGURED_POWER_KEY);
+			MutableRegistry<io.github.apace100.origins.api.origin.OriginLayer> layers = clientManager.get(OriginsDynamicRegistries.ORIGIN_LAYER_KEY);
+			MutableRegistry<Origin> origins = clientManager.get(OriginsDynamicRegistries.ORIGIN_KEY);
 			PowerTypeRegistry.clear();
 			OriginRegistry.reset();
 			OriginLayers.clear();
@@ -103,7 +113,7 @@ public class DynamicRegistryMessage implements IntSupplier {
 			OriginEventsArchitectury.POWER_TYPES_LOADED.invoker().onDataLoaded(true);
 
 			this.origins.forEach((id, data) -> OriginRegistry.register(id, Origin.createFromData(id, data)));
-			Origins.LOGGER.debug("Loaded {} origins from server on client", this.origins.size());
+			Origins.LOGGER.debug("Loaded {} conditionedOrigins from server on client", this.origins.size());
 			OriginEventsArchitectury.ORIGINS_LOADED.invoker().onDataLoaded(true);
 
 			this.layers.forEach(OriginLayers::add);

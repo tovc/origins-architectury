@@ -2,7 +2,7 @@ package io.github.apace100.origins.power.factory;
 
 import com.mojang.serialization.Codec;
 import io.github.apace100.origins.Origins;
-import io.github.apace100.origins.power.factory.action.ActionFactory;
+import io.github.apace100.origins.api.power.IFactory;
 import io.github.apace100.origins.power.factory.meta.action.*;
 import io.github.apace100.origins.power.factory.meta.condition.ConstantCondition;
 import io.github.apace100.origins.power.factory.meta.condition.ListCondition;
@@ -22,14 +22,14 @@ public class MetaFactories {
 		registry.register(Origins.identifier("or"), () -> new ConditionFactory<>(ListCondition.codec(listCodec, (t, ls) -> ls.stream().anyMatch(x -> x.test(t)))));
 	}
 
-	public static <T, V> void defineMetaActions(Registry<ActionFactory<T>> registry, Codec<ActionFactory.Instance<T>> codec, Codec<ConditionFactory.Instance<V>> cond, Function<T, V> function) {
-		Codec<List<ActionFactory.Instance<T>>> listCodec = OriginsCodecs.listOf(codec);
-		Codec<FilterableWeightedList<ActionFactory.Instance<T>>> weightedListCodec = OriginsCodecs.weightedListOf(codec);
-		registry.register(Origins.identifier("and"), () -> new ActionFactory<>(AndAction.codec(listCodec)));
-		registry.register(Origins.identifier("chance"), () -> new ActionFactory<>(ChanceAction.codec(codec)));
-		registry.register(Origins.identifier("if_else"), () -> new ActionFactory<>(IfElseAction.codec(codec, cond, function)));
-		registry.register(Origins.identifier("choice"), () -> new ActionFactory<>(ChoiceAction.codec(weightedListCodec)));
-		registry.register(Origins.identifier("if_else_list"), () -> new ActionFactory<>(IfElseListAction.codec(codec, cond, function)));
-		registry.register(Origins.identifier("delay"), () -> new ActionFactory<>(DelayAction.codec(codec)));
+	public static <T, V> void defineMetaActions(Registry<IFactory<T>> registry, Codec<IFactory.Instance<T>> codec, Codec<ConditionFactory.Instance<V>> cond, Function<T, V> function) {
+		Codec<List<IFactory.Instance<T>>> listCodec = OriginsCodecs.listOf(codec);
+		Codec<FilterableWeightedList<IFactory.Instance<T>>> weightedListCodec = OriginsCodecs.weightedListOf(codec);
+		registry.register(Origins.identifier("and"), () -> new IFactory<>(AndAction.codec(listCodec)));
+		registry.register(Origins.identifier("chance"), () -> new IFactory<>(ChanceAction.codec(codec)));
+		registry.register(Origins.identifier("if_else"), () -> new IFactory<>(IfElseAction.codec(codec, cond, function)));
+		registry.register(Origins.identifier("choice"), () -> new IFactory<>(ChoiceAction.codec(weightedListCodec)));
+		registry.register(Origins.identifier("if_else_list"), () -> new IFactory<>(IfElseListAction.codec(codec, cond, function)));
+		registry.register(Origins.identifier("delay"), () -> new IFactory<>(DelayAction.codec(codec)));
 	}
 }

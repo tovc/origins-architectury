@@ -7,7 +7,7 @@ import dev.onyxstudios.cca.api.v3.entity.EntityComponentFactoryRegistry;
 import dev.onyxstudios.cca.api.v3.entity.EntityComponentInitializer;
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.component.FabricPlayerOriginComponent;
-import io.github.apace100.origins.component.OriginComponent;
+import io.github.apace100.origins.api.component.OriginComponent;
 import nerdhub.cardinal.components.api.util.RespawnCopyStrategy;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.network.ServerPlayerEntity;

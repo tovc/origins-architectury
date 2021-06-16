@@ -2,7 +2,7 @@ package io.github.apace100.origins.mixin;
 
 import com.mojang.authlib.GameProfile;
 import io.github.apace100.origins.access.WaterMovingEntity;
-import io.github.apace100.origins.component.OriginComponent;
+import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.power.IgnoreWaterPower;
 import io.github.apace100.origins.power.PowerTypes;
 import io.github.apace100.origins.power.SwimmingPower;

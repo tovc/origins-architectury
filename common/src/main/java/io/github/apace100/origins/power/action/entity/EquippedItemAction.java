@@ -2,7 +2,7 @@ package io.github.apace100.origins.power.action.entity;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.github.apace100.origins.power.factory.action.ActionFactory;
+import io.github.apace100.origins.api.power.IFactory;
 import io.github.apace100.origins.util.OriginsCodecs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
@@ -18,9 +18,9 @@ public class EquippedItemAction implements Consumer<Entity> {
 	).apply(instance, EquippedItemAction::new));
 
 	private EquipmentSlot equipmentSlot;
-	private ActionFactory.Instance<ItemStack> action;
+	private IFactory.Instance<ItemStack> action;
 
-	public EquippedItemAction(EquipmentSlot equipmentSlot, ActionFactory.Instance<ItemStack> action) {
+	public EquippedItemAction(EquipmentSlot equipmentSlot, IFactory.Instance<ItemStack> action) {
 		this.equipmentSlot = equipmentSlot;
 		this.action = action;
 	}

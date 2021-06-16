@@ -7,8 +7,8 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import io.github.apace100.origins.origin.OriginLayer;
-import io.github.apace100.origins.origin.OriginLayers;
+import io.github.apace100.origins.api.OriginsAPI;
+import io.github.apace100.origins.api.origin.OriginLayer;
 import net.minecraft.command.CommandSource;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
@@ -16,23 +16,19 @@ import net.minecraft.util.Identifier;
 import java.util.concurrent.CompletableFuture;
 
 public class LayerArgument implements ArgumentType<OriginLayer> {
-   public static final DynamicCommandExceptionType LAYER_NOT_FOUND = new DynamicCommandExceptionType((p_208663_0_) -> new TranslatableText("commands.origin.layer_not_found", p_208663_0_));
+	public static final DynamicCommandExceptionType LAYER_NOT_FOUND = new DynamicCommandExceptionType((p_208663_0_) -> new TranslatableText("commands.origin.layer_not_found", p_208663_0_));
 
-   public static LayerArgument layer() {
-      return new LayerArgument();
-   }
+	public static LayerArgument layer() {
+		return new LayerArgument();
+	}
 
-   public OriginLayer parse(StringReader p_parse_1_) throws CommandSyntaxException {
-      Identifier id = Identifier.fromCommandInput(p_parse_1_);
-      try {
-    	  return OriginLayers.getLayer(id);
-      } catch(IllegalArgumentException e) {
-    	  throw LAYER_NOT_FOUND.create(id);
-      }
-   }
+	public OriginLayer parse(StringReader p_parse_1_) throws CommandSyntaxException {
+		Identifier id = Identifier.fromCommandInput(p_parse_1_);
+		return OriginsAPI.getLayers().getOrEmpty(id).orElseThrow(() -> LAYER_NOT_FOUND.create(id));
+	}
 
-   @Override
-   public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-      return CommandSource.suggestIdentifiers(OriginLayers.getLayers().stream().map(OriginLayer::getIdentifier), builder);
-   }
+	@Override
+	public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
+		return CommandSource.suggestIdentifiers(OriginsAPI.getLayers().getIds(), builder);
+	}
 }

@@ -2,7 +2,7 @@ package io.github.apace100.origins.power.condition.entity;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.github.apace100.origins.component.OriginComponent;
+import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.power.CooldownPower;
 import io.github.apace100.origins.power.Power;
 import io.github.apace100.origins.power.PowerType;

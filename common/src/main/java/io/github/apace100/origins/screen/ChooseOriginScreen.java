@@ -3,7 +3,7 @@ package io.github.apace100.origins.screen;
 import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.networking.ModPackets;
-import io.github.apace100.origins.origin.Impact;
+import io.github.apace100.origins.api.origin.Impact;
 import io.github.apace100.origins.origin.Origin;
 import io.github.apace100.origins.origin.OriginLayer;
 import io.github.apace100.origins.origin.OriginRegistry;
@@ -26,7 +26,6 @@ import net.minecraft.util.Language;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ChooseOriginScreen extends Screen {
 

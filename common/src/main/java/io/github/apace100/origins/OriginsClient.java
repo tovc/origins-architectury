@@ -67,12 +67,12 @@ public class OriginsClient {
         AutoConfig.register(ClientConfig.class, OriginsConfigSerializer::new);
         config = AutoConfig.getConfigHolder(ClientConfig.class).getConfig();
 
-        usePrimaryActivePowerKeybind = new KeyBinding("key.origins.primary_active", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_G, "category." + Origins.MODID);
-        useSecondaryActivePowerKeybind = new KeyBinding("key.origins.secondary_active", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category." + Origins.MODID);
-        viewCurrentOriginKeybind = new KeyBinding("key.origins.view_origin", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_O, "category." + Origins.MODID);
+        usePrimaryActivePowerKeybind = new KeyBinding("key.conditionedOrigins.primary_active", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_G, "category." + Origins.MODID);
+        useSecondaryActivePowerKeybind = new KeyBinding("key.conditionedOrigins.secondary_active", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category." + Origins.MODID);
+        viewCurrentOriginKeybind = new KeyBinding("key.conditionedOrigins.view_origin", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_O, "category." + Origins.MODID);
 
-        registerPowerKeybinding("key.origins.primary_active", usePrimaryActivePowerKeybind);
-        registerPowerKeybinding("key.origins.secondary_active", useSecondaryActivePowerKeybind);
+        registerPowerKeybinding("key.conditionedOrigins.primary_active", usePrimaryActivePowerKeybind);
+        registerPowerKeybinding("key.conditionedOrigins.secondary_active", useSecondaryActivePowerKeybind);
         registerPowerKeybinding("primary", usePrimaryActivePowerKeybind);
         registerPowerKeybinding("secondary", useSecondaryActivePowerKeybind);
 

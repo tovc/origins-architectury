@@ -1,6 +1,6 @@
 package io.github.apace100.origins.power;
 
-import me.shedaniel.architectury.annotations.ExpectPlatform;
+import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.minecraft.entity.player.PlayerEntity;
 
 public class ElytraFlightPower extends Power {

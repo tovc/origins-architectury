@@ -2,10 +2,11 @@ package io.github.apace100.origins.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 
-import io.github.apace100.origins.component.OriginComponent;
-import io.github.apace100.origins.origin.Origin;
-import io.github.apace100.origins.origin.OriginLayer;
-import io.github.apace100.origins.power.PowerType;
+import io.github.apace100.origins.api.OriginsAPI;
+import io.github.apace100.origins.api.component.OriginComponent;
+import io.github.apace100.origins.api.origin.Origin;
+import io.github.apace100.origins.api.origin.OriginLayer;
+import io.github.apace100.origins.api.power.configuration.ConfiguredPower;
 import io.github.apace100.origins.registry.ModComponentsArchitectury;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.player.PlayerEntity;
@@ -28,7 +29,7 @@ public class OriginCommand {
 					.then(argument("layer", LayerArgument.layer())
 					.then(argument("origin", OriginArgument.origin())
 					.executes((command) -> {
-						// Sets the origins of several people in the given layer.
+						// Sets the conditionedOrigins of several people in the given layer.
 						int i = 0;
 						Collection<ServerPlayerEntity> targets = EntityArgumentType.getPlayers(command, "targets");
 						OriginLayer l = command.getArgument("layer", OriginLayer.class);
@@ -38,9 +39,9 @@ public class OriginCommand {
 							i++;
 						}
 						if (targets.size() == 1) {
-							command.getSource().sendFeedback(new TranslatableText("commands.origin.set.success.single", targets.iterator().next().getDisplayName(), new TranslatableText(l.getTranslationKey()), o.getName()), true);
+							command.getSource().sendFeedback(new TranslatableText("commands.origin.set.success.single", targets.iterator().next().getDisplayName(), new TranslatableText(l.name()), o.name()), true);
 						} else {
-							command.getSource().sendFeedback(new TranslatableText("commands.origin.set.success.multiple", targets.size(), new TranslatableText(l.getTranslationKey()), o.getName()), true);
+							command.getSource().sendFeedback(new TranslatableText("commands.origin.set.success.multiple", targets.size(), new TranslatableText(l.name()), o.name()), true);
 						}
 						return i;
 					}))))
@@ -80,7 +81,7 @@ public class OriginCommand {
 							// Useful for checking if a player has the given power in functions.
 							int i = 0;
 							Collection<ServerPlayerEntity> targets = EntityArgumentType.getPlayers(command, "targets");
-							PowerType<?> powerType = command.getArgument("power", PowerType.class);
+							ConfiguredPower<?, ?> powerType = command.getArgument("power", ConfiguredPower.class);
 							for(ServerPlayerEntity target : targets) {
 								if (hasPower(target, powerType)) {
 									i++;
@@ -105,7 +106,7 @@ public class OriginCommand {
 							OriginLayer layer = command.getArgument("layer", OriginLayer.class);
 							OriginComponent component = ModComponentsArchitectury.getOriginComponent(target);
 							Origin origin = component.getOrigin(layer);
-							command.getSource().sendFeedback(new TranslatableText("commands.origin.get.result", target.getDisplayName(), new TranslatableText(layer.getTranslationKey()), origin.getName(), origin.getIdentifier()), false);
+							command.getSource().sendFeedback(new TranslatableText("commands.origin.get.result", target.getDisplayName(), new TranslatableText(layer.name()), origin.name(), OriginsAPI.getOrigins().getId(origin)), false);
 							return 1;
 						})
 					)
@@ -119,7 +120,7 @@ public class OriginCommand {
 		component.setOrigin(layer, origin);
 		OriginComponent.sync(player);
 		boolean hadOriginBefore = component.hadOriginBefore();
-		origin.getPowerTypes().forEach(powerType -> component.getPower(powerType).onChosen(hadOriginBefore));
+		origin.powers().forEach(powerType -> component.getPower(powerType).onChosen(player, hadOriginBefore));
 	}
 
 	private static boolean hasOrigin(PlayerEntity player, OriginLayer layer, Origin origin) {
@@ -127,7 +128,7 @@ public class OriginCommand {
 		return component.hasOrigin(layer) && component.getOrigin(layer).equals(origin);
 	}
 
-	private static boolean hasPower(PlayerEntity player, PowerType<?> powerType) {
+	private static boolean hasPower(PlayerEntity player, ConfiguredPower<?, ?> powerType) {
 		return ModComponentsArchitectury.getOriginComponent(player).hasPower(powerType);
 	}
 }

@@ -4,19 +4,19 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import io.github.apace100.origins.component.OriginComponent;
-import io.github.apace100.origins.power.CooldownPower;
-import io.github.apace100.origins.power.Power;
-import io.github.apace100.origins.power.PowerType;
-import io.github.apace100.origins.power.VariableIntPower;
+import io.github.apace100.origins.api.OriginsAPI;
+import io.github.apace100.origins.api.component.OriginComponent;
+import io.github.apace100.origins.api.power.configuration.ConfiguredPower;
 import io.github.apace100.origins.registry.ModComponentsArchitectury;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.command.argument.ObjectiveArgumentType;
 import net.minecraft.command.argument.ScoreHolderArgumentType;
-import net.minecraft.scoreboard.ScoreboardPlayerScore;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.TranslatableText;
+import net.minecraft.util.Identifier;
+
+import java.util.OptionalInt;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -58,91 +58,66 @@ public class ResourceCommand {
         );
     }
 
-    public static enum Subcommands {
-        HAS, GET, SET, CHANGE, OPERATION
+    public enum Subcommands {
+        HAS, GET, SET, CHANGE, OPERATION;
     }
 
     // This is a cleaner method than sticking it into every subcommand
     private static int resource(CommandContext<ServerCommandSource> command, Subcommands sub) throws CommandSyntaxException {
-        int i = 0;
+        //int i = 0;
 
         ServerPlayerEntity player = EntityArgumentType.getPlayer(command, "target");
-        PowerType powerType = command.getArgument("power", PowerType.class);
-        Power power = ModComponentsArchitectury.getOriginComponent(player).getPower(powerType);
+        ConfiguredPower<?, ?> powerType = command.getArgument("power", ConfiguredPower.class);
+        Identifier identifier = OriginsAPI.getPowers().getId(powerType);
 
-        if (power instanceof VariableIntPower) {
-            VariableIntPower vIntPower = ((VariableIntPower) power);
+        if (ModComponentsArchitectury.getOriginComponent(player).hasPower(powerType)) {
+            OptionalInt result = switch (sub) {
+                case HAS -> powerType.asVariableIntPower().map(x -> OptionalInt.of(1)).orElseGet(OptionalInt::empty);
+                case GET -> powerType.getValue(player);
+                case SET -> powerType.assign(player, IntegerArgumentType.getInteger(command, "value"));
+                case CHANGE -> powerType.change(player, IntegerArgumentType.getInteger(command, "value"));
+                case OPERATION -> command.getArgument("operation", PowerOperation.Operation.class).apply(powerType, player, command.getSource().getMinecraftServer().getScoreboard().getPlayerScore(ScoreHolderArgumentType.getScoreHolder(command, "entity"), ObjectiveArgumentType.getObjective(command, "objective")));
+            };
             switch (sub) {
-                case HAS:
-                    command.getSource().sendFeedback(new TranslatableText("commands.execute.conditional.pass"), true);
-                    return 1;
-                case GET:
-                    i = vIntPower.getValue();
-                    command.getSource().sendFeedback(new TranslatableText("commands.scoreboard.players.get.success", player.getEntityName(), i, powerType.getIdentifier()), true);
-                    return i;
-                case SET:
-                    i = IntegerArgumentType.getInteger(command, "value");
-                    vIntPower.setValue(i);
-                    OriginComponent.sync(player);
-                    command.getSource().sendFeedback(new TranslatableText("commands.scoreboard.players.set.success.single", powerType.getIdentifier(), player.getEntityName(), i), true);
-                    return 1;
-                case CHANGE:
-                    i = IntegerArgumentType.getInteger(command, "value");
-                    int total = vIntPower.getValue()+i;
-                    vIntPower.setValue(total);
-                    OriginComponent.sync(player);
-                    command.getSource().sendFeedback(new TranslatableText("commands.scoreboard.players.add.success.single", i, powerType.getIdentifier(), player.getEntityName(), total), true);
-                    return 1;
-                case OPERATION:
-                    ScoreboardPlayerScore score = command.getSource().getMinecraftServer().getScoreboard().getPlayerScore(ScoreHolderArgumentType.getScoreHolder(command, "entity"), ObjectiveArgumentType.getObjective(command, "objective"));
-                    command.getArgument("operation", PowerOperation.Operation.class).apply(vIntPower, score);
-                    OriginComponent.sync(player);
-                    command.getSource().sendFeedback(new TranslatableText("commands.scoreboard.players.operation.success.single", powerType.getIdentifier(), player.getEntityName(), vIntPower.getValue()), true);
-                    return 1;
-            }
-        } else if(power instanceof CooldownPower) {
-            CooldownPower cooldownPower = ((CooldownPower) power);
-            switch (sub) {
-                case HAS:
-                    command.getSource().sendFeedback(new TranslatableText("commands.execute.conditional.pass"), true);
-                    return 1;
-                case GET:
-                    i = cooldownPower.getRemainingTicks();
-                    command.getSource().sendFeedback(new TranslatableText("commands.scoreboard.players.get.success", player.getEntityName(), i, powerType.getIdentifier()), true);
-                    return i;
-                case SET:
-                    i = IntegerArgumentType.getInteger(command, "value");
-                    cooldownPower.setCooldown(i);
-                    OriginComponent.sync(player);
-                    command.getSource().sendFeedback(new TranslatableText("commands.scoreboard.players.set.success.single", powerType.getIdentifier(), player.getEntityName(), i), true);
-                    return 1;
-                case CHANGE:
-                    i = IntegerArgumentType.getInteger(command, "value");
-                    cooldownPower.modify(i);
-                    OriginComponent.sync(player);
-                    command.getSource().sendFeedback(new TranslatableText("commands.scoreboard.players.add.success.single", i, powerType.getIdentifier(), player.getEntityName(), cooldownPower.getRemainingTicks()), true);
-                    return 1;
-                case OPERATION:
-                    ScoreboardPlayerScore score = command.getSource().getMinecraftServer().getScoreboard().getPlayerScore(ScoreHolderArgumentType.getScoreHolder(command, "entity"), ObjectiveArgumentType.getObjective(command, "objective"));
-                    command.getArgument("operation", PowerOperation.Operation.class).apply(cooldownPower, score);
-                    OriginComponent.sync(player);
-                    command.getSource().sendFeedback(new TranslatableText("commands.scoreboard.players.operation.success.single", powerType.getIdentifier(), player.getEntityName(), cooldownPower.getRemainingTicks()), true);
-                    return 1;
-            }
-        } else {
-            switch (sub) {
-                case HAS:
-                    command.getSource().sendError(new TranslatableText("commands.execute.conditional.fail"));
-                    return 0;
-                case GET:
-                    command.getSource().sendError(new TranslatableText("commands.scoreboard.players.get.null", powerType.getIdentifier(), player.getEntityName()));
-                    return 0;
-                case SET:
-                case CHANGE:
-                case OPERATION:
-                    // This translation is a bit of a stretch, as it reads "No relevant score holders could be found"
-                    command.getSource().sendError(new TranslatableText("argument.scoreHolder.empty"));
-                    return 0;
+                case HAS -> {
+                    result.ifPresentOrElse(
+                            i -> command.getSource().sendFeedback(new TranslatableText("commands.execute.conditional.pass"), true),
+                            () -> command.getSource().sendError(new TranslatableText("commands.execute.conditional.fail")));
+                    return result.isPresent() ? 1 : 0;
+                }
+                case GET -> {
+                    result.ifPresentOrElse(
+                            i -> command.getSource().sendFeedback(new TranslatableText("commands.scoreboard.players.get.success", player.getEntityName(), i, identifier), true),
+                            () -> command.getSource().sendError(new TranslatableText("commands.scoreboard.players.get.null", identifier, player.getEntityName())));
+                    return result.orElse(0);
+                }
+                case SET -> {
+                    result.ifPresentOrElse(
+                            i -> {
+                                OriginComponent.sync(player);
+                                command.getSource().sendFeedback(new TranslatableText("commands.scoreboard.players.set.success.single", identifier, player.getEntityName(), i), true);
+                            }, () -> command.getSource().sendError(new TranslatableText("argument.scoreHolder.empty"))
+                    );
+                    return result.isPresent() ? 1 : 0;
+                }
+                case CHANGE -> {
+                    result.ifPresentOrElse(
+                            i -> {
+                                OriginComponent.sync(player);
+                                command.getSource().sendFeedback(new TranslatableText("commands.scoreboard.players.add.success.single", i - IntegerArgumentType.getInteger(command, "value"), identifier, player.getEntityName(), i), true);
+                            }, () -> command.getSource().sendError(new TranslatableText("argument.scoreHolder.empty"))
+                    );
+                    return result.isPresent() ? 1 : 0;
+                }
+                case OPERATION -> {
+                    result.ifPresentOrElse(
+                            i -> {
+                                OriginComponent.sync(player);
+                                command.getSource().sendFeedback(new TranslatableText("commands.scoreboard.players.operation.success.single", identifier, player.getEntityName(), i), true);
+                            }, () -> command.getSource().sendError(new TranslatableText("argument.scoreHolder.empty"))
+                    );
+                    return result.isPresent() ? 1 : 0;
+                }
             }
         }
         return 0;

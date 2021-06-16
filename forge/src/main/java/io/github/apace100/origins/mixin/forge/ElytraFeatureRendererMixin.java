@@ -1,6 +1,6 @@
 package io.github.apace100.origins.mixin.forge;
 
-import io.github.apace100.origins.component.OriginComponent;
+import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.power.ElytraFlightPower;
 import net.minecraft.client.render.entity.feature.ElytraFeatureRenderer;
 import net.minecraft.entity.LivingEntity;

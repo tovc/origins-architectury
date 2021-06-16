@@ -15,6 +15,7 @@
 		"ItemStackMixin",
 		"LivingEntityMixin",
 		"LoginMixin",
+		"MinecraftServerMixin",
 		"PlayerAdvancementTrackerMixin",
 		"PlayerEntityMixin",
 		"PlayerScreenHandlerMixin",
@@ -23,8 +24,8 @@
 	],
 	"client": [
 		"BackgroundRendererMixin",
-		"ClientPlayerEntityMixin",
 		"CapeFeatureRendererMixin",
+		"ClientPlayerEntityMixin",
 		"EntityRenderDispatcherMixin",
 		"GameRendererMixin",
 		"InGameOverlayRendererMixin",

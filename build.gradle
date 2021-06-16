@@ -1,7 +1,7 @@
 plugins {
 	id "java"
-	id "architectury-plugin" version "3.0.99"
-	id "forgified-fabric-loom" version "0.6.90" apply false
+	id "architectury-plugin" version "3.2-SNAPSHOT"
+	id "forgified-fabric-loom" version "0.7.0-SNAPSHOT" apply false
 	id "maven-publish"
 }
 
@@ -37,19 +37,18 @@ allprojects {
 	repositories {
 		maven { url 'https://ladysnake.jfrog.io/artifactory/mods' }
 		maven { url 'https://maven.jamieswhiteshirt.com/libs-release/' }
-		maven { url 'https://maven.shedaniel.me/' }
+		maven { url 'https://maven.architectury.dev/' }
 		mavenLocal()
 	}
 
 	tasks.withType(JavaCompile) {
 		options.encoding = "UTF-8"
 
-		// The Minecraft launcher currently installs Java 8 for users, so your mod probably wants to target Java 8 too
-		// JDK 9 introduced a new way of specifying this that will make sure no newer classes or methods are used.
-		// We'll use that if it's available, but otherwise we'll use the older option.
-		def targetVersion = 8
+		// With 1.17, minecraft officially installs java 16 for all users.
+		// I will be targeting J16 from now on.
+		def targetVersion = 16
 		if (JavaVersion.current().isJava9Compatible()) {
-			options.release = targetVersion
+			options.release.set(targetVersion);
 		}
 	}
 

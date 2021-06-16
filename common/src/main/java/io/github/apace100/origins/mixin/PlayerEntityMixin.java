@@ -1,11 +1,13 @@
 package io.github.apace100.origins.mixin;
 
-import io.github.apace100.origins.component.OriginComponent;
+import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.power.*;
+import io.github.apace100.origins.power.factories.ActionOnWakeUpPower;
 import io.github.apace100.origins.registry.ModBlocks;
 import io.github.apace100.origins.registry.ModComponentsArchitectury;
 import io.github.apace100.origins.registry.ModDamageSources;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.pattern.CachedBlockPosition;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.*;
 import net.minecraft.entity.damage.DamageSource;
@@ -70,7 +72,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements Nameable
     private void invokeWakeUpAction(boolean bl, boolean updateSleepingPlayers, CallbackInfo ci) {
         if(!bl && !updateSleepingPlayers && getSleepingPosition().isPresent()) {
             BlockPos sleepingPos = getSleepingPosition().get();
-            OriginComponent.getPowers(this, ActionOnWakeUp.class).stream().filter(p -> p.doesApply(sleepingPos)).forEach(p -> p.executeActions(sleepingPos, Direction.DOWN));
+            ActionOnWakeUpPower.execute((PlayerEntity) (LivingEntity) this, sleepingPos);
         }
     }
 

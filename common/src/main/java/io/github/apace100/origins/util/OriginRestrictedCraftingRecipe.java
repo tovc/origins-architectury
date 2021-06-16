@@ -1,7 +1,7 @@
 package io.github.apace100.origins.util;
 
 import com.google.common.collect.Lists;
-import io.github.apace100.origins.component.OriginComponent;
+import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.power.RecipePower;
 import io.github.apace100.origins.registry.ModRecipes;
 import net.minecraft.entity.player.PlayerEntity;

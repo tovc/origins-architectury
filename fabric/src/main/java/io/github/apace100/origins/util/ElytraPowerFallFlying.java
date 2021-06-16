@@ -1,6 +1,6 @@
 package io.github.apace100.origins.util;
 
-import io.github.apace100.origins.component.OriginComponent;
+import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.power.ElytraFlightPower;
 import net.adriantodt.fallflyinglib.FallFlyingAbility;
 import net.minecraft.entity.LivingEntity;

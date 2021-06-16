@@ -1,7 +1,7 @@
 package io.github.apace100.origins.registry;
 
-import io.github.apace100.origins.component.OriginComponent;
-import me.shedaniel.architectury.annotations.ExpectPlatform;
+import dev.architectury.injectables.annotations.ExpectPlatform;
+import io.github.apace100.origins.api.component.OriginComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.network.ServerPlayerEntity;
 

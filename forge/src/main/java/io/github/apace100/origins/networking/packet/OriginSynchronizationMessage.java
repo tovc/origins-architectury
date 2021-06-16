@@ -1,7 +1,7 @@
 package io.github.apace100.origins.networking.packet;
 
 import io.github.apace100.origins.Origins;
-import io.github.apace100.origins.component.OriginComponent;
+import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.registry.ModComponentsArchitectury;
 import io.netty.buffer.Unpooled;
 import net.minecraft.client.MinecraftClient;
@@ -85,7 +85,7 @@ public class OriginSynchronizationMessage {
 					buf.writeCompoundTag(this.component);
 					x.applySyncPacket(buf);
 				} catch (Throwable t) {
-					Origins.LOGGER.error("An error occurred while synchronizing origins for \"" + name + "\"", t);
+					Origins.LOGGER.error("An error occurred while synchronizing conditionedOrigins for \"" + name + "\"", t);
 				} finally {
 					buf.release();
 				}
