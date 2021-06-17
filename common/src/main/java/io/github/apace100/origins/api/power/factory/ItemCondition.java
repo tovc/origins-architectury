@@ -10,7 +10,7 @@ import io.github.apace100.origins.api.registry.OriginsRegistries;
 import me.shedaniel.architectury.core.RegistryEntry;
 import net.minecraft.item.ItemStack;
 
-public abstract class ItemCondition<T extends IOriginsFeatureConfiguration> extends RegistryEntry<ItemCondition<?>> implements IConditionFactory<T, ConfiguredItemCondition<T>, ItemCondition<T>> {
+public abstract class ItemCondition<T extends IOriginsFeatureConfiguration> extends RegistryEntry<ItemCondition<?>> implements IConditionFactory<T, ConfiguredItemCondition<T, ?>, ItemCondition<T>> {
 	public static final Codec<ItemCondition<?>> CODEC = OriginsRegistries.codec(OriginsRegistries.ITEM_CONDITION);
 	private final Codec<Pair<T, ConditionData>> codec;
 
@@ -24,7 +24,7 @@ public abstract class ItemCondition<T extends IOriginsFeatureConfiguration> exte
 	}
 
 	@Override
-	public final ConfiguredItemCondition<T> configure(T input, ConditionData data) {
+	public final ConfiguredItemCondition<T, ?> configure(T input, ConditionData data) {
 		return new ConfiguredItemCondition<>(this, input, data);
 	}
 

@@ -14,7 +14,7 @@ import io.github.apace100.origins.api.IOriginsFeatureConfiguration;
  * @param <C> The type of the {@link ConfiguredFactory} this factory will instantiate.
  * @param <F> The type of this {@link IFactory}.
  */
-public interface IFactory<T extends IOriginsFeatureConfiguration, C extends ConfiguredFactory<T, F>, F extends IFactory<T, C, F>> extends Codec<C> {
+public interface IFactory<T extends IOriginsFeatureConfiguration, C extends ConfiguredFactory<T, ? extends F>, F extends IFactory<T, C, F>> extends Codec<C> {
 
 	/**
 	 * Gets or create a {@link MapCodec} from the given {@link Codec}

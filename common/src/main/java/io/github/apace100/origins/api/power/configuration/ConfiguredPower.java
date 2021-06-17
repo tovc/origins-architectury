@@ -8,9 +8,7 @@ import io.github.apace100.origins.api.power.IVariableIntPower;
 import io.github.apace100.origins.api.power.PowerData;
 import io.github.apace100.origins.api.power.factory.PowerFactory;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.util.Identifier;
 
 import java.util.Map;
 import java.util.Optional;
@@ -18,11 +16,11 @@ import java.util.OptionalInt;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public final class ConfiguredPower<T extends IOriginsFeatureConfiguration, F extends PowerFactory<T>> extends ConfiguredFactory<T, F> {
+public final class ConfiguredPower<C extends IOriginsFeatureConfiguration, F extends PowerFactory<C>> extends ConfiguredFactory<C, F> {
 	public static final Codec<ConfiguredPower<?, ?>> CODEC = PowerFactory.CODEC.dispatch(ConfiguredFactory::getFactory, Function.identity());
 	private final PowerData data;
 
-	public ConfiguredPower(F factory, T configuration, PowerData data) {
+	public ConfiguredPower(F factory, C configuration, PowerData data) {
 		super(factory, configuration);
 		this.data = data;
 	}
@@ -94,9 +92,9 @@ public final class ConfiguredPower<T extends IOriginsFeatureConfiguration, F ext
 
 	//VariableIntPower
 	@SuppressWarnings("unchecked")
-	public Optional<IVariableIntPower<T>> asVariableIntPower() {
+	public Optional<IVariableIntPower<C>> asVariableIntPower() {
 		if (this.getFactory() instanceof IVariableIntPower<?> variableIntPower)
-			return Optional.of((IVariableIntPower<T>) variableIntPower);
+			return Optional.of((IVariableIntPower<C>) variableIntPower);
 		return Optional.empty();
 	}
 

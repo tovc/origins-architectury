@@ -3,7 +3,7 @@ package io.github.apace100.origins.mixin;
 import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.power.InvisibilityPower;
 import io.github.apace100.origins.power.ModelColorPower;
-import io.github.apace100.origins.power.ShakingPower;
+import io.github.apace100.origins.registry.ModPowers;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.render.RenderLayer;
@@ -31,7 +31,7 @@ public abstract class LivingEntityRendererMixin extends EntityRenderer<LivingEnt
 
     @Inject(method = "isShaking", at = @At("HEAD"), cancellable = true)
     private void letPlayersShakeTheirBodies(LivingEntity entity, CallbackInfoReturnable<Boolean> cir) {
-        if(OriginComponent.hasPower(entity, ShakingPower.class)) {
+        if(OriginComponent.hasPower(entity, ModPowers.SHAKING.get())) {
             cir.setReturnValue(true);
         }
     }

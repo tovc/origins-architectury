@@ -10,9 +10,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
-public record ActionOnWakeUpConfiguration(@Nullable ConfiguredBlockCondition<?> blockCondition,
-										  @Nullable ConfiguredEntityAction<?> entityAction,
-										  @Nullable ConfiguredBlockAction<?> blockAction) implements IOriginsFeatureConfiguration {
+public record ActionOnWakeUpConfiguration(@Nullable ConfiguredBlockCondition<?, ?> blockCondition,
+										  @Nullable ConfiguredEntityAction<?, ?> entityAction,
+										  @Nullable ConfiguredBlockAction<?, ?> blockAction) implements IOriginsFeatureConfiguration {
 
 	public static final Codec<ActionOnWakeUpConfiguration> CODEC = RecordCodecBuilder.create(instance -> instance.group(
 			ConfiguredBlockCondition.CODEC.optionalFieldOf("block_condition").forGetter(x -> Optional.ofNullable(x.blockCondition())),

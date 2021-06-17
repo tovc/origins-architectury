@@ -11,10 +11,10 @@ import net.minecraft.block.pattern.CachedBlockPosition;
 
 import java.util.function.Function;
 
-public final class ConfiguredBlockCondition<T extends IOriginsFeatureConfiguration> extends ConfiguredCondition<T, BlockCondition<T>> {
-	public static final Codec<ConfiguredBlockCondition<?>> CODEC = BlockCondition.CODEC.dispatch(ConfiguredFactory::getFactory, Function.identity());
+public final class ConfiguredBlockCondition<T extends IOriginsFeatureConfiguration, F extends BlockCondition<T>> extends ConfiguredCondition<T, F> {
+	public static final Codec<ConfiguredBlockCondition<?, ?>> CODEC = BlockCondition.CODEC.dispatch(ConfiguredFactory::getFactory, Function.identity());
 
-	public ConfiguredBlockCondition(BlockCondition<T> factory, T configuration, ConditionData data) {
+	public ConfiguredBlockCondition(F factory, T configuration, ConditionData data) {
 		super(factory, configuration, data);
 	}
 

@@ -10,7 +10,7 @@ import io.github.apace100.origins.api.registry.OriginsRegistries;
 import me.shedaniel.architectury.core.RegistryEntry;
 import net.minecraft.fluid.FluidState;
 
-public abstract class FluidCondition<T extends IOriginsFeatureConfiguration> extends RegistryEntry<FluidCondition<?>> implements IConditionFactory<T, ConfiguredFluidCondition<T>, FluidCondition<T>> {
+public abstract class FluidCondition<T extends IOriginsFeatureConfiguration> extends RegistryEntry<FluidCondition<?>> implements IConditionFactory<T, ConfiguredFluidCondition<T, ?>, FluidCondition<T>> {
 	public static final Codec<FluidCondition<?>> CODEC = OriginsRegistries.codec(OriginsRegistries.FLUID_CONDITION);
 	private final Codec<Pair<T, ConditionData>> codec;
 
@@ -24,7 +24,7 @@ public abstract class FluidCondition<T extends IOriginsFeatureConfiguration> ext
 	}
 
 	@Override
-	public final ConfiguredFluidCondition<T> configure(T input, ConditionData data) {
+	public final ConfiguredFluidCondition<T, ?> configure(T input, ConditionData data) {
 		return new ConfiguredFluidCondition<>(this, input, data);
 	}
 

@@ -1,9 +1,9 @@
 package io.github.apace100.origins.mixin.forge;
 
-import io.github.apace100.origins.api.component.OriginComponent;
-import io.github.apace100.origins.power.ElytraFlightPower;
+import io.github.apace100.origins.power.factories.ElytraFlightPower;
 import net.minecraft.client.render.entity.feature.ElytraFeatureRenderer;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -19,7 +19,7 @@ public class ElytraFeatureRendererMixin {
 
     @Inject(method = "shouldRender", at = @At("RETURN"), cancellable = true, remap = false)
     private <T extends LivingEntity> void modifyEquippedStackToElytra(ItemStack stack, T entity, CallbackInfoReturnable<Boolean> cir) {
-        if(OriginComponent.getPowers(entity, ElytraFlightPower.class).stream().anyMatch(ElytraFlightPower::shouldRenderElytra) && !entity.isInvisible()) {
+        if(entity instanceof PlayerEntity player && ElytraFlightPower.shouldRenderElytra(player) && !entity.isInvisible()) {
             cir.setReturnValue(true);
             cir.cancel();
         }

@@ -8,7 +8,7 @@ import io.github.apace100.origins.api.registry.OriginsRegistries;
 import me.shedaniel.architectury.core.RegistryEntry;
 import net.minecraft.entity.Entity;
 
-public abstract class EntityAction<T extends IOriginsFeatureConfiguration> extends RegistryEntry<EntityAction<?>> implements IFactory<T, ConfiguredEntityAction<T>, EntityAction<T>> {
+public abstract class EntityAction<T extends IOriginsFeatureConfiguration> extends RegistryEntry<EntityAction<?>> implements IFactory<T, ConfiguredEntityAction<T, ?>, EntityAction<T>> {
 	public static final Codec<EntityAction<?>> CODEC = OriginsRegistries.codec(OriginsRegistries.ENTITY_ACTION);
 
 	private final Codec<T> codec;
@@ -23,7 +23,7 @@ public abstract class EntityAction<T extends IOriginsFeatureConfiguration> exten
 	}
 
 	@Override
-	public final ConfiguredEntityAction<T> configure(T input) {
+	public final ConfiguredEntityAction<T, ?> configure(T input) {
 		return new ConfiguredEntityAction<>(this, input);
 	}
 

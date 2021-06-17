@@ -10,7 +10,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 
-public abstract class BlockAction<T extends IOriginsFeatureConfiguration> extends RegistryEntry<BlockAction<?>> implements IFactory<T, ConfiguredBlockAction<T>, BlockAction<T>> {
+public abstract class BlockAction<T extends IOriginsFeatureConfiguration> extends RegistryEntry<BlockAction<?>> implements IFactory<T, ConfiguredBlockAction<T, ?>, BlockAction<T>> {
 	public static final Codec<BlockAction<?>> CODEC = OriginsRegistries.codec(OriginsRegistries.BLOCK_ACTION);
 
 	private final Codec<T> codec;
@@ -25,7 +25,7 @@ public abstract class BlockAction<T extends IOriginsFeatureConfiguration> extend
 	}
 
 	@Override
-	public final ConfiguredBlockAction<T> configure(T input) {
+	public final ConfiguredBlockAction<T, ?> configure(T input) {
 		return new ConfiguredBlockAction<>(this, input);
 	}
 

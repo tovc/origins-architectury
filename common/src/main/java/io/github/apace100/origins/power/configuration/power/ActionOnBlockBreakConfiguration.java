@@ -1,6 +1,7 @@
 package io.github.apace100.origins.power.configuration.power;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.apace100.origins.api.IOriginsFeatureConfiguration;
 import io.github.apace100.origins.api.power.configuration.ConfiguredBlockAction;
@@ -10,9 +11,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
-public record ActionOnBlockBreakConfiguration(@Nullable ConfiguredBlockCondition<?> blockCondition,
-											  @Nullable ConfiguredEntityAction<?> entityAction,
-											  @Nullable ConfiguredBlockAction<?> blockAction,
+public record ActionOnBlockBreakConfiguration(@Nullable ConfiguredBlockCondition<?, ?> blockCondition,
+											  @Nullable ConfiguredEntityAction<?, ?> entityAction,
+											  @Nullable ConfiguredBlockAction<?, ?> blockAction,
 											  boolean onlyWhenHarvested) implements IOriginsFeatureConfiguration {
 
 	public static final Codec<ActionOnBlockBreakConfiguration> CODEC = RecordCodecBuilder.create(instance -> instance.group(

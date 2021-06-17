@@ -8,7 +8,7 @@ import io.github.apace100.origins.api.registry.OriginsRegistries;
 import me.shedaniel.architectury.core.RegistryEntry;
 import net.minecraft.item.ItemStack;
 
-public abstract class ItemAction<T extends IOriginsFeatureConfiguration> extends RegistryEntry<ItemAction<?>> implements IFactory<T, ConfiguredItemAction<T>, ItemAction<T>> {
+public abstract class ItemAction<T extends IOriginsFeatureConfiguration> extends RegistryEntry<ItemAction<?>> implements IFactory<T, ConfiguredItemAction<T, ?>, ItemAction<T>> {
 	public static final Codec<ItemAction<?>> CODEC = OriginsRegistries.codec(OriginsRegistries.ITEM_ACTION);
 	private final Codec<T> codec;
 
@@ -22,7 +22,7 @@ public abstract class ItemAction<T extends IOriginsFeatureConfiguration> extends
 	}
 
 	@Override
-	public final ConfiguredItemAction<T> configure(T input) {
+	public final ConfiguredItemAction<T, ?> configure(T input) {
 		return new ConfiguredItemAction<>(this, input);
 	}
 

@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.function.Function;
 
-public record ConditionedOrigin(List<Identifier> origins, @Nullable ConfiguredEntityCondition<?> condition) {
+public record ConditionedOrigin(List<Identifier> origins, @Nullable ConfiguredEntityCondition<?, ?> condition) {
 	public static final Codec<ConditionedOrigin> PURE_CODEC = RecordCodecBuilder.create(instance -> instance.group(
 			OriginsCodecs.listOf(Identifier.CODEC).fieldOf("conditionedOrigins").forGetter(ConditionedOrigin::origins),
 			ConfiguredEntityCondition.CODEC.fieldOf("condition").forGetter(ConditionedOrigin::condition)
@@ -27,11 +27,11 @@ public record ConditionedOrigin(List<Identifier> origins, @Nullable ConfiguredEn
 		this(ImmutableList.copyOf(identifiers), null);
 	}
 
-	public ConditionedOrigin(ConfiguredEntityCondition<?> condition, Identifier... identifiers) {
+	public ConditionedOrigin(ConfiguredEntityCondition<?, ?> condition, Identifier... identifiers) {
 		this(ImmutableList.copyOf(identifiers), condition);
 	}
 
 	public boolean check(LivingEntity entity) {
-		return this.condition() == null || this.condition().check(entity);
+		return ConfiguredEntityCondition.check(this.condition(), entity);
 	}
 }

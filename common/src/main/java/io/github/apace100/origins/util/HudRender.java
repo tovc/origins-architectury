@@ -1,44 +1,27 @@
 package io.github.apace100.origins.util;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.apace100.origins.Origins;
-import io.github.apace100.origins.power.factory.condition.ConditionFactory;
-import net.minecraft.entity.LivingEntity;
+import io.github.apace100.origins.api.power.configuration.ConfiguredEntityCondition;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
 
-public class HudRender {
+import java.util.Optional;
 
-    public static final HudRender DONT_RENDER = new HudRender(false, 0, Origins.identifier("textures/gui/resource_bar.png"), null);
+public record HudRender(boolean shouldRender, int barIndex, Identifier spriteLocation,
+						@Nullable ConfiguredEntityCondition<?, ?> condition) {
+	public static final Codec<HudRender> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+			Codec.BOOL.optionalFieldOf("should_render", true).forGetter(HudRender::shouldRender),
+			Codec.INT.optionalFieldOf("bar_index", 0).forGetter(HudRender::barIndex),
+			Identifier.CODEC.optionalFieldOf("sprite_location", Origins.identifier("textures/gui/resource_bar.png")).forGetter(HudRender::spriteLocation),
+			ConfiguredEntityCondition.CODEC.optionalFieldOf("condition").forGetter(x -> Optional.ofNullable(x.condition()))
+	).apply(instance, (t1, t2, t3, t4) -> new HudRender(t1, t2, t3, t4.orElse(null))));
 
-    private final boolean shouldRender;
-    private final int barIndex;
-    private final Identifier spriteLocation;
-    private final ConditionFactory.Instance<LivingEntity> playerCondition;
+	public static final HudRender DONT_RENDER = new HudRender(false, 0, Origins.identifier("textures/gui/resource_bar.png"), null);
 
-    public HudRender(boolean shouldRender, int barIndex, Identifier spriteLocation, ConditionFactory.Instance<LivingEntity> condition) {
-        this.shouldRender = shouldRender;
-        this.barIndex = barIndex;
-        this.spriteLocation = spriteLocation;
-        this.playerCondition = condition;
-    }
-
-    public Identifier getSpriteLocation() {
-        return spriteLocation;
-    }
-
-    public int getBarIndex() {
-        return barIndex;
-    }
-
-    public boolean shouldRender() {
-        return shouldRender;
-    }
-
-    public boolean shouldRender(PlayerEntity player) {
-        return shouldRender && (playerCondition == null || playerCondition.test(player));
-    }
-
-    public ConditionFactory.Instance<LivingEntity> getCondition() {
-        return playerCondition;
-    }
+	public boolean shouldRender(PlayerEntity player) {
+		return this.shouldRender() && ConfiguredEntityCondition.check(this.condition(), player);
+	}
 }

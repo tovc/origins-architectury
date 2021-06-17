@@ -10,7 +10,7 @@ import io.github.apace100.origins.api.registry.OriginsRegistries;
 import me.shedaniel.architectury.core.RegistryEntry;
 import net.minecraft.entity.damage.DamageSource;
 
-public abstract class DamageCondition<T extends IOriginsFeatureConfiguration> extends RegistryEntry<DamageCondition<?>> implements IConditionFactory<T, ConfiguredDamageCondition<T>, DamageCondition<T>> {
+public abstract class DamageCondition<T extends IOriginsFeatureConfiguration> extends RegistryEntry<DamageCondition<?>> implements IConditionFactory<T, ConfiguredDamageCondition<T, ?>, DamageCondition<T>> {
 	public static final Codec<DamageCondition<?>> CODEC = OriginsRegistries.codec(OriginsRegistries.DAMAGE_CONDITION);
 
 	private final Codec<Pair<T, ConditionData>> codec;
@@ -25,7 +25,7 @@ public abstract class DamageCondition<T extends IOriginsFeatureConfiguration> ex
 	}
 
 	@Override
-	public final ConfiguredDamageCondition<T> configure(T input, ConditionData data) {
+	public final ConfiguredDamageCondition<T, ?> configure(T input, ConditionData data) {
 		return new ConfiguredDamageCondition<>(this, input, data);
 	}
 

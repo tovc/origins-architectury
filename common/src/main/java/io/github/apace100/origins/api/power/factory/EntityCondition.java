@@ -10,7 +10,7 @@ import io.github.apace100.origins.api.registry.OriginsRegistries;
 import me.shedaniel.architectury.core.RegistryEntry;
 import net.minecraft.entity.LivingEntity;
 
-public abstract class EntityCondition<T extends IOriginsFeatureConfiguration> extends RegistryEntry<EntityCondition<?>> implements IConditionFactory<T, ConfiguredEntityCondition<T>, EntityCondition<T>> {
+public abstract class EntityCondition<T extends IOriginsFeatureConfiguration> extends RegistryEntry<EntityCondition<?>> implements IConditionFactory<T, ConfiguredEntityCondition<T, ?>, EntityCondition<T>> {
 	public static final Codec<EntityCondition<?>> CODEC = OriginsRegistries.codec(OriginsRegistries.ENTITY_CONDITION);
 	private final Codec<Pair<T, ConditionData>> codec;
 
@@ -24,7 +24,7 @@ public abstract class EntityCondition<T extends IOriginsFeatureConfiguration> ex
 	}
 
 	@Override
-	public final ConfiguredEntityCondition<T> configure(T input, ConditionData data) {
+	public final ConfiguredEntityCondition<T, ?> configure(T input, ConditionData data) {
 		return new ConfiguredEntityCondition<>(this, input, data);
 	}
 

@@ -12,7 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public record PowerData(List<ConfiguredEntityCondition<?>> conditions, boolean hidden, int loadingPriority,
+public record PowerData(List<ConfiguredEntityCondition<?, ?>> conditions, boolean hidden, int loadingPriority,
 						String nameTranslationKey, String descriptionTranslationKey) {
 	public static final PowerData DEFAULT = new PowerData(ImmutableList.of(), false, 0, "", "");
 
@@ -50,7 +50,7 @@ public record PowerData(List<ConfiguredEntityCondition<?>> conditions, boolean h
 	}
 
 	public static class Builder {
-		private final List<ConfiguredEntityCondition<?>> conditions = new ArrayList<>();
+		private final List<ConfiguredEntityCondition<?, ?>> conditions = new ArrayList<>();
 		private boolean hidden = false;
 		private int loadingPriority = 0;
 		private String name = "";
@@ -60,7 +60,7 @@ public record PowerData(List<ConfiguredEntityCondition<?>> conditions, boolean h
 
 		}
 
-		public List<ConfiguredEntityCondition<?>> getConditions() {
+		public List<ConfiguredEntityCondition<?, ?>> getConditions() {
 			return conditions;
 		}
 
@@ -95,7 +95,7 @@ public record PowerData(List<ConfiguredEntityCondition<?>> conditions, boolean h
 			return this;
 		}
 
-		public Builder addCondition(ConfiguredEntityCondition<?> condition) {
+		public Builder addCondition(ConfiguredEntityCondition<?, ?> condition) {
 			this.conditions.add(condition);
 			return this;
 		}

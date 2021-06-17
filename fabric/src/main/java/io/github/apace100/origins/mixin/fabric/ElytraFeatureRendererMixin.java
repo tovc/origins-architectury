@@ -1,11 +1,11 @@
 package io.github.apace100.origins.mixin.fabric;
 
-import io.github.apace100.origins.api.component.OriginComponent;
-import io.github.apace100.origins.power.ElytraFlightPower;
+import io.github.apace100.origins.power.factories.ElytraFlightPower;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.feature.ElytraFeatureRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -18,9 +18,8 @@ public class ElytraFeatureRendererMixin {
 
     @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;getItem()Lnet/minecraft/item/Item;"))
     private Item modifyEquippedStackToElytra(ItemStack itemStack, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, LivingEntity livingEntity, float f, float g, float h, float j, float k, float l) {
-        if(OriginComponent.getPowers(livingEntity, ElytraFlightPower.class).stream().anyMatch(ElytraFlightPower::shouldRenderElytra) && !livingEntity.isInvisible()) {
+        if(livingEntity instanceof PlayerEntity player && ElytraFlightPower.shouldRenderElytra(player) && !livingEntity.isInvisible())
             return Items.ELYTRA;
-        }
         return itemStack.getItem();
     }
 }

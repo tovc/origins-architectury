@@ -10,10 +10,10 @@ import net.minecraft.world.biome.Biome;
 
 import java.util.function.Function;
 
-public final class ConfiguredBiomeCondition<T extends IOriginsFeatureConfiguration> extends ConfiguredCondition<T, BiomeCondition<T>> {
-	public static final Codec<ConfiguredBiomeCondition<?>> CODEC = BiomeCondition.CODEC.dispatch(ConfiguredFactory::getFactory, Function.identity());
+public final class ConfiguredBiomeCondition<C extends IOriginsFeatureConfiguration, F extends BiomeCondition<C>> extends ConfiguredCondition<C, F> {
+	public static final Codec<ConfiguredBiomeCondition<?, ?>> CODEC = BiomeCondition.CODEC.dispatch(ConfiguredFactory::getFactory, Function.identity());
 
-	public ConfiguredBiomeCondition(BiomeCondition<T> factory, T configuration, ConditionData data) {
+	public ConfiguredBiomeCondition(F factory, C configuration, ConditionData data) {
 		super(factory, configuration, data);
 	}
 

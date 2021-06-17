@@ -8,11 +8,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
-public record ActionOnCallbackConfiguration(@Nullable ConfiguredEntityAction<?> entityActionRespawned,
-											@Nullable ConfiguredEntityAction<?> entityActionRemoved,
-											@Nullable ConfiguredEntityAction<?> entityActionChosen,
-											@Nullable ConfiguredEntityAction<?> entityActionLost,
-											@Nullable ConfiguredEntityAction<?> entityActionAdded,
+public record ActionOnCallbackConfiguration(@Nullable ConfiguredEntityAction<?, ?> entityActionRespawned,
+											@Nullable ConfiguredEntityAction<?, ?> entityActionRemoved,
+											@Nullable ConfiguredEntityAction<?, ?> entityActionChosen,
+											@Nullable ConfiguredEntityAction<?, ?> entityActionLost,
+											@Nullable ConfiguredEntityAction<?, ?> entityActionAdded,
 											boolean executeChosenWhenOrb) implements IOriginsFeatureConfiguration {
 	public static final Codec<ActionOnCallbackConfiguration> CODEC = RecordCodecBuilder.create(instance -> instance.group(
 			ConfiguredEntityAction.CODEC.optionalFieldOf("entity_action_respawned").forGetter(x -> Optional.ofNullable(x.entityActionRespawned())),

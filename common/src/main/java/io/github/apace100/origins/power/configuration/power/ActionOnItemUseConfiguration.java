@@ -10,9 +10,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
-public record ActionOnItemUseConfiguration(@Nullable ConfiguredItemCondition<?> itemCondition,
-										   @Nullable ConfiguredEntityAction<?> entityAction,
-										   @Nullable ConfiguredItemAction<?> itemAction) implements IOriginsFeatureConfiguration {
+public record ActionOnItemUseConfiguration(@Nullable ConfiguredItemCondition<?, ?> itemCondition,
+										   @Nullable ConfiguredEntityAction<?, ?> entityAction,
+										   @Nullable ConfiguredItemAction<?, ?> itemAction) implements IOriginsFeatureConfiguration {
 
 	public static final Codec<ActionOnItemUseConfiguration> CODEC = RecordCodecBuilder.create(instance -> instance.group(
 			ConfiguredItemCondition.CODEC.optionalFieldOf("item_condition").forGetter(x -> Optional.ofNullable(x.itemCondition())),

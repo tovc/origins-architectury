@@ -12,7 +12,7 @@ import io.github.apace100.origins.api.IOriginsFeatureConfiguration;
  * Most of the time you won't need to override the version with {@link ConditionData},
  * but it may be useful to optimize the code.
  */
-public interface IConditionFactory<T extends IOriginsFeatureConfiguration, C extends ConfiguredCondition<T, F>, F extends IConditionFactory<T, C, F>> extends IFactory<T, C, F> {
+public interface IConditionFactory<T extends IOriginsFeatureConfiguration, C extends ConfiguredCondition<T, ? extends F>, F extends IConditionFactory<T, C, F>> extends IFactory<T, C, F> {
 	static <T extends IOriginsFeatureConfiguration, F> Codec<Pair<T, ConditionData>> conditionCodec(Codec<T> codec) {
 		return RecordCodecBuilder.create(instance -> instance.group(
 				IFactory.asMap(codec).forGetter(Pair::getFirst),

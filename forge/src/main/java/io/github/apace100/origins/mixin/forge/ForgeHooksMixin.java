@@ -1,9 +1,8 @@
 package io.github.apace100.origins.mixin.forge;
 
 import io.github.apace100.origins.api.component.OriginComponent;
-import io.github.apace100.origins.power.ClimbingPower;
 import io.github.apace100.origins.power.ModifyHarvestPower;
-import io.github.apace100.origins.registry.ModComponentsArchitectury;
+import io.github.apace100.origins.power.factories.ClimbingPower;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.pattern.CachedBlockPosition;
 import net.minecraft.entity.LivingEntity;
@@ -18,8 +17,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import java.util.List;
 
 @Mixin(ForgeHooks.class)
 public class ForgeHooksMixin {
@@ -38,17 +35,9 @@ public class ForgeHooksMixin {
 	@Inject(method = "isLivingOnLadder", remap = false, at = @At("RETURN"), cancellable = true)
 	private static void ladder(BlockState state, World world, BlockPos pos, LivingEntity entity, CallbackInfoReturnable<Boolean> info) {
 		if(!info.getReturnValue()) {
-			if(entity instanceof PlayerEntity) {
-				List<ClimbingPower> climbingPowers = ModComponentsArchitectury.getOriginComponent(entity).getPowers(ClimbingPower.class, true);
-				if(climbingPowers.size() > 0) {
-					if(climbingPowers.stream().anyMatch(ClimbingPower::isActive)) {
-						info.setReturnValue(true);
-					} else if(entity.isHoldingOntoLadder()) {
-						if(climbingPowers.stream().anyMatch(ClimbingPower::canHold)) {
-							info.setReturnValue(true);
-						}
-					}
-				}
+			if(entity instanceof PlayerEntity player) {
+				if (ClimbingPower.check(player, t -> {}))
+					info.setReturnValue(true);
 			}
 		}
 	}

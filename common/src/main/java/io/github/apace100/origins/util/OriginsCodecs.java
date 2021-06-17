@@ -142,8 +142,8 @@ public class OriginsCodecs {
 	public static final Codec<Optional<SoundEvent>> OPTIONAL_SOUND_EVENT = optionalRegistry(Registry.SOUND_EVENT::getOrEmpty, Registry.SOUND_EVENT::getId);
 
 	public static final Codec<Optional<AttributedEntityAttributeModifier>> OPTIONAL_ATTRIBUTED_ATTRIBUTE_MODIFIER = RecordCodecBuilder.create(instance -> instance.group(
-			OPTIONAL_ATTRIBUTE.fieldOf("attribute").forGetter(x -> x.map(AttributedEntityAttributeModifier::getAttribute)),
-			ENTITY_ATTRIBUTE_MODIFIER_MAP_CODEC.forGetter(x -> x.map(AttributedEntityAttributeModifier::getModifier).get())
+			OPTIONAL_ATTRIBUTE.fieldOf("attribute").forGetter(x -> x.map(AttributedEntityAttributeModifier::attribute)),
+			ENTITY_ATTRIBUTE_MODIFIER_MAP_CODEC.forGetter(x -> x.map(AttributedEntityAttributeModifier::modifier).get())
 	).apply(instance, (entityAttribute, entityAttributeModifier) -> entityAttribute.map(x -> new AttributedEntityAttributeModifier(x, entityAttributeModifier))));
 
 	public static final Codec<Optional<ItemStack>> ITEM_STACK = RecordCodecBuilder.create(instance -> instance.group(
@@ -190,6 +190,11 @@ public class OriginsCodecs {
 	 */
 	public static <T> Codec<List<T>> listOf(Codec<T> source) {
 		return Codec.either(source, source.listOf()).xmap(x -> x.map(Lists::newArrayList, Function.identity()), Either::right);
+	}
+
+	public static <T> Codec<List<T>> optionalListOf(Codec<Optional<T>> source) {
+		return Codec.either(source, source.listOf()).xmap(x -> x.map(Optional::stream, y -> y.stream().flatMap(Optional::stream)).collect(Collectors.toList()),
+				objects -> Either.right(objects.stream().filter(Objects::nonNull).map(Optional::of).collect(Collectors.toList())));
 	}
 
 	public static <T> Codec<Set<T>> setOf(Codec<T> source) {

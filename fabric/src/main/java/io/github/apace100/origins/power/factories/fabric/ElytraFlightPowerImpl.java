@@ -1,4 +1,4 @@
-package io.github.apace100.origins.power.fabric;
+package io.github.apace100.origins.power.factories.fabric;
 
 import net.minecraft.entity.player.PlayerEntity;
 

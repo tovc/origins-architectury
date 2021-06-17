@@ -8,9 +8,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
-public record ActionOverItemConfiguration(@Nullable ConfiguredEntityAction<?> entityAction,
-										  @Nullable ConfiguredEntityAction<?> risingAction,
-										  @Nullable ConfiguredEntityAction<?> fallingAction,
+public record ActionOverItemConfiguration(@Nullable ConfiguredEntityAction<?, ?> entityAction,
+										  @Nullable ConfiguredEntityAction<?, ?> risingAction,
+										  @Nullable ConfiguredEntityAction<?, ?> fallingAction,
 										  int interval) implements IOriginsFeatureConfiguration {
 	public static final Codec<ActionOverItemConfiguration> CODEC = RecordCodecBuilder.create(instance -> instance.group(
 			ConfiguredEntityAction.CODEC.optionalFieldOf("entity_action").forGetter(x -> Optional.ofNullable(x.entityAction())),

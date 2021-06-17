@@ -10,7 +10,7 @@ import io.github.apace100.origins.api.registry.OriginsRegistries;
 import me.shedaniel.architectury.core.RegistryEntry;
 import net.minecraft.world.biome.Biome;
 
-public abstract class BiomeCondition<T extends IOriginsFeatureConfiguration> extends RegistryEntry<BiomeCondition<?>> implements IConditionFactory<T, ConfiguredBiomeCondition<T>, BiomeCondition<T>> {
+public abstract class BiomeCondition<T extends IOriginsFeatureConfiguration> extends RegistryEntry<BiomeCondition<?>> implements IConditionFactory<T, ConfiguredBiomeCondition<T, ?>, BiomeCondition<T>> {
 	public static final Codec<BiomeCondition<?>> CODEC = OriginsRegistries.codec(OriginsRegistries.BIOME_CONDITION);
 
 	private final Codec<Pair<T, ConditionData>> codec;
@@ -25,7 +25,7 @@ public abstract class BiomeCondition<T extends IOriginsFeatureConfiguration> ext
 	}
 
 	@Override
-	public ConfiguredBiomeCondition<T> configure(T input, ConditionData configuration) {
+	public ConfiguredBiomeCondition<T, ?> configure(T input, ConditionData configuration) {
 		return new ConfiguredBiomeCondition<>(this, input, configuration);
 	}
 

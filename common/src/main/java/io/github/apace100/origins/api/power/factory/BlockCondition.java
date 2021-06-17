@@ -10,7 +10,7 @@ import io.github.apace100.origins.api.registry.OriginsRegistries;
 import me.shedaniel.architectury.core.RegistryEntry;
 import net.minecraft.block.pattern.CachedBlockPosition;
 
-public abstract class BlockCondition<T extends IOriginsFeatureConfiguration> extends RegistryEntry<BlockCondition<?>> implements IConditionFactory<T, ConfiguredBlockCondition<T>, BlockCondition<T>> {
+public abstract class BlockCondition<T extends IOriginsFeatureConfiguration> extends RegistryEntry<BlockCondition<?>> implements IConditionFactory<T, ConfiguredBlockCondition<T, ?>, BlockCondition<T>> {
 	public static final Codec<BlockCondition<?>> CODEC = OriginsRegistries.codec(OriginsRegistries.BLOCK_CONDITION);
 
 	private final Codec<Pair<T, ConditionData>> codec;
@@ -25,7 +25,7 @@ public abstract class BlockCondition<T extends IOriginsFeatureConfiguration> ext
 	}
 
 	@Override
-	public final ConfiguredBlockCondition<T> configure(T input, ConditionData data) {
+	public final ConfiguredBlockCondition<T, ?> configure(T input, ConditionData data) {
 		return new ConfiguredBlockCondition<>(this, input, data);
 	}
 

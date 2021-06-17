@@ -1,9 +1,9 @@
 package io.github.apace100.origins.mixin;
 
 import io.github.apace100.origins.api.component.OriginComponent;
-import io.github.apace100.origins.power.ElytraFlightPower;
-import io.github.apace100.origins.power.RestrictArmorPower;
+import io.github.apace100.origins.power.factories.RestrictArmorPower;
 import io.github.apace100.origins.registry.ModComponentsArchitectury;
+import io.github.apace100.origins.registry.ModPowers;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -20,22 +20,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(targets = "net/minecraft/screen/PlayerScreenHandler$1")
 public abstract class PlayerScreenHandlerMixin extends Slot {
 
-    public PlayerScreenHandlerMixin(Inventory inventory, int index, int x, int y) {
-        super(inventory, index, x, y);
-    }
+	public PlayerScreenHandlerMixin(Inventory inventory, int index, int x, int y) {
+		super(inventory, index, x, y);
+	}
 
-    @Inject(method = "Lnet/minecraft/screen/PlayerScreenHandler$1;canInsert(Lnet/minecraft/item/ItemStack;)Z", at = @At("HEAD"), cancellable = true)
-    private void preventArmorInsertion(ItemStack stack, CallbackInfoReturnable<Boolean> info) {
-        PlayerEntity player = ((PlayerInventory)inventory).player;
-        OriginComponent component = ModComponentsArchitectury.getOriginComponent(player);
-        EquipmentSlot slot = MobEntity.getPreferredEquipmentSlot(stack);
-        if(component.getPowers(RestrictArmorPower.class).stream().anyMatch(rap -> !rap.canEquip(stack, slot))) {
-            info.setReturnValue(false);
-        }
-        if(OriginComponent.getPowers(player, ElytraFlightPower.class).size() > 0) {
-            if(stack.getItem() == Items.ELYTRA) {
-                info.setReturnValue(false);
-            }
-        }
-    }
+	@Inject(method = "Lnet/minecraft/screen/PlayerScreenHandler$1;canInsert(Lnet/minecraft/item/ItemStack;)Z", at = @At("HEAD"), cancellable = true)
+	private void preventArmorInsertion(ItemStack stack, CallbackInfoReturnable<Boolean> info) {
+		PlayerEntity player = ((PlayerInventory) inventory).player;
+		OriginComponent component = ModComponentsArchitectury.getOriginComponent(player);
+		EquipmentSlot slot = MobEntity.getPreferredEquipmentSlot(stack);
+		if (RestrictArmorPower.isForbidden(player, slot, stack))
+			info.setReturnValue(false);
+		else if (OriginComponent.hasPower(player, ModPowers.ELYTRA_FLIGHT.get()) && stack.getItem() == Items.ELYTRA)
+			info.setReturnValue(false);
+	}
 }

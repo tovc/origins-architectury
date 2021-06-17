@@ -41,20 +41,20 @@ public class PowerHudRenderer extends DrawableHelper implements GameHudRender {
             int barHeight = 5;
             int iconSize = 8;
             List<HudRendered> hudPowers = component.getPowers().stream().filter(p -> p instanceof HudRendered).map(p -> (HudRendered)p).sorted(
-                Comparator.comparing(hudRenderedA -> hudRenderedA.getRenderSettings().getSpriteLocation())
+                Comparator.comparing(hudRenderedA -> hudRenderedA.getRenderSettings().spriteLocation())
             ).collect(Collectors.toList());
             Identifier lastLocation = null;
             RenderSystem.color3f(1f, 1f, 1f);
             for (HudRendered hudPower : hudPowers) {
                 HudRender render = hudPower.getRenderSettings();
                 if(render.shouldRender(client.player) && hudPower.shouldRender()) {
-                    Identifier currentLocation = render.getSpriteLocation();
+                    Identifier currentLocation = render.spriteLocation();
                     if(currentLocation != lastLocation) {
                         client.getTextureManager().bindTexture(currentLocation);
                         lastLocation = currentLocation;
                     }
                     drawTexture(matrices, x, y, 0, 0, barWidth, barHeight);
-                    int v = 10 + render.getBarIndex() * 10;
+                    int v = 10 + render.barIndex() * 10;
                     int w = (int)(hudPower.getFill() * barWidth);
                     drawTexture(matrices, x, y, 0, v, w, barHeight);
                     setZOffset(getZOffset() + 1);

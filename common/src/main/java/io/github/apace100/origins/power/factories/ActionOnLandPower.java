@@ -8,7 +8,7 @@ import io.github.apace100.origins.power.configuration.FieldConfiguration;
 import io.github.apace100.origins.registry.ModPowers;
 import net.minecraft.entity.player.PlayerEntity;
 
-public class ActionOnLandPower extends PowerFactory<FieldConfiguration<ConfiguredEntityAction<?>>> {
+public class ActionOnLandPower extends PowerFactory<FieldConfiguration<ConfiguredEntityAction<?, ?>>> {
 	public static void execute(PlayerEntity player) {
 		OriginComponent.getPowers(player, ModPowers.ACTION_ON_LAND.get()).forEach(x -> x.getFactory().executeAction(x, player));
 	}
@@ -17,7 +17,7 @@ public class ActionOnLandPower extends PowerFactory<FieldConfiguration<Configure
 		super(FieldConfiguration.codec(ConfiguredEntityAction.CODEC, "action_on_land"));
 	}
 
-	public void executeAction(ConfiguredPower<FieldConfiguration<ConfiguredEntityAction<?>>, ?> config, PlayerEntity player) {
+	public void executeAction(ConfiguredPower<FieldConfiguration<ConfiguredEntityAction<?, ?>>, ?> config, PlayerEntity player) {
 		config.getConfiguration().value().execute(player);
 	}
 }

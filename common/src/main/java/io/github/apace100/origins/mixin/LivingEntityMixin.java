@@ -3,7 +3,12 @@ package io.github.apace100.origins.mixin;
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.power.*;
+import io.github.apace100.origins.power.factories.AttackerActionWhenHitPower;
+import io.github.apace100.origins.power.factories.ClimbingPower;
+import io.github.apace100.origins.power.factories.EffectImmunityPower;
+import io.github.apace100.origins.power.factories.SelfActionWhenHitPower;
 import io.github.apace100.origins.registry.ModComponentsArchitectury;
+import io.github.apace100.origins.registry.ModPowers;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.entity.Entity;
@@ -51,16 +56,22 @@ public abstract class LivingEntityMixin extends Entity {
         }
     }
 
+    //TODO Move this to an event.
     @Inject(method = "damage", at = @At("RETURN"))
     private void invokeHitActions(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         if(cir.getReturnValue()) {
-            OriginComponent.getPowers(this, SelfActionWhenHitPower.class).forEach(p -> p.whenHit(source, amount));
-            OriginComponent.getPowers(this, AttackerActionWhenHitPower.class).forEach(p -> p.whenHit(source, amount));
+            if ((Entity) (this) instanceof PlayerEntity player) {
+                SelfActionWhenHitPower.execute(player, source, amount);
+                AttackerActionWhenHitPower.execute(player, source, amount);
+                //SelfActionOnHit
+                //TargetActionOnHit
+            }
             OriginComponent.getPowers(source.getAttacker(), SelfActionOnHitPower.class).forEach(p -> p.onHit((LivingEntity)(Object)this, source, amount));
             OriginComponent.getPowers(source.getAttacker(), TargetActionOnHitPower.class).forEach(p -> p.onHit((LivingEntity)(Object)this, source, amount));
         }
     }
 
+    //TODO Move this to an event.
     @Inject(method = "damage", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;onDeath(Lnet/minecraft/entity/damage/DamageSource;)V"))
     private void invokeKillAction(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         OriginComponent.getPowers(source.getAttacker(), SelfActionOnKillPower.class).forEach(p -> p.onKill((LivingEntity)(Object)this, source, amount));
@@ -78,7 +89,7 @@ public abstract class LivingEntityMixin extends Entity {
 
     @Redirect(method = "baseTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;isWet()Z"))
     private boolean preventExtinguishingFromSwimming(LivingEntity livingEntity) {
-        if(OriginComponent.hasPower(livingEntity, SwimmingPower.class) && livingEntity.isSwimming() && !(getFluidHeight(FluidTags.WATER) > 0)) {
+        if(OriginComponent.hasPower(livingEntity, ModPowers.SWIMMING.get()) && livingEntity.isSwimming() && !(getFluidHeight(FluidTags.WATER) > 0)) {
             return false;
         }
         return livingEntity.isWet();
@@ -102,20 +113,17 @@ public abstract class LivingEntityMixin extends Entity {
     // HOTBLOODED
     @Inject(at = @At("HEAD"), method= "canHaveStatusEffect", cancellable = true)
     private void preventStatusEffects(StatusEffectInstance effect, CallbackInfoReturnable<Boolean> info) {
-        for (EffectImmunityPower power : OriginComponent.getPowers(this, EffectImmunityPower.class)) {
-            if(power.doesApply(effect)) {
-                info.setReturnValue(false);
-                return;
-            }
-        }
+        if (((Entity) this) instanceof PlayerEntity player && EffectImmunityPower.isImmune(player, effect))
+            info.setReturnValue(false);
     }
 
     // CLIMBING
     @Inject(at = @At("RETURN"), method = "isClimbing", cancellable = true)
     public void doSpiderClimbing(CallbackInfoReturnable<Boolean> info) {
         if(!info.getReturnValue()) {
-            if((Entity)this instanceof PlayerEntity) {
-                List<ClimbingPower> climbingPowers = ModComponentsArchitectury.getOriginComponent((Entity)this).getPowers(ClimbingPower.class, true);
+            if((Entity)this instanceof PlayerEntity player) {
+                if (ClimbingPower.check(player, t -> this.climbingPos = Optional.of(t)));
+                /*List<ClimbingPower> climbingPowers = ModComponentsArchitectury.getOriginComponent((Entity)this).getPowers(ClimbingPower.class, true);
                 if(climbingPowers.size() > 0) {
                     if(climbingPowers.stream().anyMatch(ClimbingPower::isActive)) {
                         BlockPos pos = getBlockPos();
@@ -129,7 +137,7 @@ public abstract class LivingEntityMixin extends Entity {
                             }
                         //}
                     }
-                }
+                }*/
             }
         }
     }

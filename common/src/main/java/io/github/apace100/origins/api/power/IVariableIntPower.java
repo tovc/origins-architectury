@@ -3,6 +3,7 @@ package io.github.apace100.origins.api.power;
 import io.github.apace100.origins.api.IOriginsFeatureConfiguration;
 import io.github.apace100.origins.api.power.configuration.ConfiguredPower;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.math.MathHelper;
 
 public interface IVariableIntPower<T extends IOriginsFeatureConfiguration> {
 	/**
@@ -45,6 +46,13 @@ public interface IVariableIntPower<T extends IOriginsFeatureConfiguration> {
 	 * @return The minimum value of this power.
 	 */
 	int getMinimum(ConfiguredPower<T, ?> configuration, PlayerEntity player);
+
+	default float getProgress(ConfiguredPower<T, ?> configuration, PlayerEntity player) {
+		int value = this.getValue(configuration, player);
+		int min = this.getMinimum(configuration, player);
+		int max = this.getMaximum(configuration, player);
+		return MathHelper.clamp((value - min) / (float) (max - min), 0.0F, 1.0F);
+	}
 
 	/**
 	 * Adds the given value to the current value.

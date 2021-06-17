@@ -1,4 +1,4 @@
-package io.github.apace100.origins.power.forge;
+package io.github.apace100.origins.power.factories.forge;
 
 import net.minecraft.entity.attribute.EntityAttributeInstance;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
