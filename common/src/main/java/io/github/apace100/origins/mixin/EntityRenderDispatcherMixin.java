@@ -1,7 +1,7 @@
 package io.github.apace100.origins.mixin;
 
 import io.github.apace100.origins.api.component.OriginComponent;
-import io.github.apace100.origins.power.PreventEntityRenderPower;
+import io.github.apace100.origins.power.factories.PreventEntityRenderPower;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -22,9 +22,8 @@ public class EntityRenderDispatcherMixin {
     private void preventRenderingEntities(Entity entity, Frustum frustum, double x, double y, double z, CallbackInfoReturnable<Boolean> cir) {
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         if(player != null) {
-            if(OriginComponent.getPowers(player, PreventEntityRenderPower.class).stream().anyMatch(perp -> perp.doesApply(entity))) {
+            if(PreventEntityRenderPower.isRenderPrevented(player, entity))
                 cir.setReturnValue(false);
-            }
         }
     }
 }

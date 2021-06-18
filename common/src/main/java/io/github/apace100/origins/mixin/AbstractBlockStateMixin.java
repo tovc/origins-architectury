@@ -2,9 +2,11 @@ package io.github.apace100.origins.mixin;
 
 import io.github.apace100.origins.access.EntityShapeContextAccessor;
 import io.github.apace100.origins.api.component.OriginComponent;
-import io.github.apace100.origins.power.PhasingPower;
+import io.github.apace100.origins.power.factories.PhasingPower;
 import net.minecraft.block.*;
+import net.minecraft.block.pattern.CachedBlockPosition;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -12,6 +14,7 @@ import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldView;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -36,15 +39,10 @@ public abstract class AbstractBlockStateMixin {
         VoxelShape blockShape = getBlock().getCollisionShape(asBlockState(), world, pos, context);
         if(!blockShape.isEmpty() && context instanceof EntityShapeContext) {
             Entity entity = EntityShapeContextAccessor.getEntity((EntityShapeContext) context);
-            if(entity != null) {
-                boolean isAbove = isAbove(entity, blockShape, pos, false);
-                for (PhasingPower phasingPower : OriginComponent.getPowers(entity, PhasingPower.class)) {
-                    if(!isAbove || phasingPower.shouldPhaseDown((PlayerEntity)entity)) {
-                        if(phasingPower.doesApply(pos)) {
-                            info.setReturnValue(VoxelShapes.empty());
-                        }
-                    }
-                }
+            if(entity instanceof PlayerEntity player) {
+                boolean isAbove = isAbove(player, blockShape, pos, false);
+                if (PhasingPower.shouldPhaseThrough(player, new CachedBlockPosition(world instanceof WorldView wv ? wv : player.world, pos, true), isAbove))
+                    info.setReturnValue(VoxelShapes.empty());
             }
         }
     }
@@ -56,10 +54,7 @@ public abstract class AbstractBlockStateMixin {
 
     @Inject(method = "onEntityCollision", at = @At("HEAD"), cancellable = true)
     private void preventCollisionWhenPhasing(World world, BlockPos pos, Entity entity, CallbackInfo ci) {
-        for (PhasingPower phasingPower : OriginComponent.getPowers(entity, PhasingPower.class)) {
-            if(phasingPower.doesApply(pos)) {
-                ci.cancel();
-            }
-        }
+        if (entity instanceof LivingEntity le && PhasingPower.shouldPhaseThrough(le, new CachedBlockPosition(world, pos, true)))
+            ci.cancel();
     }
 }

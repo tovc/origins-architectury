@@ -5,12 +5,20 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.apace100.origins.api.IOriginsFeatureConfiguration;
+import io.github.apace100.origins.api.power.configuration.power.IValueModifyingPowerConfiguration;
 import io.github.apace100.origins.util.OriginsCodecs;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
 
 import java.util.List;
 import java.util.Optional;
 
 public final class ListConfiguration<T> implements IOriginsFeatureConfiguration {
+	public static final MapCodec<ListConfiguration<EntityAttributeModifier>> MODIFIER_CODEC = modifierCodec("modifier");
+
+	public static final MapCodec<ListConfiguration<EntityAttributeModifier>> modifierCodec(String singular) {
+		return ListConfiguration.mapCodec(OriginsCodecs.ENTITY_ATTRIBUTE_MODIFIER_MAP_CODEC.codec(), singular, singular + "s");
+	}
+
 	public static <T> MapCodec<ListConfiguration<T>> mapCodec(Codec<T> codec, String singular, String plural) {
 		return RecordCodecBuilder.mapCodec(instance -> instance.group(
 				codec.optionalFieldOf(singular).forGetter(ListConfiguration::getSingular),

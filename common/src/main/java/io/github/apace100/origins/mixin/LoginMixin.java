@@ -2,9 +2,9 @@ package io.github.apace100.origins.mixin;
 
 import io.github.apace100.origins.access.EndRespawningEntity;
 import io.github.apace100.origins.api.component.OriginComponent;
-import io.github.apace100.origins.power.ModifyPlayerSpawnPower;
 import io.github.apace100.origins.power.Power;
 import io.github.apace100.origins.registry.ModComponentsArchitectury;
+import io.github.apace100.origins.registry.ModPowers;
 import net.minecraft.entity.Dismounting;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
@@ -30,9 +30,9 @@ public abstract class LoginMixin {
 
 	@Redirect(method = "respawnPlayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;setSpawnPoint(Lnet/minecraft/util/registry/RegistryKey;Lnet/minecraft/util/math/BlockPos;FZZ)V"))
 	private void preventEndExitSpawnPointSetting(ServerPlayerEntity serverPlayerEntity, RegistryKey<World> dimension, BlockPos pos, float angle, boolean spawnPointSet, boolean bl, ServerPlayerEntity playerEntity, boolean alive) {
-		EndRespawningEntity ere = (EndRespawningEntity)playerEntity;
+		EndRespawningEntity ere = (EndRespawningEntity) playerEntity;
 		// Prevent setting the spawn point if the player has a "fake" respawn point
-		if(ere.hasRealRespawnPoint()) {
+		if (ere.hasRealRespawnPoint()) {
 			serverPlayerEntity.setSpawnPoint(dimension, pos, angle, spawnPointSet, bl);
 		}
 	}
@@ -46,8 +46,8 @@ public abstract class LoginMixin {
 	@Redirect(method = "respawnPlayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;findRespawnPosition(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/util/math/BlockPos;FZZ)Ljava/util/Optional;"))
 	private Optional<Vec3d> retryObstructedSpawnpointIfFailed(ServerWorld world, BlockPos pos, float f, boolean bl, boolean bl2, ServerPlayerEntity player, boolean alive) {
 		Optional<Vec3d> original = PlayerEntity.findRespawnPosition(world, pos, f, bl, bl2);
-		if(!original.isPresent()) {
-			if(OriginComponent.hasPower(player, ModifyPlayerSpawnPower.class)) {
+		if (!original.isPresent()) {
+			if (OriginComponent.hasPower(player, ModPowers.MODIFY_PLAYER_SPAWN.get())) {
 				return Optional.ofNullable(Dismounting.method_30769(EntityType.PLAYER, world, pos, bl));
 			}
 		}

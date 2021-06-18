@@ -1,7 +1,7 @@
 package io.github.apace100.origins.mixin.forge;
 
 import io.github.apace100.origins.api.component.OriginComponent;
-import io.github.apace100.origins.power.ModifyPlayerSpawnPower;
+import io.github.apace100.origins.registry.ModPowers;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
@@ -16,6 +16,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
+import java.util.Objects;
 import java.util.Optional;
 
 //Changes to the way respawning works to make it less invasive.
@@ -48,10 +49,8 @@ public class PlayerManagerMixin {
 	}
 
 	private void updatePlayerSpawn(ServerPlayerEntity entity, boolean spawnSet) {
-		for (ModifyPlayerSpawnPower power : OriginComponent.getPowers(entity, ModifyPlayerSpawnPower.class)) {
-			this.origins$respawnData = power.getSpawn(spawnSet);
-			if (origins$respawnData != null)
-				return;
-		}
+		this.origins$respawnData = OriginComponent.getPowers(entity, ModPowers.MODIFY_PLAYER_SPAWN.get()).stream()
+				.map(x -> x.getConfiguration().getSpawn(entity, spawnSet))
+				.filter(Objects::nonNull).findFirst().orElse(null);
 	}
 }

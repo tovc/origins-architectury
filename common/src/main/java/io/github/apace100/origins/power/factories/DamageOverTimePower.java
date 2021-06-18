@@ -12,16 +12,6 @@ import net.minecraft.world.Difficulty;
 import java.util.Map;
 
 public class DamageOverTimePower extends VariableIntPowerFactory.Simple<DamageOverTimeConfiguration> {
-	private static final class DataContainer {
-		private int value;
-		private int outOfDamageTicks;
-
-		private DataContainer(int value, int outOfDamageTicks) {
-			this.value = value;
-			this.outOfDamageTicks = outOfDamageTicks;
-		}
-	}
-
 	public DamageOverTimePower() {
 		super(DamageOverTimeConfiguration.CODEC);
 		this.ticking(true);
@@ -52,7 +42,7 @@ public class DamageOverTimePower extends VariableIntPowerFactory.Simple<DamageOv
 	protected void doDamage(ConfiguredPower<DamageOverTimeConfiguration, ?> configuration, PlayerEntity player) {
 		DataContainer dataContainer = this.getDataContainer(configuration, player);
 		dataContainer.outOfDamageTicks = 0;
-		if(this.getValue(configuration, player) <= 0) {
+		if (this.getValue(configuration, player) <= 0) {
 			this.assign(configuration, player, configuration.getConfiguration().interval());
 			player.damage(configuration.getConfiguration().damageSource(), player.world.getDifficulty() == Difficulty.EASY ? configuration.getConfiguration().damageEasy() : configuration.getConfiguration().damage());
 		} else {
@@ -62,7 +52,7 @@ public class DamageOverTimePower extends VariableIntPowerFactory.Simple<DamageOv
 
 	protected void resetDamage(ConfiguredPower<DamageOverTimeConfiguration, ?> configuration, PlayerEntity player) {
 		DataContainer dataContainer = this.getDataContainer(configuration, player);
-		if(dataContainer.outOfDamageTicks >= 20)
+		if (dataContainer.outOfDamageTicks >= 20)
 			this.assign(configuration, player, this.getDamageBegin(configuration.getConfiguration(), player));
 		else
 			dataContainer.outOfDamageTicks++;
@@ -70,14 +60,14 @@ public class DamageOverTimePower extends VariableIntPowerFactory.Simple<DamageOv
 
 	protected int getDamageBegin(DamageOverTimeConfiguration configuration, PlayerEntity player) {
 		int prot = getProtection(configuration, player);
-		if(prot >= 64)
+		if (prot >= 64)
 			return 24000;
-		prot = (int)(prot * 2 * 20 * configuration.protectionEffectiveness());
+		prot = (int) (prot * 2 * 20 * configuration.protectionEffectiveness());
 		return configuration.delay() + prot;
 	}
 
 	private int getProtection(DamageOverTimeConfiguration configuration, PlayerEntity player) {
-		if(configuration.protectionEnchantment() == null) {
+		if (configuration.protectionEnchantment() == null) {
 			return 0;
 		} else {
 			Map<EquipmentSlot, ItemStack> enchantedItems = configuration.protectionEnchantment().getEquipment(player);
@@ -89,4 +79,13 @@ public class DamageOverTimePower extends VariableIntPowerFactory.Simple<DamageOv
 		}
 	}
 
+	private static final class DataContainer {
+		private int value;
+		private int outOfDamageTicks;
+
+		private DataContainer(int value, int outOfDamageTicks) {
+			this.value = value;
+			this.outOfDamageTicks = outOfDamageTicks;
+		}
+	}
 }

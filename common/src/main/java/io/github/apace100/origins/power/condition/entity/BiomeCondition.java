@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+//FIXME This is wrong, it should be using RegistryKey instead.
 public class BiomeCondition implements Predicate<LivingEntity> {
 
 	public static final Codec<BiomeCondition> CODEC = RecordCodecBuilder.create(instance -> instance.group(

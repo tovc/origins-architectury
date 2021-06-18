@@ -2,8 +2,11 @@ package io.github.apace100.origins.mixin.fabric;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.apace100.origins.api.component.OriginComponent;
-import io.github.apace100.origins.power.LavaVisionPower;
-import io.github.apace100.origins.power.PhasingPower;
+import io.github.apace100.origins.api.power.configuration.ConfiguredPower;
+import io.github.apace100.origins.power.configuration.power.PhasingConfiguration;
+import io.github.apace100.origins.power.factories.LavaVisionPower;
+import io.github.apace100.origins.power.factories.PhasingPower;
+import io.github.apace100.origins.registry.ModPowers;
 import io.github.apace100.origins.util.ClientHooks;
 import net.minecraft.client.render.BackgroundRenderer;
 import net.minecraft.client.render.Camera;
@@ -21,17 +24,18 @@ public class BackgroundRendererMixin {
 
 	@Redirect(method = "applyFog", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;fogStart(F)V"))
 	private static void redirectFogStart(float start, Camera camera, BackgroundRenderer.FogType fogType) {
-		if(camera.getFocusedEntity() instanceof PlayerEntity) {
-			List<PhasingPower> phasings = OriginComponent.getPowers(camera.getFocusedEntity(), PhasingPower.class);
-			if(phasings.stream().anyMatch(pp -> pp.getRenderType() == PhasingPower.RenderType.BLINDNESS)) {
-				if(ClientHooks.getInWallBlockState((PlayerEntity)camera.getFocusedEntity()) != null) {
-					float view = phasings.stream().filter(pp -> pp.getRenderType() == PhasingPower.RenderType.BLINDNESS).map(PhasingPower::getViewDistance).min(Float::compareTo).orElseThrow(RuntimeException::new);
+		if (camera.getFocusedEntity() instanceof PlayerEntity) {
+			List<ConfiguredPower<PhasingConfiguration, PhasingPower>> phasings = OriginComponent.getPowers(camera.getFocusedEntity(), ModPowers.PHASING.get());
+			if (phasings.stream().anyMatch(pp -> pp.getConfiguration().renderType() == PhasingConfiguration.RenderType.BLINDNESS)) {
+				if (ClientHooks.getInWallBlockState((PlayerEntity) camera.getFocusedEntity()) != null) {
+					float view = phasings.stream()
+							.filter(pp -> pp.getConfiguration().renderType() == PhasingConfiguration.RenderType.BLINDNESS)
+							.map(x -> x.getConfiguration().viewDistance()).min(Float::compareTo).orElseThrow(RuntimeException::new);
 					float s;
-					if (fogType == BackgroundRenderer.FogType.FOG_SKY) {
+					if (fogType == BackgroundRenderer.FogType.FOG_SKY)
 						s = Math.min(0F, start);
-					} else {
+					else
 						s = Math.min(view * 0.25F, start);
-					}
 					RenderSystem.fogStart(s);
 					return;
 				}
@@ -42,11 +46,13 @@ public class BackgroundRendererMixin {
 
 	@Redirect(method = "applyFog", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;fogEnd(F)V"))
 	private static void redirectFogEnd(float end, Camera camera, BackgroundRenderer.FogType fogType) {
-		if(camera.getFocusedEntity() instanceof PlayerEntity) {
-			List<PhasingPower> phasings = OriginComponent.getPowers(camera.getFocusedEntity(), PhasingPower.class);
-			if(phasings.stream().anyMatch(pp -> pp.getRenderType() == PhasingPower.RenderType.BLINDNESS)) {
-				if(ClientHooks.getInWallBlockState((PlayerEntity)camera.getFocusedEntity()) != null) {
-					float view = phasings.stream().filter(pp -> pp.getRenderType() == PhasingPower.RenderType.BLINDNESS).map(PhasingPower::getViewDistance).min(Float::compareTo).orElseThrow(RuntimeException::new);
+		if (camera.getFocusedEntity() instanceof PlayerEntity) {
+			List<ConfiguredPower<PhasingConfiguration, PhasingPower>> phasings = OriginComponent.getPowers(camera.getFocusedEntity(), ModPowers.PHASING.get());
+			if (phasings.stream().anyMatch(pp -> pp.getConfiguration().renderType() == PhasingConfiguration.RenderType.BLINDNESS)) {
+				if (ClientHooks.getInWallBlockState((PlayerEntity) camera.getFocusedEntity()) != null) {
+					float view = phasings.stream()
+							.filter(pp -> pp.getConfiguration().renderType() == PhasingConfiguration.RenderType.BLINDNESS)
+							.map(x -> x.getConfiguration().viewDistance()).min(Float::compareTo).orElseThrow(RuntimeException::new);
 					float v;
 					if (fogType == BackgroundRenderer.FogType.FOG_SKY) {
 						v = Math.min(view * 0.8F, end);
@@ -59,39 +65,25 @@ public class BackgroundRendererMixin {
 			}
 		}
 		RenderSystem.fogEnd(end);
-	} @ModifyConstant(method = "applyFog", constant = @Constant(floatValue = 0.25F, ordinal = 0))
+	}
+
+	@ModifyConstant(method = "applyFog", constant = @Constant(floatValue = 0.25F, ordinal = 0))
 	private static float modifyLavaVisibilitySNoPotion(float original, Camera camera) {
-		List<LavaVisionPower> powers = OriginComponent.getPowers(camera.getFocusedEntity(), LavaVisionPower.class);
-		if(powers.size() > 0) {
-			return powers.get(0).getS();
-		}
-		return original;
+		return LavaVisionPower.getS(camera.getFocusedEntity()).orElse(original);
 	}
 
 	@ModifyConstant(method = "applyFog", constant = @Constant(floatValue = 1.0F, ordinal = 1))
 	private static float modifyLavaVisibilityVNoPotion(float original, Camera camera) {
-		List<LavaVisionPower> powers = OriginComponent.getPowers(camera.getFocusedEntity(), LavaVisionPower.class);
-		if(powers.size() > 0) {
-			return powers.get(0).getV();
-		}
-		return original;
+		return LavaVisionPower.getV(camera.getFocusedEntity()).orElse(original);
 	}
 
 	@ModifyConstant(method = "applyFog", constant = @Constant(floatValue = 0.0F, ordinal = 0))
 	private static float modifyLavaVisibilitySWithPotion(float original, Camera camera) {
-		List<LavaVisionPower> powers = OriginComponent.getPowers(camera.getFocusedEntity(), LavaVisionPower.class);
-		if(powers.size() > 0) {
-			return powers.get(0).getS();
-		}
-		return original;
+		return LavaVisionPower.getS(camera.getFocusedEntity()).orElse(original);
 	}
 
 	@ModifyConstant(method = "applyFog", constant = @Constant(floatValue = 3.0F, ordinal = 0))
 	private static float modifyLavaVisibilityVWithPotion(float original, Camera camera) {
-		List<LavaVisionPower> powers = OriginComponent.getPowers(camera.getFocusedEntity(), LavaVisionPower.class);
-		if(powers.size() > 0) {
-			return powers.get(0).getV();
-		}
-		return original;
+		return LavaVisionPower.getV(camera.getFocusedEntity()).orElse(original);
 	}
 }

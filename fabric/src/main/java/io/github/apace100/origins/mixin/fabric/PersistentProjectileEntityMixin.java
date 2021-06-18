@@ -1,7 +1,6 @@
 package io.github.apace100.origins.mixin.fabric;
 
-import io.github.apace100.origins.api.component.OriginComponent;
-import io.github.apace100.origins.power.ModifyProjectileDamagePower;
+import io.github.apace100.origins.power.factories.ModifyDamageDealtPower;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
@@ -17,22 +16,22 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(PersistentProjectileEntity.class)
 public abstract class PersistentProjectileEntityMixin {
 
-    @ModifyVariable(method = "onEntityHit", ordinal = 0, at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;onAttacking(Lnet/minecraft/entity/Entity;)V"))
-    private int modifyProjectileDamageDealt(int original, EntityHitResult entityHitResult) {
-        Entity owner = ((ProjectileEntity)(Object)this).getOwner();
-        if(owner != null) {
-            Entity target = entityHitResult.getEntity();
-            DamageSource source = DamageSource.arrow((PersistentProjectileEntity)(Object)this, owner);
-            return (int) OriginComponent.modify(owner, ModifyProjectileDamagePower.class, original, p -> p.doesApply(source, original, target instanceof LivingEntity ? (LivingEntity)target : null), p -> p.executeActions(target));
-        }
-        return original;
-    }
+	@ModifyVariable(method = "onEntityHit", ordinal = 0, at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;onAttacking(Lnet/minecraft/entity/Entity;)V"))
+	private int modifyProjectileDamageDealt(int original, EntityHitResult entityHitResult) {
+		Entity owner = ((ProjectileEntity) (Object) this).getOwner();
+		if (owner != null) {
+			Entity target = entityHitResult.getEntity();
+			DamageSource source = DamageSource.arrow((PersistentProjectileEntity) (Object) this, owner);
+			return (int) ModifyDamageDealtPower.modifyProjectile(owner, target instanceof LivingEntity le ? le : null, source, original);
+		}
+		return original;
+	}
 
-    @Redirect(method = "onEntityHit", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;damage(Lnet/minecraft/entity/damage/DamageSource;F)Z"))
-    private boolean preventDamageWhenZero(Entity entity, DamageSource source, float amount) {
-        if(entity instanceof ServerPlayerEntity || amount > 0f) {
-            return entity.damage(source, amount);
-        }
-        return false;
-    }
+	@Redirect(method = "onEntityHit", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;damage(Lnet/minecraft/entity/damage/DamageSource;F)Z"))
+	private boolean preventDamageWhenZero(Entity entity, DamageSource source, float amount) {
+		if (entity instanceof ServerPlayerEntity || amount > 0f) {
+			return entity.damage(source, amount);
+		}
+		return false;
+	}
 }

@@ -1,10 +1,13 @@
 package io.github.apace100.origins;
 
 import io.github.apace100.origins.api.component.OriginComponent;
+import io.github.apace100.origins.api.power.configuration.ConfiguredBlockCondition;
 import io.github.apace100.origins.components.ForgePlayerOriginComponent;
 import io.github.apace100.origins.networking.ModPackets;
-import io.github.apace100.origins.power.*;
 import io.github.apace100.origins.power.factories.ActionOnBlockBreakPower;
+import io.github.apace100.origins.power.factories.ModifyDamageDealtPower;
+import io.github.apace100.origins.power.factories.ModifyDamageTakenPower;
+import io.github.apace100.origins.power.factories.ModifyJumpPower;
 import io.github.apace100.origins.registry.ModComponentsArchitectury;
 import io.github.apace100.origins.registry.ModPowers;
 import io.github.apace100.origins.registry.forge.ModComponentsArchitecturyImpl;
@@ -53,7 +56,8 @@ public class OriginForgeEventHandler {
 
 		int toolFactor = ForgeHooks.canHarvestBlock(event.getState(), event.getPlayer(), event.getPlayer().world, event.getPos()) ? 30 : 100;
 		float factor = hardness * toolFactor;
-		speed = OriginComponent.modify(player, ModifyBreakSpeedPower.class, speed * factor, p -> p.doesApply(player.world, event.getPos())) / factor;
+		CachedBlockPosition cbp = new CachedBlockPosition(player.getEntityWorld(), event.getPos(), true);
+		speed = OriginComponent.modify(player, ModPowers.MODIFY_BREAK_SPEED.get(), speed * factor, p -> ConfiguredBlockCondition.check(p.getConfiguration().condition(), cbp)) / factor;
 		event.setNewSpeed(speed);
 	}
 
@@ -66,7 +70,7 @@ public class OriginForgeEventHandler {
 	@SubscribeEvent
 	public static void modifyDamageTaken(LivingDamageEvent event) {
 		LivingEntity entityLiving = event.getEntityLiving();
-		event.setAmount(OriginComponent.modify(entityLiving, ModifyDamageTakenPower.class, event.getAmount(), p -> p.doesApply(event.getSource(), event.getAmount()), p -> p.executeActions(event.getSource().getAttacker())));
+		event.setAmount(ModifyDamageTakenPower.modify(entityLiving, event.getSource(), event.getAmount()));
 	}
 
 	/**
@@ -74,7 +78,7 @@ public class OriginForgeEventHandler {
 	 */
 	@SubscribeEvent(priority = EventPriority.LOW)
 	public static void livingJump(LivingEvent.LivingJumpEvent event) {
-		double modified = OriginComponent.modify(event.getEntityLiving(), ModifyJumpPower.class, event.getEntityLiving().getVelocity().y, p -> true, ModifyJumpPower::executeAction);
+		double modified = ModifyJumpPower.apply(event.getEntityLiving(), event.getEntityLiving().getVelocity().y);
 		updateJumpHeight(modified, event.getEntityLiving());
 	}
 
@@ -92,9 +96,9 @@ public class OriginForgeEventHandler {
 		LivingEntity target = event.getEntityLiving();
 		DamageSource source = event.getSource();
 		if (event.getSource().isProjectile()) {
-			event.setAmount(OriginComponent.modify(source.getAttacker(), ModifyProjectileDamagePower.class, event.getAmount(), p -> p.doesApply(source, event.getAmount(), target), p -> p.executeActions(target)));
+			event.setAmount(ModifyDamageDealtPower.modifyProjectile(source.getAttacker(), target, source, event.getAmount()));
 		} else {
-			event.setAmount(OriginComponent.modify(source.getAttacker(), ModifyDamageDealtPower.class, event.getAmount(), p -> p.doesApply(source, event.getAmount(), target), p -> p.executeActions(target)));
+			event.setAmount(ModifyDamageDealtPower.modifyMelee(source.getAttacker(), target, source, event.getAmount()));
 		}
 	}
 
@@ -108,7 +112,7 @@ public class OriginForgeEventHandler {
 	public static void playerTick(TickEvent.PlayerTickEvent event) {
 		if (event.phase == TickEvent.Phase.START && event.side == LogicalSide.SERVER) {
 			ModComponentsArchitectury.getOriginComponent(event.player).serverTick();
-			if((event.player.age & 0x7F) == 0 && event.player instanceof ServerPlayerEntity)
+			if ((event.player.age & 0x7F) == 0 && event.player instanceof ServerPlayerEntity)
 				ModComponentsArchitectury.syncWith((ServerPlayerEntity) event.player, event.player);
 		}
 	}
@@ -134,7 +138,7 @@ public class OriginForgeEventHandler {
 
 	private static void checkOrigins(ServerPlayerEntity entity) {
 		OriginComponent component = ModComponentsArchitectury.getOriginComponent(entity);
-		if(!component.hasAllOrigins()) {
+		if (!component.hasAllOrigins()) {
 			PacketByteBuf data = new PacketByteBuf(Unpooled.buffer());
 			data.writeBoolean(true);
 			NetworkManager.sendToPlayer(entity, ModPackets.OPEN_ORIGIN_SCREEN, data);

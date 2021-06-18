@@ -1,8 +1,8 @@
 package io.github.apace100.origins.mixin.fabric;
 
 import io.github.apace100.origins.api.component.OriginComponent;
-import io.github.apace100.origins.power.ModifyHarvestPower;
 import io.github.apace100.origins.power.factories.ActionOnBlockBreakPower;
+import io.github.apace100.origins.power.factories.ModifyHarvestPower;
 import io.github.apace100.origins.registry.ModPowers;
 import io.github.apace100.origins.util.SavedBlockPosition;
 import net.minecraft.block.Block;
@@ -35,12 +35,7 @@ public class ServerPlayerInteractionManagerMixin {
 
     @ModifyVariable(method = "tryBreakBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;postMine(Lnet/minecraft/world/World;Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/entity/player/PlayerEntity;)V"), ordinal = 1)
     private boolean modifyEffectiveTool(boolean original) {
-        for (ModifyHarvestPower mhp : OriginComponent.getPowers(player, ModifyHarvestPower.class)) {
-            if (mhp.doesApply(savedBlockPosition)) {
-                return mhp.isHarvestAllowed();
-            }
-        }
-        return original;
+        return ModifyHarvestPower.isHarvestAllowed(player, savedBlockPosition).orElse(original);
     }
 
     @Inject(method = "tryBreakBlock", at = @At(value = "RETURN", ordinal = 4), locals = LocalCapture.CAPTURE_FAILHARD)

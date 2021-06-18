@@ -1,8 +1,8 @@
 package io.github.apace100.origins.mixin.fabric;
 
 import io.github.apace100.origins.api.component.OriginComponent;
-import io.github.apace100.origins.power.ModifyJumpPower;
 import io.github.apace100.origins.power.PowerTypes;
+import io.github.apace100.origins.power.factories.ModifyJumpPower;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -36,10 +36,7 @@ public abstract class LivingEntityMixin extends Entity {
 	@Inject(at = @At("HEAD"), method = "getJumpVelocity", cancellable = true)
 	private void modifyJumpVelocity(CallbackInfoReturnable<Float> info) {
 		float base = 0.42F * this.getJumpVelocityMultiplier();
-		float modified = OriginComponent.modify(this, ModifyJumpPower.class, base, p -> {
-			p.executeAction();
-			return true;
-		});
+		float modified = (float) ModifyJumpPower.apply((LivingEntity) (Entity) this, base);
 		info.setReturnValue(modified);
 	}
 }

@@ -1,9 +1,8 @@
 package io.github.apace100.origins.mixin;
 
-import io.github.apace100.origins.api.component.OriginComponent;
-import io.github.apace100.origins.power.NightVisionPower;
-import io.github.apace100.origins.power.PhasingPower;
-import io.github.apace100.origins.registry.ModComponentsArchitectury;
+import io.github.apace100.origins.api.power.INightVisionPower;
+import io.github.apace100.origins.power.configuration.power.PhasingConfiguration;
+import io.github.apace100.origins.power.factories.PhasingPower;
 import io.github.apace100.origins.util.ClientHooks;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -14,31 +13,30 @@ import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.*;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(BackgroundRenderer.class)
 @Environment(EnvType.CLIENT)
 public abstract class BackgroundRendererMixin {
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;hasStatusEffect(Lnet/minecraft/entity/effect/StatusEffect;)Z", ordinal = 1), method = "render")
-    private static boolean hasStatusEffectProxy(LivingEntity player, StatusEffect effect) {
-        if(player instanceof PlayerEntity && effect == StatusEffects.NIGHT_VISION && !player.hasStatusEffect(StatusEffects.NIGHT_VISION)) {
-            return ModComponentsArchitectury.getOriginComponent(player).getPowers(NightVisionPower.class).stream().anyMatch(NightVisionPower::isActive);
-        }
-        return player.hasStatusEffect(effect);
-    }
+	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;hasStatusEffect(Lnet/minecraft/entity/effect/StatusEffect;)Z", ordinal = 1), method = "render")
+	private static boolean hasStatusEffectProxy(LivingEntity player, StatusEffect effect) {
+		if (player instanceof PlayerEntity p && effect == StatusEffects.NIGHT_VISION && !player.hasStatusEffect(StatusEffects.NIGHT_VISION)) {
+			return INightVisionPower.getNightVisionStrength(p).filter(x -> x > 0).isPresent();
+		}
+		return player.hasStatusEffect(effect);
+	}
 
-    @ModifyVariable(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/Camera;getFocusedEntity()Lnet/minecraft/entity/Entity;", ordinal = 0), ordinal = 0)
-    private static double modifyD(double original, Camera camera) {
-        if(camera.getFocusedEntity() instanceof PlayerEntity) {
-            if(OriginComponent.getPowers(camera.getFocusedEntity(), PhasingPower.class).stream().anyMatch(pp -> pp.getRenderType() == PhasingPower.RenderType.BLINDNESS)) {
-                if(ClientHooks.getInWallBlockState((PlayerEntity)camera.getFocusedEntity()) != null) {
-                    return 0;
-                }
-            }
-        }
-        return original;
-    }
+	@ModifyVariable(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/Camera;getFocusedEntity()Lnet/minecraft/entity/Entity;", ordinal = 0), ordinal = 0)
+	private static double modifyD(double original, Camera camera) {
+		if (camera.getFocusedEntity() instanceof PlayerEntity) {
+			if (PhasingPower.hasRenderMethod(camera.getFocusedEntity(), PhasingConfiguration.RenderType.BLINDNESS) && ClientHooks.getInWallBlockState((PlayerEntity) camera.getFocusedEntity()) != null)
+				return 0;
+		}
+		return original;
+	}
 
     /*@ModifyVariable(method = "applyFog", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;fogStart(F)V"), ordinal = 0)
     private static float modifyS(float original, Camera camera) {

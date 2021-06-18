@@ -9,9 +9,8 @@ import io.github.apace100.origins.api.power.configuration.ConfiguredPower;
 import io.github.apace100.origins.api.registry.OriginsBuiltinRegistries;
 import io.github.apace100.origins.api.registry.OriginsDynamicRegistries;
 import io.github.apace100.origins.networking.ModPackets;
-import io.github.apace100.origins.power.Power;
-import io.github.apace100.origins.power.PreventBlockUsePower;
-import io.github.apace100.origins.power.PreventItemUsePower;
+import io.github.apace100.origins.power.factories.PreventBlockActionPower;
+import io.github.apace100.origins.power.factories.PreventItemActionPower;
 import io.github.apace100.origins.registry.ModComponentsArchitectury;
 import io.github.apace100.origins.registry.ModOrigins;
 import io.github.apace100.origins.registry.OriginsDynamicRegistryManager;
@@ -54,21 +53,14 @@ public class OriginEventHandler {
 	}
 
 	private static ActionResult preventBlockUse(PlayerEntity player, Hand hand, BlockPos blockPos, Direction direction) {
-		if (OriginComponent.getPowers(player, PreventBlockUsePower.class).stream().anyMatch(p -> p.doesPrevent(player.getEntityWorld(), blockPos))) {
-			return ActionResult.FAIL;
-		}
-		return ActionResult.PASS;
+		return PreventBlockActionPower.isUsagePrevented(player, blockPos) ? ActionResult.FAIL : ActionResult.PASS;
 	}
 
 	private static TypedActionResult<ItemStack> preventItemUse(PlayerEntity user, Hand hand) {
 		if (user != null) {
-			OriginComponent component = ModComponentsArchitectury.getOriginComponent(user);
 			ItemStack stackInHand = user.getStackInHand(hand);
-			for (PreventItemUsePower piup : component.getPowers(PreventItemUsePower.class)) {
-				if (piup.doesPrevent(stackInHand)) {
-					return TypedActionResult.fail(stackInHand);
-				}
-			}
+			if (PreventItemActionPower.isUsagePrevented(user, stackInHand))
+				return TypedActionResult.fail(stackInHand);
 			return TypedActionResult.pass(user.getStackInHand(hand));
 		}
 		return TypedActionResult.pass(ItemStack.EMPTY);
@@ -88,13 +80,12 @@ public class OriginEventHandler {
 		ModComponentsArchitectury.syncWith(player, player);
 		OriginComponent.sync(player);
 		if (!component.hasAllOrigins()) {
-			if (component.checkAutoChoosingLayers(player, true)) {
+			if (component.checkAutoChoosingLayers(player, true))
 				component.sync();
-			}
 			if (component.hasAllOrigins()) {
-				component.getOrigins().values().forEach(o -> {
-					o.getPowerTypes().forEach(powerType -> component.getPower(powerType).onChosen(false));
-				});
+				component.getOrigins().values().stream()
+						.flatMap(o -> o.powers().stream())
+						.forEach(x -> component.getPower(x).onChosen(player, false));
 			} else {
 				PacketByteBuf data = new PacketByteBuf(Unpooled.buffer());
 				data.writeBoolean(true);
@@ -104,9 +95,7 @@ public class OriginEventHandler {
 	}
 
 	private static void respawn(ServerPlayerEntity serverPlayerEntity, boolean alive) {
-		if (!alive) {
-			List<Power> powers = ModComponentsArchitectury.getOriginComponent(serverPlayerEntity).getPowers();
-			powers.forEach(Power::onRespawn);
-		}
+		if (!alive)
+			ModComponentsArchitectury.getOriginComponent(serverPlayerEntity).getPowers().forEach(x -> x.onRespawn(serverPlayerEntity));
 	}
 }

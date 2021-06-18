@@ -6,6 +6,10 @@ import io.github.apace100.origins.api.IOriginsFeatureConfiguration;
 import java.util.Optional;
 
 public record FieldConfiguration<T>(T value) implements IOriginsFeatureConfiguration {
+	public static <T> FieldConfiguration<T> of(T value) {
+		return new FieldConfiguration<>(value);
+	}
+
 	public static <T> Codec<FieldConfiguration<T>> codec(Codec<T> codec, String fieldName, T defaultValue) {
 		return codec.optionalFieldOf(fieldName, defaultValue).xmap(FieldConfiguration::new, FieldConfiguration::value).codec();
 	}

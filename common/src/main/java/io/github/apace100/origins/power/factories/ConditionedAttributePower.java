@@ -5,7 +5,6 @@ import io.github.apace100.origins.api.power.factory.PowerFactory;
 import io.github.apace100.origins.power.configuration.ListConfiguration;
 import io.github.apace100.origins.power.configuration.power.ConditionedAttributeConfiguration;
 import io.github.apace100.origins.util.AttributedEntityAttributeModifier;
-import io.github.apace100.origins.util.OriginsCodecs;
 import net.minecraft.entity.attribute.EntityAttributeInstance;
 import net.minecraft.entity.player.PlayerEntity;
 
@@ -39,12 +38,12 @@ public class ConditionedAttributePower extends PowerFactory<ConditionedAttribute
 	}
 
 	@Override
-	protected int tickInterval(ConditionedAttributeConfiguration configuration, PlayerEntity player) {
-		return configuration.tickRate();
+	protected void onRemoved(ConditionedAttributeConfiguration configuration, PlayerEntity player) {
+		this.remove(configuration.modifiers(), player);
 	}
 
 	@Override
-	protected void onRemoved(ConditionedAttributeConfiguration configuration, PlayerEntity player) {
-		this.remove(configuration.modifiers(), player);
+	protected int tickInterval(ConditionedAttributeConfiguration configuration, PlayerEntity player) {
+		return configuration.tickRate();
 	}
 }

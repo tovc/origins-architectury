@@ -99,15 +99,15 @@ public abstract class PowerFactory<T extends IOriginsFeatureConfiguration> exten
 		return new ConfiguredPower<>(this, input, data);
 	}
 
-	public boolean shouldCheckConditions() {
+	protected boolean shouldCheckConditions() {
 		return this.allowConditions;
 	}
 
-	public boolean shouldTickWhenActive() {
+	protected boolean shouldTickWhenActive() {
 		return this.ticking;
 	}
 
-	public boolean shouldTickWhenInactive() {
+	protected boolean shouldTickWhenInactive() {
 		return this.tickingWhenInactive;
 	}
 

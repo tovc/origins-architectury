@@ -4,9 +4,10 @@ import io.github.apace100.origins.access.MovingEntity;
 import io.github.apace100.origins.access.WaterMovingEntity;
 import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.networking.ModPackets;
-import io.github.apace100.origins.power.*;
 import io.github.apace100.origins.power.factories.ActionOnLandPower;
 import io.github.apace100.origins.power.factories.EntityGlowPower;
+import io.github.apace100.origins.power.factories.InvulnerablePower;
+import io.github.apace100.origins.power.factories.PhasingPower;
 import io.github.apace100.origins.registry.ModComponentsArchitectury;
 import io.github.apace100.origins.registry.ModPowers;
 import io.netty.buffer.Unpooled;
@@ -108,14 +109,12 @@ public abstract class EntityMixin implements MovingEntity {
 
 	@Inject(at = @At("HEAD"), method = "isInvulnerableTo", cancellable = true)
 	private void makeOriginInvulnerable(DamageSource damageSource, CallbackInfoReturnable<Boolean> cir) {
-		if ((Object) this instanceof PlayerEntity) {
-			OriginComponent component = ModComponentsArchitectury.getOriginComponent((Entity) (Object) this);
-			if (!component.hasAllOrigins()) {
+		if ((Object) this instanceof PlayerEntity player) {
+			OriginComponent component = ModComponentsArchitectury.getOriginComponent(player);
+			if (!component.hasAllOrigins())
 				cir.setReturnValue(true);
-			}
-			if (component.getPowers(InvulnerablePower.class).stream().anyMatch(inv -> inv.doesApply(damageSource))) {
+			if (InvulnerablePower.isInvulnerableTo(player, damageSource))
 				cir.setReturnValue(true);
-			}
 		}
 	}
 
@@ -129,19 +128,14 @@ public abstract class EntityMixin implements MovingEntity {
 
 	@Inject(at = @At("HEAD"), method = "isInvisible", cancellable = true)
 	private void phantomInvisibility(CallbackInfoReturnable<Boolean> info) {
-		if (OriginComponent.hasPower((Entity) (Object) this, InvisibilityPower.class)) {
+		if (OriginComponent.hasPower((Entity) (Object) this, ModPowers.INVISIBILITY.get()))
 			info.setReturnValue(true);
-		}
 	}
 
 	@Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/util/math/BlockPos;<init>(DDD)V"), method = "pushOutOfBlocks", cancellable = true)
 	protected void pushOutOfBlocks(double x, double y, double z, CallbackInfo info) {
-		List<PhasingPower> powers = OriginComponent.getPowers((Entity) (Object) this, PhasingPower.class);
-		if (powers.size() > 0) {
-			if (powers.stream().anyMatch(phasingPower -> phasingPower.doesApply(new BlockPos(x, y, z)))) {
-				info.cancel();
-			}
-		}
+		if ((Entity) (Object) this instanceof LivingEntity livingEntity && PhasingPower.shouldPhaseThrough(livingEntity, new BlockPos(x, y, z)))
+			info.cancel();
 	}
 
 	@Inject(method = "move", at = @At("HEAD"))

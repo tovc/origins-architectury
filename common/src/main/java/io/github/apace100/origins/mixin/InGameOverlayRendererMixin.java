@@ -1,7 +1,8 @@
 package io.github.apace100.origins.mixin;
 
 import io.github.apace100.origins.api.component.OriginComponent;
-import io.github.apace100.origins.power.PhasingPower;
+import io.github.apace100.origins.power.factories.PhasingPower;
+import io.github.apace100.origins.registry.ModPowers;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -19,10 +20,7 @@ public class InGameOverlayRendererMixin {
 
     @Inject(method = "renderInWallOverlay", at = @At("HEAD"), cancellable = true)
     private static void preventInWallOverlayRendering(MinecraftClient minecraftClient, Sprite sprite, MatrixStack matrixStack, CallbackInfo ci) {
-        if(minecraftClient.cameraEntity != null) {
-            if(OriginComponent.getPowers(minecraftClient.cameraEntity, PhasingPower.class).size() > 0) {
-                ci.cancel();
-            }
-        }
+        if (minecraftClient.cameraEntity != null && OriginComponent.hasPower(minecraftClient.cameraEntity, ModPowers.PHASING.get()))
+            ci.cancel();
     }
 }

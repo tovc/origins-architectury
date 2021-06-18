@@ -1,6 +1,7 @@
 package io.github.apace100.origins.mixin;
 
 import io.github.apace100.origins.api.component.OriginComponent;
+import io.github.apace100.origins.api.power.IInventoryPower;
 import io.github.apace100.origins.power.*;
 import io.github.apace100.origins.power.factories.ActionOnWakeUpPower;
 import io.github.apace100.origins.power.factories.RestrictArmorPower;
@@ -17,6 +18,7 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.fluid.Fluid;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.particle.ParticleTypes;
@@ -96,7 +98,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements Nameable
 	// ModifyExhaustion
 	@ModifyVariable(at = @At("HEAD"), method = "addExhaustion", ordinal = 0, name = "exhaustion")
 	private float modifyExhaustion(float exhaustionIn) {
-		return OriginComponent.modify(this, ModifyExhaustionPower.class, exhaustionIn);
+		return OriginComponent.modify(this, ModPowers.MODIFY_EXHAUSTION.get(), exhaustionIn);
 	}
 
 	// NO_COBWEB_SLOWDOWN
@@ -107,17 +109,21 @@ public abstract class PlayerEntityMixin extends LivingEntity implements Nameable
 		}
 	}
 
+	@SuppressWarnings({"unchecked", "rawtypes"})
 	@Inject(method = "dropInventory", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerInventory;dropAll()V"))
 	private void dropAdditionalInventory(CallbackInfo ci) {
-		OriginComponent.getPowers(this, InventoryPower.class).forEach(inventory -> {
-			if (inventory.shouldDropOnDeath()) {
-				for (int i = 0; i < inventory.size(); ++i) {
-					ItemStack itemStack = inventory.getStack(i);
-					if (inventory.shouldDropOnDeath(itemStack)) {
+		PlayerEntity thisPlayer = (PlayerEntity) (LivingEntity) this;
+		ModComponentsArchitectury.getOriginComponent(this).getPowers().stream().filter(x -> x.isActive(thisPlayer) && x.getFactory() instanceof IInventoryPower).forEach(x -> {
+			IInventoryPower power = (IInventoryPower<?>) x.getFactory();
+			if (power.shouldDropOnDeath(x, thisPlayer)) {
+				Inventory inventory = power.getInventory(x, thisPlayer);
+				for (int i = 0; i < this.inventory.size(); ++i) {
+					ItemStack itemStack = this.inventory.getStack(i);
+					if (power.shouldDropOnDeath(x, thisPlayer, itemStack)) {
 						if (!itemStack.isEmpty() && EnchantmentHelper.hasVanishingCurse(itemStack)) {
 							inventory.removeStack(i);
 						} else {
-							((PlayerEntity) (Object) this).dropItem(itemStack, true, false);
+							thisPlayer.dropItem(itemStack, true, false);
 							inventory.setStack(i, ItemStack.EMPTY);
 						}
 					}

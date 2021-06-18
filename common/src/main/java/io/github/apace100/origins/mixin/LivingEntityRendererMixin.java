@@ -1,8 +1,9 @@
 package io.github.apace100.origins.mixin;
 
 import io.github.apace100.origins.api.component.OriginComponent;
-import io.github.apace100.origins.power.InvisibilityPower;
-import io.github.apace100.origins.power.ModelColorPower;
+import io.github.apace100.origins.api.power.ConfiguredFactory;
+import io.github.apace100.origins.power.configuration.power.ColorConfiguration;
+import io.github.apace100.origins.power.factories.InvisibilityPower;
 import io.github.apace100.origins.registry.ModPowers;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -20,7 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
-import java.util.List;
+import java.util.Optional;
 
 @Mixin(LivingEntityRenderer.class)
 public abstract class LivingEntityRendererMixin extends EntityRenderer<LivingEntity> {
@@ -38,19 +39,14 @@ public abstract class LivingEntityRendererMixin extends EntityRenderer<LivingEnt
 
     @Inject(method = "render", at = @At(value = "HEAD"), cancellable = true)
     private void preventPumpkinRendering(LivingEntity livingEntity, float f, float g, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, CallbackInfo info) {
-        List<InvisibilityPower> invisibilityPowers = OriginComponent.getPowers(livingEntity, InvisibilityPower.class);
-        if(invisibilityPowers.size() > 0 && invisibilityPowers.stream().noneMatch(InvisibilityPower::shouldRenderArmor)) {
+        if(InvisibilityPower.isArmorHidden(livingEntity))
             info.cancel();
-        }
     }
 
     @ModifyVariable(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/VertexConsumerProvider;getBuffer(Lnet/minecraft/client/render/RenderLayer;)Lnet/minecraft/client/render/VertexConsumer;", shift = At.Shift.BEFORE))
     private RenderLayer changeRenderLayerWhenTranslucent(RenderLayer original, LivingEntity entity) {
-        if(entity instanceof PlayerEntity) {
-            if(OriginComponent.getPowers(entity, ModelColorPower.class).stream().anyMatch(ModelColorPower::isTranslucent)) {
-                return RenderLayer.getItemEntityTranslucentCull(getTexture(entity));
-            }
-        }
+        if (entity instanceof PlayerEntity player && OriginComponent.getPowers(player, ModPowers.MODEL_COLOR.get()).stream().map(ConfiguredFactory::getConfiguration).anyMatch(x -> x.alpha() < 1.0F))
+            return RenderLayer.getItemEntityTranslucentCull(getTexture(entity));
         return original;
     }
 
@@ -58,8 +54,8 @@ public abstract class LivingEntityRendererMixin extends EntityRenderer<LivingEnt
     @ModifyArgs(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/entity/model/EntityModel;render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;IIFFFF)V", ordinal = 0))
     private <T extends LivingEntity> void renderColorChangedModel(Args args, LivingEntity player, float f, float g, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i) {
         if(player instanceof PlayerEntity) {
-            List<ModelColorPower> modelColorPowers = OriginComponent.getPowers(player, ModelColorPower.class);
-            if (!modelColorPowers.isEmpty()) {
+            Optional<ColorConfiguration> configuration = ColorConfiguration.forPower(player, ModPowers.MODEL_COLOR.get());
+            if (configuration.isPresent()) {
                 //Mixin is being weird.
                 //Basically: if there is a redirect, args[0] is a Model
                 // otherwise args[0] is the MatrixStack
@@ -67,10 +63,10 @@ public abstract class LivingEntityRendererMixin extends EntityRenderer<LivingEnt
                 int green = args.size() - 3;
                 int blue = args.size() - 2;
                 int alpha = args.size() - 1;
-                args.set(red, args.<Float>get(red) * modelColorPowers.stream().map(ModelColorPower::getRed).reduce(1.0F, (a, b) -> a * b));
-                args.set(green, args.<Float>get(green) * modelColorPowers.stream().map(ModelColorPower::getGreen).reduce(1.0F, (a, b) -> a * b));
-                args.set(blue, args.<Float>get(blue) * modelColorPowers.stream().map(ModelColorPower::getBlue).reduce(1.0F, (a, c) -> a * c));
-                args.set(alpha, args.<Float>get(alpha) * modelColorPowers.stream().map(ModelColorPower::getAlpha).min(Float::compare).orElseThrow(RuntimeException::new));
+                args.set(red, args.<Float>get(red) * configuration.get().red());
+                args.set(green, args.<Float>get(green) * configuration.get().green());
+                args.set(blue, args.<Float>get(blue) * configuration.get().blue());
+                args.set(alpha, args.<Float>get(alpha) * configuration.get().alpha());
             }
         }
     }

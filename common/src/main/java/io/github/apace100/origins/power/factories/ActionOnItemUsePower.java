@@ -28,9 +28,9 @@ public class ActionOnItemUsePower extends PowerFactory<ActionOnItemUseConfigurat
 
 	public void executeActions(ConfiguredPower<ActionOnItemUseConfiguration, ?> factory, PlayerEntity player, ItemStack stack) {
 		ActionOnItemUseConfiguration configuration = factory.getConfiguration();
-		if(configuration.itemAction() != null)
+		if (configuration.itemAction() != null)
 			configuration.itemAction().execute(stack);
-		if(configuration.entityAction() != null)
+		if (configuration.entityAction() != null)
 			configuration.entityAction().execute(player);
 	}
 }

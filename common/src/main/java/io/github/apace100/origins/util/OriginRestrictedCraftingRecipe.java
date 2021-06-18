@@ -2,7 +2,7 @@ package io.github.apace100.origins.util;
 
 import com.google.common.collect.Lists;
 import io.github.apace100.origins.api.component.OriginComponent;
-import io.github.apace100.origins.power.RecipePower;
+import io.github.apace100.origins.registry.ModPowers;
 import io.github.apace100.origins.registry.ModRecipes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.CraftingInventory;
@@ -22,57 +22,56 @@ import java.util.stream.Collectors;
 
 public class OriginRestrictedCraftingRecipe extends SpecialCraftingRecipe {
 
-    public OriginRestrictedCraftingRecipe(Identifier id) {
-        super(id);
-    }
+	public OriginRestrictedCraftingRecipe(Identifier id) {
+		super(id);
+	}
 
-    @Override
-    public boolean matches(CraftingInventory inv, World world) {
-        return getRecipes(inv).stream().anyMatch(r -> r.matches(inv, world));
-    }
+	@Override
+	public boolean matches(CraftingInventory inv, World world) {
+		return getRecipes(inv).stream().anyMatch(r -> r.matches(inv, world));
+	}
 
-    @Override
-    public ItemStack craft(CraftingInventory inv) {
-        PlayerEntity player = getPlayerFromInventory(inv);
-        if(player != null) {
-            Optional<Recipe<CraftingInventory>> optional = getRecipes(inv).stream().filter(r -> r.matches(inv, player.world)).findFirst();
-            if(optional.isPresent()) {
-                Recipe<CraftingInventory> recipe = optional.get();
-                return recipe.craft(inv);
-            }
-        }
-        return ItemStack.EMPTY;
-    }
+	@Override
+	public ItemStack craft(CraftingInventory inv) {
+		PlayerEntity player = getPlayerFromInventory(inv);
+		if (player != null) {
+			Optional<Recipe<CraftingInventory>> optional = getRecipes(inv).stream().filter(r -> r.matches(inv, player.world)).findFirst();
+			if (optional.isPresent()) {
+				Recipe<CraftingInventory> recipe = optional.get();
+				return recipe.craft(inv);
+			}
+		}
+		return ItemStack.EMPTY;
+	}
 
-    @Override
-    public boolean fits(int width, int height) {
-        return true;
-    }
+	@Override
+	public boolean fits(int width, int height) {
+		return true;
+	}
 
-    @Override
-    public RecipeSerializer<?> getSerializer() {
-        return ModRecipes.ORIGIN_RESTRICTED;
-    }
+	@Override
+	public RecipeSerializer<?> getSerializer() {
+		return ModRecipes.ORIGIN_RESTRICTED;
+	}
 
-    private PlayerEntity getPlayerFromInventory(CraftingInventory inv) {
-        return getPlayerFromHandler(inv.handler);
-    }
+	private PlayerEntity getPlayerFromInventory(CraftingInventory inv) {
+		return getPlayerFromHandler(inv.handler);
+	}
 
-    private List<Recipe<CraftingInventory>> getRecipes(CraftingInventory inv) {
-        PlayerEntity player = getPlayerFromHandler(inv.handler);
-        if(player != null) {
-            return OriginComponent.getPowers(player, RecipePower.class).stream().map(RecipePower::getRecipe).collect(Collectors.toList());
-        }
-        return Lists.newArrayList();
-    }
+	@SuppressWarnings("unchecked")
+	private List<Recipe<CraftingInventory>> getRecipes(CraftingInventory inv) {
+		PlayerEntity player = getPlayerFromHandler(inv.handler);
+		if (player != null) {
+			return OriginComponent.getPowers(player, ModPowers.RECIPE.get()).stream().map(x -> (Recipe<CraftingInventory>) x.getConfiguration().value()).collect(Collectors.toList());
+		}
+		return Lists.newArrayList();
+	}
 
-    private PlayerEntity getPlayerFromHandler(ScreenHandler screenHandler) {
-        if(screenHandler instanceof CraftingScreenHandler) {
-            return ((CraftingScreenHandler) screenHandler).player;
-        }
-        if(screenHandler instanceof PlayerScreenHandler) {
-            return ((PlayerScreenHandler) screenHandler).owner;
-        }
-        return null;
-    }
+	private PlayerEntity getPlayerFromHandler(ScreenHandler screenHandler) {
+		if (screenHandler instanceof CraftingScreenHandler)
+			return ((CraftingScreenHandler) screenHandler).player;
+		if (screenHandler instanceof PlayerScreenHandler)
+			return ((PlayerScreenHandler) screenHandler).owner;
+		return null;
+	}
 }

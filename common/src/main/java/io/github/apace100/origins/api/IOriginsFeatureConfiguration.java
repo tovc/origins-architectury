@@ -26,6 +26,21 @@ public interface IOriginsFeatureConfiguration {
 	}
 
 	/**
+	 * Returns a list of all warnings that appear during the configuration of this feature.<br/>
+	 * If something that really should be here is missing, but it was marked as optional, this
+	 * should be written here.
+	 */
+	@NotNull
+	default List<String> getWarnings(@NotNull MinecraftServer server) {
+		return ImmutableList.of();
+	}
+
+	/**
+	 * This is used to check whether this configuration is valid. i.e. if there is a point in executing the power.
+	 */
+	default boolean isConfigurationValid() { return true; }
+
+	/**
 	 * Returns a list of powers that are not registered in the dynamic registry.
 	 * @param dynamicRegistryManager The dynamic registry manager, use {@link OriginsDynamicRegistries#get(MinecraftServer)} to access it.
 	 * @param identifiers The powers to check the existence of.
@@ -41,4 +56,5 @@ public interface IOriginsFeatureConfiguration {
 		}
 		return builder.build();
 	}
+
 }

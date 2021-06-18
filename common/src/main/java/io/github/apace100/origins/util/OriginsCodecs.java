@@ -1,6 +1,8 @@
 package io.github.apace100.origins.util;
 
 import com.google.common.collect.*;
+import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -25,6 +27,9 @@ import net.minecraft.fluid.Fluid;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.StringNbtReader;
+import net.minecraft.particle.ParticleEffect;
+import net.minecraft.particle.ParticleType;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.tag.ServerTagManagerHolder;
@@ -37,6 +42,7 @@ import net.minecraft.world.GameMode;
 import net.minecraft.world.LightType;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.gen.feature.StructureFeature;
 
 import java.util.*;
 import java.util.function.Function;
@@ -129,10 +135,15 @@ public class OriginsCodecs {
 	//Simple Codecs
 	public static final Codec<PowerType<?>> POWER_TYPE = FUZZY_IDENTIFIER.xmap(PowerTypeReference::new, PowerType::getIdentifier);
 	public static final Codec<RegistryKey<World>> DIMENSION = Identifier.CODEC.xmap(x -> RegistryKey.of(Registry.DIMENSION, x), RegistryKey::getValue);
+	public static final Codec<RegistryKey<Biome>> BIOME = Identifier.CODEC.xmap(x -> RegistryKey.of(Registry.BIOME_KEY, x), RegistryKey::getValue);
 	public static final Codec<EntityGroup> ENTITY_GROUP = mappedCodec(Codec.STRING, ImmutableBiMap.of("default", EntityGroup.DEFAULT, "undead", EntityGroup.UNDEAD, "arthropod", EntityGroup.ARTHROPOD, "illager", EntityGroup.ILLAGER, "aquatic", EntityGroup.AQUATIC));
 	public static final Codec<Ingredient> INGREDIENT = new IngredientCodec();
 	//Registry Codecs
 	public static final Codec<Optional<EntityAttribute>> OPTIONAL_ATTRIBUTE = optionalRegistry(Registry.ATTRIBUTE::getOrEmpty, Registry.ATTRIBUTE::getId);
+	/**
+	 * Use {@link #BIOME} instead.
+	 */
+	@Deprecated
 	public static final Codec<Optional<Biome>> OPTIONAL_BIOME = optionalRegistry(BuiltinRegistries.BIOME::getOrEmpty, BuiltinRegistries.BIOME::getId);
 	public static final Codec<Optional<Block>> OPTIONAL_BLOCK = optionalRegistry(Registry.BLOCK::getOrEmpty, Registry.BLOCK::getId);
 	public static final Codec<Optional<EntityType<?>>> OPTIONAL_ENTITY_TYPE = optionalRegistry(Registry.ENTITY_TYPE::getOrEmpty, Registry.ENTITY_TYPE::getId);
@@ -140,6 +151,13 @@ public class OriginsCodecs {
 	public static final Codec<Optional<Item>> OPTIONAL_ITEM = optionalRegistry(Registry.ITEM::getOrEmpty, Registry.ITEM::getId);
 	public static final Codec<Optional<StatusEffect>> OPTIONAL_STATUS_EFFECT = optionalRegistry(Registry.STATUS_EFFECT::getOrEmpty, Registry.STATUS_EFFECT::getId);
 	public static final Codec<Optional<SoundEvent>> OPTIONAL_SOUND_EVENT = optionalRegistry(Registry.SOUND_EVENT::getOrEmpty, Registry.SOUND_EVENT::getId);
+	public static final Codec<Optional<StructureFeature<?>>> OPTIONAL_STRUCTURE_FEATURE = optionalRegistry(Registry.STRUCTURE_FEATURE::getOrEmpty, Registry.STRUCTURE_FEATURE::getId);
+	public static final Codec<Optional<ParticleType<?>>> OPTIONAL_PARTICLE_TYPE = optionalRegistry(Registry.PARTICLE_TYPE::getOrEmpty, Registry.PARTICLE_TYPE::getId);
+
+	public static final Codec<Optional<ParticleEffect>> PARTICLE_EFFECT = OPTIONAL_PARTICLE_TYPE.comapFlatMap(
+			x -> x.map(type -> type instanceof ParticleEffect effect ? DataResult.success(Optional.of(effect)) : DataResult.<Optional<ParticleEffect>>error("Particle type " + Registry.PARTICLE_TYPE.getId(type) + " isn't a simple particle type"))
+					.orElseGet(() -> DataResult.success(Optional.empty())),
+			x -> x.map(ParticleEffect::getType));
 
 	public static final Codec<Optional<AttributedEntityAttributeModifier>> OPTIONAL_ATTRIBUTED_ATTRIBUTE_MODIFIER = RecordCodecBuilder.create(instance -> instance.group(
 			OPTIONAL_ATTRIBUTE.fieldOf("attribute").forGetter(x -> x.map(AttributedEntityAttributeModifier::attribute)),
@@ -155,6 +173,14 @@ public class OriginsCodecs {
 		compoundTag.ifPresent(is::setTag);
 		return is;
 	})));
+
+	public static final Codec<CompoundTag> NBT = Codec.STRING.flatXmap(x -> {
+		try {
+			return DataResult.success(new StringNbtReader(new StringReader(x)).parseCompoundTag());
+		} catch (CommandSyntaxException e) {
+			return DataResult.error("Could not parse NBT tag, exception: " + e.getMessage());
+		}
+	}, x -> DataResult.success(x.toString()));
 
 	public static final Codec<ItemStack> ITEM_OR_ITEM_STACK = Codec.either(OPTIONAL_ITEM.xmap(x -> x.map(ItemStack::new), x -> x.map(ItemStack::getItem)), ITEM_STACK)
 			.xmap(x -> x.map(Function.identity(), Function.identity()).orElse(ItemStack.EMPTY), x -> Either.right(x.isEmpty() ? Optional.empty() : Optional.of(x)));

@@ -69,11 +69,10 @@ public interface OriginComponent {
 
 	static <T extends IOriginsFeatureConfiguration, F extends PowerFactory<T> & IValueModifyingPower<T>> double modify(Entity entity, F factory, double baseValue, Predicate<ConfiguredPower<T, F>> powerFilter, Consumer<ConfiguredPower<T, F>> powerAction) {
 		if (entity instanceof PlayerEntity player) {
-			List<ConfiguredPower<T, F>> powers = ModComponentsArchitectury.getOriginComponent(entity).getPowers(factory).stream()
-					.filter(p -> powerFilter == null || powerFilter.test(p)).toList();
-			List<EntityAttributeModifier> mps = powers.stream().flatMap(p -> p.getFactory().getModifiers(p, player).stream()).collect(Collectors.toList());
+			List<ConfiguredPower<T, F>> powers = OriginComponent.getPowers(player, factory).stream().filter(x -> powerFilter == null || powerFilter.test(x)).toList();
+			List<EntityAttributeModifier> modifiers = powers.stream().flatMap(x -> x.getFactory().getModifiers(x, player).stream()).toList();
 			if (powerAction != null) powers.forEach(powerAction);
-			return AttributeUtil.sortAndApplyModifiers(mps, baseValue);
+			return AttributeUtil.applyModifiers(modifiers, baseValue);
 		}
 		return baseValue;
 	}

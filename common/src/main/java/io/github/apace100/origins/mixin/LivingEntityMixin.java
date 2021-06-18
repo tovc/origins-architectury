@@ -2,11 +2,10 @@ package io.github.apace100.origins.mixin;
 
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.api.component.OriginComponent;
-import io.github.apace100.origins.power.*;
-import io.github.apace100.origins.power.factories.AttackerActionWhenHitPower;
-import io.github.apace100.origins.power.factories.ClimbingPower;
-import io.github.apace100.origins.power.factories.EffectImmunityPower;
-import io.github.apace100.origins.power.factories.SelfActionWhenHitPower;
+import io.github.apace100.origins.api.power.configuration.ConfiguredPower;
+import io.github.apace100.origins.api.power.factory.power.AttributeModifyingPowerFactory;
+import io.github.apace100.origins.power.configuration.FieldConfiguration;
+import io.github.apace100.origins.power.factories.*;
 import io.github.apace100.origins.registry.ModComponentsArchitectury;
 import io.github.apace100.origins.registry.ModPowers;
 import net.fabricmc.api.EnvType;
@@ -50,7 +49,7 @@ public abstract class LivingEntityMixin extends Entity {
 
     @Inject(method = "canWalkOnFluid", at = @At("HEAD"), cancellable = true)
     private void modifyWalkableFluids(Fluid fluid, CallbackInfoReturnable<Boolean> info) {
-        if(OriginComponent.getPowers(this, WalkOnFluidPower.class).stream().anyMatch(p -> fluid.isIn(p.getFluidTag()))) {
+        if(OriginComponent.getPowers(this, ModPowers.WALK_ON_FLUID.get()).stream().anyMatch(p -> fluid.isIn(p.getConfiguration().value()))) {
             info.setReturnValue(true);
             info.cancel();
         }
@@ -66,15 +65,19 @@ public abstract class LivingEntityMixin extends Entity {
                 //SelfActionOnHit
                 //TargetActionOnHit
             }
-            OriginComponent.getPowers(source.getAttacker(), SelfActionOnHitPower.class).forEach(p -> p.onHit((LivingEntity)(Object)this, source, amount));
-            OriginComponent.getPowers(source.getAttacker(), TargetActionOnHitPower.class).forEach(p -> p.onHit((LivingEntity)(Object)this, source, amount));
+            if (source.getAttacker() instanceof PlayerEntity attacker && (Entity) (this) instanceof LivingEntity living) {
+                SelfCombatActionPower.onHit(attacker, living, source, amount);
+                TargetCombatActionPower.onHit(attacker, living, source, amount);
+            }
         }
     }
 
     //TODO Move this to an event.
     @Inject(method = "damage", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;onDeath(Lnet/minecraft/entity/damage/DamageSource;)V"))
     private void invokeKillAction(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
-        OriginComponent.getPowers(source.getAttacker(), SelfActionOnKillPower.class).forEach(p -> p.onKill((LivingEntity)(Object)this, source, amount));
+        if (source.getAttacker() instanceof PlayerEntity attacker && (Entity) (this) instanceof LivingEntity living) {
+            SelfCombatActionPower.onKill(attacker, living, source, amount);
+        }
     }
 
     // ModifyLavaSpeedPower
@@ -84,7 +87,7 @@ public abstract class LivingEntityMixin extends Entity {
         @Constant(doubleValue = 0.5D, ordinal = 2)
     })
     private double modifyLavaSpeed(double original) {
-        return OriginComponent.modify(this, ModifyLavaSpeedPower.class, original);
+        return OriginComponent.modify(this, ModPowers.MODIFY_LAVA_SPEED.get(), original);
     }
 
     @Redirect(method = "baseTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;isWet()Z"))
@@ -100,12 +103,12 @@ public abstract class LivingEntityMixin extends Entity {
     public void getGroup(CallbackInfoReturnable<EntityGroup> info) {
         if((Object)this instanceof PlayerEntity) {
             OriginComponent component = ModComponentsArchitectury.getOriginComponent(this);
-            List<SetEntityGroupPower> groups = component.getPowers(SetEntityGroupPower.class);
+            List<ConfiguredPower<FieldConfiguration<EntityGroup>, EntityGroupPower>> groups = component.getPowers(ModPowers.ENTITY_GROUP.get());
             if(groups.size() > 0) {
                 if(groups.size() > 1) {
                     Origins.LOGGER.warn("Player " + this.getDisplayName().toString() + " has two instances of SetEntityGroupPower.");
                 }
-                info.setReturnValue(groups.get(0).group);
+                info.setReturnValue(groups.get(0).getConfiguration().value());
             }
         }
     }
@@ -120,26 +123,8 @@ public abstract class LivingEntityMixin extends Entity {
     // CLIMBING
     @Inject(at = @At("RETURN"), method = "isClimbing", cancellable = true)
     public void doSpiderClimbing(CallbackInfoReturnable<Boolean> info) {
-        if(!info.getReturnValue()) {
-            if((Entity)this instanceof PlayerEntity player) {
-                if (ClimbingPower.check(player, t -> this.climbingPos = Optional.of(t)));
-                /*List<ClimbingPower> climbingPowers = ModComponentsArchitectury.getOriginComponent((Entity)this).getPowers(ClimbingPower.class, true);
-                if(climbingPowers.size() > 0) {
-                    if(climbingPowers.stream().anyMatch(ClimbingPower::isActive)) {
-                        BlockPos pos = getBlockPos();
-                        this.climbingPos = Optional.of(pos);
-                        //origins_lastClimbingPos = getPos();
-                        info.setReturnValue(true);
-                    } else if(isHoldingOntoLadder()) {
-                        //if(origins_lastClimbingPos != null && isHoldingOntoLadder()) {
-                            if(climbingPowers.stream().anyMatch(ClimbingPower::canHold)) {
-                                    info.setReturnValue(true);
-                            }
-                        //}
-                    }
-                }*/
-            }
-        }
+        if (!info.getReturnValue() && (Entity) this instanceof PlayerEntity player && ClimbingPower.check(player, t -> this.climbingPos = Optional.of(t)))
+            info.setReturnValue(true);
     }
 
     // WATER_BREATHING
@@ -153,18 +138,18 @@ public abstract class LivingEntityMixin extends Entity {
     // SWIM_SPEED
     @Redirect(method = "travel", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;updateVelocity(FLnet/minecraft/util/math/Vec3d;)V", ordinal = 0))
     public void modifyUnderwaterMovementSpeed(LivingEntity livingEntity, float speedMultiplier, Vec3d movementInput) {
-        livingEntity.updateVelocity(OriginComponent.modify(livingEntity, ModifySwimSpeedPower.class, speedMultiplier), movementInput);
+        livingEntity.updateVelocity((float) AttributeModifyingPowerFactory.apply(this, ModPowers.MODIFY_SWIM_SPEED.get(), speedMultiplier), movementInput);
     }
 
     @ModifyConstant(method = "swimUpward", constant = @Constant(doubleValue = 0.03999999910593033D))
     public double modifyUpwardSwimming(double original) {
-        return OriginComponent.modify(this, ModifySwimSpeedPower.class, original);
+        return AttributeModifyingPowerFactory.apply(this, ModPowers.MODIFY_SWIM_SPEED.get(), original);//OriginComponent.modify(this, ModifySwimSpeedPower.class, original);
     }
 
     @Environment(EnvType.CLIENT)
     @ModifyConstant(method = "knockDownwards", constant = @Constant(doubleValue = -0.03999999910593033D))
     public double swimDown(double original) {
-        return OriginComponent.modify(this, ModifySwimSpeedPower.class, original);
+        return AttributeModifyingPowerFactory.apply(this, ModPowers.MODIFY_SWIM_SPEED.get(), original);
     }
 
     // LIKE_WATER
@@ -189,11 +174,7 @@ public abstract class LivingEntityMixin extends Entity {
 
     @Inject(method = "tryUseTotem", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Hand;values()[Lnet/minecraft/util/Hand;"), cancellable = true)
     private void preventDeath(DamageSource source, CallbackInfoReturnable<Boolean> cir) {
-        Optional<PreventDeathPower> preventDeathPower = OriginComponent.getPowers(this, PreventDeathPower.class).stream().filter(p -> p.doesApply(source, cachedDamageAmount)).findFirst();
-        if(preventDeathPower.isPresent()) {
-            this.setHealth(1.0F);
-            preventDeathPower.get().executeAction();
+        if (PreventDeathPower.tryPreventDeath((LivingEntity) (Entity) this, source, cachedDamageAmount))
             cir.setReturnValue(true);
-        }
     }
 }

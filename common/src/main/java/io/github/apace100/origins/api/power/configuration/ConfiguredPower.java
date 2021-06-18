@@ -34,7 +34,7 @@ public final class ConfiguredPower<C extends IOriginsFeatureConfiguration, F ext
 	}
 
 	public boolean isActive(PlayerEntity player) {
-		return this.getFactory().isActive(this, player);
+		return this.getConfiguration().isConfigurationValid() && this.getFactory().isActive(this, player);
 	}
 
 	public void onChosen(PlayerEntity player, boolean isOrbOfOrigin) {
@@ -51,6 +51,10 @@ public final class ConfiguredPower<C extends IOriginsFeatureConfiguration, F ext
 
 	public void onAdded(PlayerEntity player) {
 		this.getFactory().onAdded(this, player);
+	}
+
+	public void onRespawn(PlayerEntity player) {
+		this.getFactory().onRespawn(this, player);
 	}
 
 	public <C> C getPowerData(PlayerEntity player, Supplier<? extends C> supplier) {
