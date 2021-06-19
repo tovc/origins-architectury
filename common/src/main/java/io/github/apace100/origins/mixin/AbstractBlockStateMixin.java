@@ -1,8 +1,7 @@
 package io.github.apace100.origins.mixin;
 
 import io.github.apace100.origins.access.EntityShapeContextAccessor;
-import io.github.apace100.origins.api.component.OriginComponent;
-import io.github.apace100.origins.power.factories.PhasingPower;
+import io.github.apace100.origins.power.PhasingPower;
 import net.minecraft.block.*;
 import net.minecraft.block.pattern.CachedBlockPosition;
 import net.minecraft.entity.Entity;

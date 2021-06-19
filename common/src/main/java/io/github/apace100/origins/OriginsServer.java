@@ -1,7 +1,6 @@
 package io.github.apace100.origins;
 
-import io.github.apace100.origins.power.factory.condition.EntityConditionsServer;
-import net.fabricmc.api.DedicatedServerModInitializer;
+import io.github.apace100.origins.factory.condition.EntityConditionsServer;
 
 public class OriginsServer {
 

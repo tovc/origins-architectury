@@ -1,6 +1,6 @@
 package io.github.apace100.origins.mixin.fabric;
 
-import io.github.apace100.origins.power.factories.ModifyDamageDealtPower;
+import io.github.apace100.origins.power.ModifyDamageDealtPower;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;

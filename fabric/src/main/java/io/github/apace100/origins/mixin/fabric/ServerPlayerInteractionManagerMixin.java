@@ -1,9 +1,7 @@
 package io.github.apace100.origins.mixin.fabric;
 
-import io.github.apace100.origins.api.component.OriginComponent;
-import io.github.apace100.origins.power.factories.ActionOnBlockBreakPower;
-import io.github.apace100.origins.power.factories.ModifyHarvestPower;
-import io.github.apace100.origins.registry.ModPowers;
+import io.github.apace100.origins.power.ActionOnBlockBreakPower;
+import io.github.apace100.origins.power.ModifyHarvestPower;
 import io.github.apace100.origins.util.SavedBlockPosition;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;

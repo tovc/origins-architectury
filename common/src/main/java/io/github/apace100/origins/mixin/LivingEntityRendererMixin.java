@@ -2,8 +2,8 @@ package io.github.apace100.origins.mixin;
 
 import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.api.power.ConfiguredFactory;
-import io.github.apace100.origins.power.configuration.power.ColorConfiguration;
-import io.github.apace100.origins.power.factories.InvisibilityPower;
+import io.github.apace100.origins.power.configuration.ColorConfiguration;
+import io.github.apace100.origins.power.InvisibilityPower;
 import io.github.apace100.origins.registry.ModPowers;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;

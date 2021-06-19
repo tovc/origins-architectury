@@ -1,6 +1,6 @@
 package io.github.apace100.origins;
 
-import io.github.apace100.origins.power.factories.ParticlePower;
+import io.github.apace100.origins.power.ParticlePower;
 import io.github.apace100.origins.registry.OriginsDynamicRegistryManager;
 import me.shedaniel.architectury.event.events.TickEvent;
 import me.shedaniel.architectury.event.events.client.ClientLifecycleEvent;

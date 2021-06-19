@@ -2,14 +2,20 @@ package io.github.apace100.origins;
 
 import io.github.apace100.origins.api.OriginsAPI;
 import io.github.apace100.origins.command.*;
+import io.github.apace100.origins.data.OriginLayerLoader;
+import io.github.apace100.origins.data.OriginLoader;
+import io.github.apace100.origins.data.PowerLoader;
 import io.github.apace100.origins.networking.ModPacketsC2S;
 import io.github.apace100.origins.origin.Origin;
 import io.github.apace100.origins.origin.OriginLayers;
 import io.github.apace100.origins.origin.OriginManager;
 import io.github.apace100.origins.power.PowerTypes;
-import io.github.apace100.origins.power.factory.PowerFactories;
-import io.github.apace100.origins.power.factory.condition.*;
+import io.github.apace100.origins.factory.PowerFactories;
+import io.github.apace100.origins.factory.condition.*;
 import io.github.apace100.origins.registry.*;
+import io.github.apace100.origins.registry.action.ModBlockActions;
+import io.github.apace100.origins.registry.action.ModEntityActions;
+import io.github.apace100.origins.registry.action.ModItemActions;
 import io.github.apace100.origins.util.ChoseOriginCriterion;
 import io.github.apace100.origins.util.GainedPowerCriterion;
 import io.github.apace100.origins.util.OriginsConfigSerializer;
@@ -53,16 +59,16 @@ public class Origins {
 		ModEntities.register();
 		ModLoot.registerLootTables();
 		ModRecipes.register();
-		PowerFactories.register();
+		ModPowers.register();
 		EntityConditions.register();
 		ItemConditions.register();
 		BlockConditions.register();
 		DamageConditions.register();
 		FluidConditions.register();
 		BiomeConditions.register();
-		EntityActions.register();
-		ItemActions.register();
-		BlockActions.register();
+		ModEntityActions.register();
+		ModItemActions.register();
+		ModBlockActions.register();
 		Origin.init();
 		OriginEventHandler.register();
 		CommandRegistrationEvent.EVENT.register((dispatcher, dedicated) -> {
@@ -71,13 +77,14 @@ public class Origins {
 		});
 		CriteriaTriggersRegistry.register(ChoseOriginCriterion.INSTANCE);
 		CriteriaTriggersRegistry.register(GainedPowerCriterion.INSTANCE);
-		ArgumentTypes.register("conditionedOrigins:origin", OriginArgument.class, new ConstantArgumentSerializer<>(OriginArgument::origin));
-		ArgumentTypes.register("conditionedOrigins:layer", LayerArgument.class, new ConstantArgumentSerializer<>(LayerArgument::layer));
-		ArgumentTypes.register("conditionedOrigins:power", PowerArgument.class, new ConstantArgumentSerializer<>(PowerArgument::power));
-		ArgumentTypes.register("conditionedOrigins:power_operation", PowerOperation.class, new ConstantArgumentSerializer<>(PowerOperation::operation));
-		ReloadListeners.registerReloadListener(ResourceType.SERVER_DATA, new PowerTypes());
-		ReloadListeners.registerReloadListener(ResourceType.SERVER_DATA, new OriginManager());
-		ReloadListeners.registerReloadListener(ResourceType.SERVER_DATA, new OriginLayers());
+		ArgumentTypes.register("origins:origin", OriginArgument.class, new ConstantArgumentSerializer<>(OriginArgument::origin));
+		ArgumentTypes.register("origins:layer", LayerArgument.class, new ConstantArgumentSerializer<>(LayerArgument::layer));
+		ArgumentTypes.register("origins:power", PowerArgument.class, new ConstantArgumentSerializer<>(PowerArgument::power));
+		ArgumentTypes.register("origins:power_operation", PowerOperation.class, new ConstantArgumentSerializer<>(PowerOperation::operation));
+		ReloadListeners.registerReloadListener(ResourceType.SERVER_DATA, new PowerLoader());
+		ReloadListeners.registerReloadListener(ResourceType.SERVER_DATA, new OriginLoader());
+		ReloadListeners.registerReloadListener(ResourceType.SERVER_DATA, new OriginLayerLoader());
+		//FIXME Apply validation steps.
 	}
 
 	public static Identifier identifier(String path) {

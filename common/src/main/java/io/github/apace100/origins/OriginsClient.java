@@ -4,7 +4,7 @@ import io.github.apace100.origins.networking.ModPackets;
 import io.github.apace100.origins.networking.ModPacketsS2C;
 import io.github.apace100.origins.power.Active;
 import io.github.apace100.origins.power.Power;
-import io.github.apace100.origins.power.factory.condition.EntityConditionsClient;
+import io.github.apace100.origins.factory.condition.EntityConditionsClient;
 import io.github.apace100.origins.registry.ModBlocks;
 import io.github.apace100.origins.registry.ModComponentsArchitectury;
 import io.github.apace100.origins.registry.ModEntities;

@@ -8,7 +8,7 @@ import io.github.apace100.origins.origin.OriginLayers;
 import io.github.apace100.origins.origin.OriginRegistry;
 import io.github.apace100.origins.power.PowerType;
 import io.github.apace100.origins.power.PowerTypeRegistry;
-import io.github.apace100.origins.power.factory.PowerFactory;
+import io.github.apace100.origins.factory.PowerFactory;
 import io.github.apace100.origins.registry.ModComponentsArchitectury;
 import io.github.apace100.origins.registry.ModRegistriesArchitectury;
 import io.github.apace100.origins.screen.ChooseOriginScreen;

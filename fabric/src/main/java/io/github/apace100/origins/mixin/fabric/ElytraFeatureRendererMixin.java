@@ -1,6 +1,6 @@
 package io.github.apace100.origins.mixin.fabric;
 
-import io.github.apace100.origins.power.factories.ElytraFlightPower;
+import io.github.apace100.origins.power.ElytraFlightPower;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.feature.ElytraFeatureRenderer;
 import net.minecraft.client.util.math.MatrixStack;

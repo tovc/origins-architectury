@@ -1,6 +1,6 @@
 package io.github.apace100.origins.mixin;
 
-import io.github.apace100.origins.power.factories.RestrictArmorPower;
+import io.github.apace100.origins.power.RestrictArmorPower;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ArmorItem;

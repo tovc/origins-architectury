@@ -1,6 +1,5 @@
 package io.github.apace100.origins.data;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -24,18 +23,21 @@ import net.minecraft.util.profiler.Profiler;
 import net.minecraft.util.registry.MutableRegistry;
 import net.minecraft.util.registry.RegistryKey;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public class PowerLoader extends MultiJsonDataLoader {
-
 	private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().disableHtmlEscaping().create();
 	private static final Comparator<ConfiguredPower<?, ?>> LOADING_ORDER_COMPARATOR = Comparator.comparingInt((ConfiguredPower<?, ?> x) -> x.getData().loadingPriority());
 
 	/**
 	 * Recursively registers all powers in the given file.
-	 * @param registry The registry to register the powers into.
+	 *
+	 * @param registry   The registry to register the powers into.
 	 * @param identifier The identifier of the power to register.
-	 * @param original The original {@link ConfiguredPower} to register.
+	 * @param original   The original {@link ConfiguredPower} to register.
 	 */
 	@SuppressWarnings("unchecked")
 	private static void register(MutableRegistry<ConfiguredPower<?, ?>> registry, Identifier identifier, ConfiguredPower<?, ?> original) {
@@ -47,6 +49,8 @@ public class PowerLoader extends MultiJsonDataLoader {
 			newPower.getContainedPowers().forEach((s, configuredPower) -> register(registry, new Identifier(identifier.getNamespace(), identifier.getPath() + s), configuredPower));
 		}
 	}
+	public static String CURRENT_NAMESPACE;
+	public static String CURRENT_PATH;
 
 	public PowerLoader() {
 		super(GSON, "powers");
@@ -59,6 +63,8 @@ public class PowerLoader extends MultiJsonDataLoader {
 			throw new IllegalStateException("Tried to load powers before initializing dynamic registries!");
 		MutableRegistry<ConfiguredPower<?, ?>> powers = registryManager.get(OriginsDynamicRegistries.CONFIGURED_POWER_KEY);
 		map.forEach((identifier, jsonElements) -> {
+			CURRENT_NAMESPACE = identifier.getNamespace();
+			CURRENT_PATH = identifier.getPath();
 			Optional<ConfiguredPower<?, ?>> definition = jsonElements.stream().flatMap(x -> {
 				DataResult<ConfiguredPower<?, ?>> power = ConfiguredPower.CODEC.decode(JsonOps.INSTANCE, x).map(Pair::getFirst);
 				Optional<ConfiguredPower<?, ?>> powerDefinition = power.resultOrPartial(error -> Origins.LOGGER.error("Error loading power \"{}\": {}", identifier, error));

@@ -4,10 +4,10 @@ import io.github.apace100.origins.access.MovingEntity;
 import io.github.apace100.origins.access.WaterMovingEntity;
 import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.networking.ModPackets;
-import io.github.apace100.origins.power.factories.ActionOnLandPower;
-import io.github.apace100.origins.power.factories.EntityGlowPower;
-import io.github.apace100.origins.power.factories.InvulnerablePower;
-import io.github.apace100.origins.power.factories.PhasingPower;
+import io.github.apace100.origins.power.ActionOnLandPower;
+import io.github.apace100.origins.power.EntityGlowPower;
+import io.github.apace100.origins.power.InvulnerablePower;
+import io.github.apace100.origins.power.PhasingPower;
 import io.github.apace100.origins.registry.ModComponentsArchitectury;
 import io.github.apace100.origins.registry.ModPowers;
 import io.netty.buffer.Unpooled;
@@ -38,8 +38,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import java.util.List;
 
 @Mixin(Entity.class)
 public abstract class EntityMixin implements MovingEntity {

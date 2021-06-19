@@ -1,6 +1,6 @@
 package io.github.apace100.origins.mixin.forge;
 
-import io.github.apace100.origins.power.factories.PreventBlockActionPower;
+import io.github.apace100.origins.power.PreventBlockActionPower;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.entity.Entity;

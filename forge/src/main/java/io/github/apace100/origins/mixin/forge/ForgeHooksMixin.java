@@ -1,7 +1,7 @@
 package io.github.apace100.origins.mixin.forge;
 
-import io.github.apace100.origins.power.factories.ClimbingPower;
-import io.github.apace100.origins.power.factories.ModifyHarvestPower;
+import io.github.apace100.origins.power.ClimbingPower;
+import io.github.apace100.origins.power.ModifyHarvestPower;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.pattern.CachedBlockPosition;
 import net.minecraft.entity.LivingEntity;

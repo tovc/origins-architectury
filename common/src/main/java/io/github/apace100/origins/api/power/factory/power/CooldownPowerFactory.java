@@ -2,6 +2,7 @@ package io.github.apace100.origins.api.power.factory.power;
 
 import com.mojang.serialization.Codec;
 import io.github.apace100.origins.api.component.OriginComponent;
+import io.github.apace100.origins.api.power.ICooldownPower;
 import io.github.apace100.origins.api.power.IHudRenderedPower;
 import io.github.apace100.origins.api.power.IVariableIntPower;
 import io.github.apace100.origins.api.power.configuration.ConfiguredPower;
@@ -15,7 +16,7 @@ import net.minecraft.util.math.MathHelper;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-public abstract class CooldownPowerFactory<T extends ICooldownPowerConfiguration> extends PowerFactory<T> implements IVariableIntPower<T>, IHudRenderedPower<T> {
+public abstract class CooldownPowerFactory<T extends ICooldownPowerConfiguration> extends PowerFactory<T> implements ICooldownPower<T>, IHudRenderedPower<T> {
 	protected CooldownPowerFactory(Codec<T> codec) {
 		super(codec);
 	}
@@ -24,10 +25,12 @@ public abstract class CooldownPowerFactory<T extends ICooldownPowerConfiguration
 		super(codec, allowConditions);
 	}
 
+	@Override
 	public boolean canUse(ConfiguredPower<T, ?> configuration, PlayerEntity player) {
 		return this.getRemainingDuration(configuration, player) <= 0 && configuration.isActive(player);
 	}
 
+	@Override
 	public void use(ConfiguredPower<T, ?> configuration, PlayerEntity player) {
 		this.setLastUseTime(configuration, player, player.getEntityWorld().getTime());
 		OriginComponent.sync(player);

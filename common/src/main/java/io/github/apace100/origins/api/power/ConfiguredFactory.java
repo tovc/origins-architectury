@@ -1,8 +1,12 @@
 package io.github.apace100.origins.api.power;
 
 import io.github.apace100.origins.api.IOriginsFeatureConfiguration;
+import net.minecraft.server.MinecraftServer;
+import org.jetbrains.annotations.NotNull;
 
-public abstract class ConfiguredFactory<T extends IOriginsFeatureConfiguration, F> {
+import java.util.List;
+
+public abstract class ConfiguredFactory<T extends IOriginsFeatureConfiguration, F> implements IOriginsFeatureConfiguration {
 	private final F factory;
 	private final T configuration;
 
@@ -17,5 +21,20 @@ public abstract class ConfiguredFactory<T extends IOriginsFeatureConfiguration, 
 
 	public T getConfiguration() {
 		return this.configuration;
+	}
+
+	@Override
+	public @NotNull List<String> getErrors(@NotNull MinecraftServer server) {
+		return this.getConfiguration().getErrors(server);
+	}
+
+	@Override
+	public @NotNull List<String> getWarnings(@NotNull MinecraftServer server) {
+		return this.getConfiguration().getWarnings(server);
+	}
+
+	@Override
+	public boolean isConfigurationValid() {
+		return this.getConfiguration().isConfigurationValid();
 	}
 }

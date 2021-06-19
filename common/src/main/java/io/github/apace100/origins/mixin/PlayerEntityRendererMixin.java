@@ -1,6 +1,6 @@
 package io.github.apace100.origins.mixin;
 
-import io.github.apace100.origins.power.configuration.power.ColorConfiguration;
+import io.github.apace100.origins.power.configuration.ColorConfiguration;
 import io.github.apace100.origins.registry.ModPowers;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;

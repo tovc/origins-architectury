@@ -1,6 +1,6 @@
 package io.github.apace100.origins.mixin;
 
-import io.github.apace100.origins.power.factories.PreventItemActionPower;
+import io.github.apace100.origins.power.PreventItemActionPower;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;

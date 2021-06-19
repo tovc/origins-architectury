@@ -9,15 +9,15 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.apace100.origins.api.origin.Impact;
-import io.github.apace100.origins.power.PowerType;
-import io.github.apace100.origins.power.PowerTypeReference;
-import io.github.apace100.origins.power.PowerTypes;
+import io.github.apace100.origins.data.PowerLoader;
 import io.github.apace100.origins.util.codec.IngredientCodec;
 import io.github.apace100.origins.util.codec.InlineCodec;
 import io.github.apace100.origins.util.codec.OptionalField;
 import net.minecraft.block.Block;
 import net.minecraft.enchantment.Enchantment;
-import net.minecraft.entity.*;
+import net.minecraft.entity.EntityGroup;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.damage.DamageSource;
@@ -34,7 +34,10 @@ import net.minecraft.recipe.Ingredient;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.tag.ServerTagManagerHolder;
 import net.minecraft.tag.Tag;
-import net.minecraft.util.*;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.InvalidIdentifierException;
+import net.minecraft.util.Pair;
+import net.minecraft.util.StringIdentifiable;
 import net.minecraft.util.registry.BuiltinRegistries;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
@@ -50,7 +53,10 @@ import java.util.stream.Collectors;
 
 public class OriginsCodecs {
 	//Large Codecs
-	public static final Codec<Identifier> FUZZY_IDENTIFIER = Codec.STRING.flatXmap(input -> {
+	/**
+	 * Reprensents a reference to a power.
+	 */
+	public static final Codec<Identifier> POWER_TYPE = Codec.STRING.flatXmap(input -> {
 		String namespace = "minecraft";
 		String path;
 		if (input.contains(":")) {
@@ -62,14 +68,14 @@ public class OriginsCodecs {
 		} else
 			path = input;
 		if (namespace.contains("*")) {
-			if (PowerTypes.CURRENT_NAMESPACE != null)
-				namespace = namespace.replace("*", PowerTypes.CURRENT_NAMESPACE);
+			if (PowerLoader.CURRENT_NAMESPACE != null)
+				namespace = namespace.replace("*", PowerLoader.CURRENT_NAMESPACE);
 			else
 				return DataResult.error("Identifier may only contain a `*` in the namespace inside of powers.");
 		}
 		if (path.contains("*")) {
-			if (PowerTypes.CURRENT_PATH != null)
-				path = path.replace("*", PowerTypes.CURRENT_NAMESPACE);
+			if (PowerLoader.CURRENT_PATH != null)
+				path = path.replace("*", PowerLoader.CURRENT_NAMESPACE);
 			else
 				return DataResult.error("Identifier may only contain a `*` in the path inside of powers.");
 		}
@@ -133,7 +139,6 @@ public class OriginsCodecs {
 	public static final Codec<Tag<Fluid>> FLUID_TAG = Tag.codec(() -> ServerTagManagerHolder.getTagManager().getFluids());
 	public static final Codec<Tag<EntityType<?>>> ENTITY_TAG = Tag.codec(() -> ServerTagManagerHolder.getTagManager().getEntityTypes());
 	//Simple Codecs
-	public static final Codec<PowerType<?>> POWER_TYPE = FUZZY_IDENTIFIER.xmap(PowerTypeReference::new, PowerType::getIdentifier);
 	public static final Codec<RegistryKey<World>> DIMENSION = Identifier.CODEC.xmap(x -> RegistryKey.of(Registry.DIMENSION, x), RegistryKey::getValue);
 	public static final Codec<RegistryKey<Biome>> BIOME = Identifier.CODEC.xmap(x -> RegistryKey.of(Registry.BIOME_KEY, x), RegistryKey::getValue);
 	public static final Codec<EntityGroup> ENTITY_GROUP = mappedCodec(Codec.STRING, ImmutableBiMap.of("default", EntityGroup.DEFAULT, "undead", EntityGroup.UNDEAD, "arthropod", EntityGroup.ARTHROPOD, "illager", EntityGroup.ILLAGER, "aquatic", EntityGroup.AQUATIC));

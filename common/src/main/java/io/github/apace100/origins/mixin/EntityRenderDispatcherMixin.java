@@ -1,7 +1,6 @@
 package io.github.apace100.origins.mixin;
 
-import io.github.apace100.origins.api.component.OriginComponent;
-import io.github.apace100.origins.power.factories.PreventEntityRenderPower;
+import io.github.apace100.origins.power.PreventEntityRenderPower;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;

@@ -26,16 +26,20 @@ public class OriginsAPI {
 		throw new AssertionError();
 	}
 
+	public static IOriginsDynamicRegistryManager getDynamicRegistries() {
+		return OriginsDynamicRegistries.get(getServer());
+	}
+
 	public static Registry<OriginLayer> getLayers() {
-		return OriginsDynamicRegistries.get(getServer()).get(OriginsDynamicRegistries.ORIGIN_LAYER_KEY);
+		return getDynamicRegistries().get(OriginsDynamicRegistries.ORIGIN_LAYER_KEY);
 	}
 
 	public static Registry<Origin> getOrigins() {
-		return OriginsDynamicRegistries.get(getServer()).get(OriginsDynamicRegistries.ORIGIN_KEY);
+		return getDynamicRegistries().get(OriginsDynamicRegistries.ORIGIN_KEY);
 	}
 
 	public static Registry<ConfiguredPower<?, ?>> getPowers() {
-		return OriginsDynamicRegistries.get(getServer()).get(OriginsDynamicRegistries.CONFIGURED_POWER_KEY);
+		return getDynamicRegistries().get(OriginsDynamicRegistries.CONFIGURED_POWER_KEY);
 	}
 
 	//The component will be a dummy if the entity isn't a player.

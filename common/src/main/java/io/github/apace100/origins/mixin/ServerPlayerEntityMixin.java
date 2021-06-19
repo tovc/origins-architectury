@@ -3,7 +3,7 @@ package io.github.apace100.origins.mixin;
 import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Either;
 import io.github.apace100.origins.access.EndRespawningEntity;
-import io.github.apace100.origins.power.factories.PreventSleepPower;
+import io.github.apace100.origins.power.PreventSleepPower;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.screen.ScreenHandlerListener;
 import net.minecraft.server.MinecraftServer;

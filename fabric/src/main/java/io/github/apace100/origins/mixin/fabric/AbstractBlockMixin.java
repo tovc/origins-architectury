@@ -3,7 +3,7 @@ package io.github.apace100.origins.mixin.fabric;
 import io.github.apace100.origins.access.EntityShapeContextAccessor;
 import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.api.power.configuration.ConfiguredBlockCondition;
-import io.github.apace100.origins.power.factories.PreventBlockActionPower;
+import io.github.apace100.origins.power.PreventBlockActionPower;
 import io.github.apace100.origins.registry.ModPowers;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.BlockState;

@@ -1,6 +1,6 @@
 package io.github.apace100.origins.mixin;
 
-import io.github.apace100.origins.power.factories.ElytraFlightPower;
+import io.github.apace100.origins.power.ElytraFlightPower;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.feature.CapeFeatureRenderer;

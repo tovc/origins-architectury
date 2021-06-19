@@ -1,7 +1,7 @@
 package io.github.apace100.origins.mixin;
 
 import io.github.apace100.origins.api.component.OriginComponent;
-import io.github.apace100.origins.power.factories.RestrictArmorPower;
+import io.github.apace100.origins.power.RestrictArmorPower;
 import io.github.apace100.origins.registry.ModComponentsArchitectury;
 import io.github.apace100.origins.registry.ModPowers;
 import net.minecraft.entity.EquipmentSlot;

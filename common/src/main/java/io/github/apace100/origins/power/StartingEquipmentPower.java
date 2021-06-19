@@ -1,60 +1,35 @@
 package io.github.apace100.origins.power;
 
 import io.github.apace100.origins.Origins;
+import io.github.apace100.origins.api.power.factory.PowerFactory;
+import io.github.apace100.origins.power.configuration.StartingInventoryConfiguration;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Comparator;
 
-public class StartingEquipmentPower extends Power {
+public class StartingEquipmentPower extends PowerFactory<StartingInventoryConfiguration> {
+	public StartingEquipmentPower() {
+		super(StartingInventoryConfiguration.CODEC, false);
+	}
 
-    private final List<ItemStack> itemStacks = new LinkedList<>();
-    private final HashMap<Integer, ItemStack> slottedStacks = new HashMap<>();
-    private boolean recurrent;
+	@Override
+	protected void onChosen(StartingInventoryConfiguration configuration, PlayerEntity player, boolean isOrbOfOrigin) {
+		this.giveStacks(configuration, player);
+	}
 
-    public StartingEquipmentPower(PowerType<?> type, PlayerEntity player) {
-        super(type, player);
-    }
+	@Override
+	protected void onRespawn(StartingInventoryConfiguration configuration, PlayerEntity player) {
+		if (configuration.recurrent())
+			this.giveStacks(configuration, player);
+	}
 
-    public void setRecurrent(boolean recurrent) {
-        this.recurrent = recurrent;
-    }
-
-    public void addStack(ItemStack stack) {
-        this.itemStacks.add(stack);
-    }
-
-    public void addStack(int slot, ItemStack stack) {
-        slottedStacks.put(slot, stack);
-    }
-
-    @Override
-    public void onChosen(boolean isOrbOfOrigin) {
-        giveStacks();
-    }
-
-    @Override
-    public void onRespawn() {
-        if(recurrent) {
-            giveStacks();
-        }
-    }
-
-    private void giveStacks() {
-        slottedStacks.forEach((slot, stack) -> {
-            Origins.LOGGER.info("Giving player " + stack.toString());
-            if(player.inventory.getStack(slot).isEmpty()) {
-                player.inventory.setStack(slot, stack);
-            } else {
-                player.giveItemStack(stack);
-            }
-        });
-        itemStacks.forEach(is -> {
-            ItemStack copy = is.copy();
-            Origins.LOGGER.info("Giving player " + copy.toString());
-            player.giveItemStack(copy);
-        });
-    }
+	private void giveStacks(StartingInventoryConfiguration configuration, PlayerEntity player) {
+		configuration.stacks().getContent().stream().sorted(Comparator.reverseOrder()).forEach(x -> {
+			Origins.LOGGER.info("Giving player {} stack: {}", player.getName().asString(), x.stack().toString());
+			if (x.hasPosition() && player.inventory.getStack(x.position()).isEmpty())
+				player.inventory.setStack(x.position(), x.stack().copy());
+			else
+				player.giveItemStack(x.stack().copy());
+		});
+	}
 }
