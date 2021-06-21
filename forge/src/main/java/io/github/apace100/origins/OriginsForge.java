@@ -1,5 +1,6 @@
 package io.github.apace100.origins;
 
+import io.github.apace100.origins.compat.BetterDivingCompat;
 import io.github.apace100.origins.component.OriginComponent;
 import io.github.apace100.origins.networking.forge.ForgeNetworkHandler;
 import io.github.apace100.origins.registry.forge.ModComponentsArchitecturyImpl;
@@ -8,6 +9,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -44,10 +46,12 @@ public class OriginsForge {
 		Origins.VERSION = version.toString();
 		EventBuses.registerModEventBus(Origins.MODID, FMLJavaModLoadingContext.get().getModEventBus());
 		Origins.register();
-		DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> OriginsForgeClient::initialize);
-		DistExecutor.safeRunWhenOn(Dist.DEDICATED_SERVER, () -> OriginsServer::register);
+		DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> OriginsForgeClient::initialize);
+		DistExecutor.unsafeRunWhenOn(Dist.DEDICATED_SERVER, () -> OriginsServer::register);
 		FMLJavaModLoadingContext.get().getModEventBus().addListener((FMLCommonSetupEvent event) -> CapabilityManager.INSTANCE.register(OriginComponent.class, new ModComponentsArchitecturyImpl.OriginStorage(), () -> null));
 		MinecraftForge.EVENT_BUS.addListener((FMLServerAboutToStartEvent event) -> OriginsClient.isServerRunningOrigins = true);
 		MinecraftForge.EVENT_BUS.addListener((FMLServerStoppedEvent event) -> OriginsClient.isServerRunningOrigins = false);
+		if (ModList.get().isLoaded("better_diving"))
+			BetterDivingCompat.registerCompat();
 	}
 }

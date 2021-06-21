@@ -10,6 +10,7 @@ public class ElytraFlightPower extends Power {
     public ElytraFlightPower(PowerType<?> type, PlayerEntity player, boolean renderElytra) {
         super(type, player);
         this.renderElytra = renderElytra;
+        this.setTicking(true);
     }
 
     public boolean shouldRenderElytra() {
@@ -22,11 +23,6 @@ public class ElytraFlightPower extends Power {
             enableFlight(player);
         else
             disableFlight(player);
-    }
-
-    @Override
-    public void onAdded() {
-        enableFlight(player);
     }
 
     @Override

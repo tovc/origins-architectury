@@ -50,3 +50,10 @@ mandatory=true
 versionRange="[1.16.5-2.1.1.0,)"
 ordering="NONE"
 side="BOTH"
+
+[[dependencies.origins]]
+modId="better_diving"
+mandatory=false
+versionRange="[1,)"
+ordering="AFTER"
+side="BOTH"
