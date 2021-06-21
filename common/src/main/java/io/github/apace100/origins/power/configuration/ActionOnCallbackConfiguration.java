@@ -1,11 +1,15 @@
 package io.github.apace100.origins.power.configuration;
 
+import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.apace100.origins.api.IOriginsFeatureConfiguration;
 import io.github.apace100.origins.api.power.configuration.ConfiguredEntityAction;
+import net.minecraft.server.MinecraftServer;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Optional;
 
 public record ActionOnCallbackConfiguration(@Nullable ConfiguredEntityAction<?, ?> entityActionRespawned,

@@ -3,11 +3,8 @@ package io.github.apace100.origins.action.configuration;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.apace100.origins.api.IOriginsFeatureConfiguration;
-import io.github.apace100.origins.api.power.configuration.power.ListConfiguration;
+import io.github.apace100.origins.api.configuration.ListConfiguration;
 import io.github.apace100.origins.util.OriginsCodecs;
-import net.minecraft.entity.AreaEffectCloudEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 
 public record SpawnEffectCloudConfiguration(float radius, float radiusOnUse, int waitTime,

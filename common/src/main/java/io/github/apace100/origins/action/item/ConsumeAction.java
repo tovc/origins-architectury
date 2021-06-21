@@ -1,12 +1,9 @@
 package io.github.apace100.origins.action.item;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.github.apace100.origins.api.power.configuration.power.FieldConfiguration;
+import io.github.apace100.origins.api.configuration.FieldConfiguration;
 import io.github.apace100.origins.api.power.factory.ItemAction;
 import net.minecraft.item.ItemStack;
-
-import java.util.function.Consumer;
 
 public class ConsumeAction extends ItemAction<FieldConfiguration<Integer>> {
 

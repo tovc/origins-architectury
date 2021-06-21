@@ -34,7 +34,7 @@ public class InventoryPower extends PowerFactory<InventoryConfiguration> impleme
 	@Override
 	public void activate(ConfiguredPower<InventoryConfiguration, ?> configuration, PlayerEntity player) {
 		if (!player.world.isClient)
-			player.openHandledScreen(new SimpleNamedScreenHandlerFactory(this.getMenuCreator(configuration, player), new TranslatableText(configuration.getConfiguration().name())));
+			player.openHandledScreen(new SimpleNamedScreenHandlerFactory(this.getMenuCreator(configuration, player), new TranslatableText(configuration.getConfiguration().inventoryName())));
 	}
 
 	@Override

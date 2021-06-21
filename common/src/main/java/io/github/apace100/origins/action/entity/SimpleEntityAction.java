@@ -1,6 +1,6 @@
 package io.github.apace100.origins.action.entity;
 
-import io.github.apace100.origins.api.power.configuration.power.NoConfiguration;
+import io.github.apace100.origins.api.configuration.NoConfiguration;
 import io.github.apace100.origins.api.power.factory.EntityAction;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;

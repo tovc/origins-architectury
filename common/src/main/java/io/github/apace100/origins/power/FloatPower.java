@@ -2,7 +2,7 @@ package io.github.apace100.origins.power;
 
 import com.mojang.serialization.Codec;
 import io.github.apace100.origins.api.power.factory.PowerFactory;
-import io.github.apace100.origins.api.power.configuration.power.FieldConfiguration;
+import io.github.apace100.origins.api.configuration.FieldConfiguration;
 
 /**
  * @deprecated Unused in the original code of origins, not registered anywhere, so I'm skipping for now.

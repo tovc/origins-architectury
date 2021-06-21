@@ -2,24 +2,20 @@ package io.github.apace100.origins.condition.damage;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.github.apace100.origins.api.configuration.FieldConfiguration;
+import io.github.apace100.origins.api.power.factory.DamageCondition;
 import net.minecraft.entity.damage.DamageSource;
 
 import java.util.Objects;
 
-public class NameCondition implements DamageCondition {
+public class NameCondition extends DamageCondition<FieldConfiguration<String>> {
 
-	public static final Codec<NameCondition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-			Codec.STRING.fieldOf("name").forGetter(x -> x.name)
-	).apply(instance, NameCondition::new));
-
-	private final String name;
-
-	public NameCondition(String name) {
-		this.name = name;
+	public NameCondition() {
+		super(FieldConfiguration.codec(Codec.STRING, "name"));
 	}
 
 	@Override
-	public boolean test(DamageSource source, float f) {
-		return Objects.equals(source.name, this.name);
+	public boolean check(FieldConfiguration<String> configuration, DamageSource source, float amount) {
+		return configuration.value().equals(source.name);
 	}
 }

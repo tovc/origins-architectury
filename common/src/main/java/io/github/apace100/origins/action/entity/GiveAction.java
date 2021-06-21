@@ -1,6 +1,6 @@
 package io.github.apace100.origins.action.entity;
 
-import io.github.apace100.origins.api.power.configuration.power.FieldConfiguration;
+import io.github.apace100.origins.api.configuration.FieldConfiguration;
 import io.github.apace100.origins.api.power.factory.EntityAction;
 import io.github.apace100.origins.util.OriginsCodecs;
 import net.minecraft.entity.Entity;

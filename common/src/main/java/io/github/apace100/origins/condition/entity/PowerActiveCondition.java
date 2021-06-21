@@ -1,25 +1,19 @@
 package io.github.apace100.origins.condition.entity;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.github.apace100.origins.power.PowerType;
-import io.github.apace100.origins.util.OriginsCodecs;
+import io.github.apace100.origins.action.configuration.PowerReference;
+import io.github.apace100.origins.api.OriginsAPI;
+import io.github.apace100.origins.api.component.OriginComponent;
+import io.github.apace100.origins.api.power.factory.EntityCondition;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 
-import java.util.function.Predicate;
+public class PowerActiveCondition extends EntityCondition<PowerReference> {
 
-public class PowerActiveCondition implements Predicate<LivingEntity> {
-
-	public static final Codec<PowerActiveCondition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-			OriginsCodecs.POWER_TYPE.fieldOf("power").forGetter(x -> x.type)
-	).apply(instance, PowerActiveCondition::new));
-
-	private final PowerType<?> type;
-
-	public PowerActiveCondition(PowerType<?> type) {this.type = type;}
+	public PowerActiveCondition() {super(PowerReference.codec("power"));}
 
 	@Override
-	public boolean test(LivingEntity livingEntity) {
-		return type.isActive(livingEntity);
+	public boolean check(PowerReference configuration, LivingEntity entity) {
+		OriginComponent component = OriginsAPI.getComponent(entity);
+		return entity instanceof PlayerEntity player && component.hasPower(configuration.power()) && component.getPower(configuration.power()).isActive(player);
 	}
 }

@@ -14,7 +14,7 @@ public class PlaySoundAction extends EntityAction<PlaySoundConfiguration> {
 
 	@Override
 	public void execute(PlaySoundConfiguration configuration, Entity entity) {
-		if (entity instanceof PlayerEntity)
-			configuration.sound().ifPresent(x -> entity.world.playSound(null, (entity).getX(), (entity).getY(), (entity).getZ(), x, SoundCategory.PLAYERS, configuration.volume(), configuration.pitch()));
+		if (entity instanceof PlayerEntity && configuration.sound() != null)
+			entity.world.playSound(null, (entity).getX(), (entity).getY(), (entity).getZ(), configuration.sound(), SoundCategory.PLAYERS, configuration.volume(), configuration.pitch());
 	}
 }

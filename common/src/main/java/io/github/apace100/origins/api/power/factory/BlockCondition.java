@@ -29,11 +29,11 @@ public abstract class BlockCondition<T extends IOriginsFeatureConfiguration> ext
 		return new ConfiguredBlockCondition<>(this, input, data);
 	}
 
-	public boolean check(T configuration, CachedBlockPosition block) {
+	protected boolean check(T configuration, CachedBlockPosition block) {
 		return false;
 	}
 
-	public boolean check(T configuration, ConditionData data, CachedBlockPosition block) {
-		return data.inverted() ^ this.check(configuration, block);
+	public boolean check(ConfiguredBlockCondition<T, ?> configuration, CachedBlockPosition block) {
+		return configuration.getData().inverted() ^ this.check(configuration.getConfiguration(), block);
 	}
 }

@@ -6,7 +6,7 @@ import io.github.apace100.origins.api.power.configuration.ConfiguredDamageCondit
 import io.github.apace100.origins.api.power.configuration.ConfiguredEntityAction;
 import io.github.apace100.origins.api.power.configuration.ConfiguredEntityCondition;
 import io.github.apace100.origins.api.power.configuration.power.IValueModifyingPowerConfiguration;
-import io.github.apace100.origins.api.power.configuration.power.ListConfiguration;
+import io.github.apace100.origins.api.configuration.ListConfiguration;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import org.jetbrains.annotations.Nullable;
 

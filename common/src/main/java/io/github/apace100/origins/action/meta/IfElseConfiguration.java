@@ -2,7 +2,8 @@ package io.github.apace100.origins.action.meta;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.github.apace100.origins.factory.meta.IStreamConfiguration;
+import io.github.apace100.origins.api.configuration.IStreamConfiguration;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -32,10 +33,5 @@ public record IfElseConfiguration<C, A, V>(C condition, A ifAction, @Nullable A 
 	@Override
 	public List<Object> entries() {
 		return Stream.of(this.condition(), this.ifAction(), this.elseAction()).toList();
-	}
-
-	@Override
-	public String name() {
-		return "if_else";
 	}
 }

@@ -1,28 +1,17 @@
 package io.github.apace100.origins.condition.damage;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.github.apace100.origins.util.Comparison;
-import io.github.apace100.origins.util.OriginsCodecs;
+import io.github.apace100.origins.api.configuration.FloatComparisonConfiguration;
+import io.github.apace100.origins.api.power.factory.DamageCondition;
 import net.minecraft.entity.damage.DamageSource;
 
-public class AmountCondition implements DamageCondition {
+public class AmountCondition extends DamageCondition<FloatComparisonConfiguration> {
 
-	public static final Codec<AmountCondition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-			OriginsCodecs.COMPARISON.fieldOf("comparison").forGetter(x -> x.comparison),
-			Codec.FLOAT.fieldOf("compare_to").forGetter(x -> x.compareTo)
-	).apply(instance, AmountCondition::new));
-
-	private final Comparison comparison;
-	private final float compareTo;
-
-	public AmountCondition(Comparison comparison, float compareTo) {
-		this.comparison = comparison;
-		this.compareTo = compareTo;
+	public AmountCondition() {
+		super(FloatComparisonConfiguration.CODEC);
 	}
 
 	@Override
-	public boolean test(DamageSource source, float f) {
-		return this.comparison.compare(f, this.compareTo);
+	protected boolean check(FloatComparisonConfiguration configuration, DamageSource source, float amount) {
+		return configuration.check(amount);
 	}
 }

@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import io.github.apace100.origins.api.IOriginsFeatureConfiguration;
 import io.github.apace100.origins.api.power.configuration.ConfiguredPower;
 import io.github.apace100.origins.api.power.factory.PowerFactory;
-import io.github.apace100.origins.action.configuration.MultipleConfiguration;
+import io.github.apace100.origins.power.configuration.MultipleConfiguration;
 import net.minecraft.util.Pair;
 
 import java.util.Map;

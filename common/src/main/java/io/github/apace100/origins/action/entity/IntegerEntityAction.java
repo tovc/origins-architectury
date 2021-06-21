@@ -1,14 +1,12 @@
 package io.github.apace100.origins.action.entity;
 
-import io.github.apace100.origins.api.power.configuration.power.FieldConfiguration;
-import io.github.apace100.origins.api.power.configuration.power.NoConfiguration;
+import io.github.apace100.origins.api.configuration.FieldConfiguration;
 import io.github.apace100.origins.api.power.factory.EntityAction;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 public class IntegerEntityAction extends EntityAction<FieldConfiguration<Integer>> {
 

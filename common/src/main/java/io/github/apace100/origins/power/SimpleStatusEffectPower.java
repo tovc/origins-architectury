@@ -3,7 +3,7 @@ package io.github.apace100.origins.power;
 import com.mojang.serialization.Codec;
 import io.github.apace100.origins.api.power.configuration.ConfiguredPower;
 import io.github.apace100.origins.api.power.factory.PowerFactory;
-import io.github.apace100.origins.api.power.configuration.power.ListConfiguration;
+import io.github.apace100.origins.api.configuration.ListConfiguration;
 import io.github.apace100.origins.util.OriginsCodecs;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;

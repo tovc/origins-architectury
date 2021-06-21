@@ -5,7 +5,7 @@ import io.github.apace100.origins.api.power.configuration.ConfiguredEntityAction
 import io.github.apace100.origins.api.power.configuration.ConfiguredItemCondition;
 import io.github.apace100.origins.api.power.configuration.ConfiguredPower;
 import io.github.apace100.origins.api.power.factory.PowerFactory;
-import io.github.apace100.origins.api.power.configuration.power.ListConfiguration;
+import io.github.apace100.origins.api.configuration.ListConfiguration;
 import io.github.apace100.origins.power.configuration.ModifyFoodConfiguration;
 import io.github.apace100.origins.registry.ModPowers;
 import io.github.apace100.origins.util.AttributeUtil;

@@ -3,7 +3,7 @@ package io.github.apace100.origins.power.configuration;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.apace100.origins.api.IOriginsFeatureConfiguration;
-import io.github.apace100.origins.api.power.configuration.power.ListConfiguration;
+import io.github.apace100.origins.api.configuration.ListConfiguration;
 import io.github.apace100.origins.util.PositionedItemStack;
 
 public record StartingInventoryConfiguration(ListConfiguration<PositionedItemStack> stacks, boolean recurrent) implements IOriginsFeatureConfiguration {

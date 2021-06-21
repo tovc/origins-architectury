@@ -1,30 +1,23 @@
 package io.github.apace100.origins.condition.damage;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.github.apace100.origins.factory.condition.ConditionFactory;
-import io.github.apace100.origins.util.OriginsCodecs;
+import io.github.apace100.origins.api.configuration.FieldConfiguration;
+import io.github.apace100.origins.api.power.configuration.ConfiguredEntityCondition;
+import io.github.apace100.origins.api.power.factory.DamageCondition;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 
 import java.util.Optional;
 
-public class AttackerCondition implements DamageCondition {
+public class AttackerCondition extends DamageCondition<FieldConfiguration<Optional<ConfiguredEntityCondition<?, ?>>>> {
 
-	public static final Codec<AttackerCondition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-			OriginsCodecs.ENTITY_CONDITION.optionalFieldOf("entity_condition").forGetter(x -> x.condition)
-	).apply(instance, AttackerCondition::new));
-
-	private final Optional<ConditionFactory.Instance<LivingEntity>> condition;
-
-	public AttackerCondition(Optional<ConditionFactory.Instance<LivingEntity>> condition) {
-		this.condition = condition;
+	public AttackerCondition() {
+		super(FieldConfiguration.optionalCodec(ConfiguredEntityCondition.CODEC, "entity_condition"));
 	}
 
 	@Override
-	public boolean test(DamageSource source, float f) {
+	protected boolean check(FieldConfiguration<Optional<ConfiguredEntityCondition<?, ?>>> configuration, DamageSource source, float amount) {
 		Entity attacker = source.getAttacker();
-		return attacker instanceof LivingEntity ? condition.map(x -> x.test((LivingEntity) attacker)).orElse(true) : Boolean.valueOf(false);
+		return attacker instanceof LivingEntity le ? configuration.value().map(x -> x.check(le)).orElse(true) : Boolean.valueOf(false);
 	}
 }

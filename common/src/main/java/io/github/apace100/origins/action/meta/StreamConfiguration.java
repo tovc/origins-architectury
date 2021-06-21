@@ -3,7 +3,7 @@ package io.github.apace100.origins.action.meta;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.github.apace100.origins.factory.meta.IStreamConfiguration;
+import io.github.apace100.origins.api.configuration.IStreamConfiguration;
 import io.github.apace100.origins.util.OriginsCodecs;
 
 import java.util.List;
@@ -21,14 +21,14 @@ public record StreamConfiguration<T, V>(List<T> entries, String name,
 										BiConsumer<T, V> consumer) implements IDelegatedActionConfiguration<V>, IStreamConfiguration<T> {
 
 	public static <T, V> StreamConfiguration<T, V> and(List<T> entries, BiConsumer<T, V> executor) {
-		return new StreamConfiguration<>(entries, "and", executor);
+		return new StreamConfiguration<>(entries, "And", executor);
 	}
 
 	public static <C, A, V> StreamConfiguration<Pair<C, A>, V> ifElseList(List<Pair<C, A>> entries, BiPredicate<C, V> predicate, BiConsumer<A, V> executor) {
 		BiConsumer<Pair<C, A>, V> consumer = (pair, v) -> {
 			if (predicate.test(pair.getFirst(), v)) executor.accept(pair.getSecond(), v);
 		};
-		return new StreamConfiguration<>(entries, "if_else_list", consumer);
+		return new StreamConfiguration<>(entries, "IfElseList", consumer);
 	}
 
 	public static <T, V> Codec<StreamConfiguration<T, V>> and(Codec<T> source, BiConsumer<T, V> executor) {

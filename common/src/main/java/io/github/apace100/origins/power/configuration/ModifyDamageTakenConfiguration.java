@@ -5,7 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.apace100.origins.api.power.configuration.ConfiguredDamageCondition;
 import io.github.apace100.origins.api.power.configuration.ConfiguredEntityAction;
 import io.github.apace100.origins.api.power.configuration.power.IValueModifyingPowerConfiguration;
-import io.github.apace100.origins.api.power.configuration.power.ListConfiguration;
+import io.github.apace100.origins.api.configuration.ListConfiguration;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import org.jetbrains.annotations.Nullable;
 

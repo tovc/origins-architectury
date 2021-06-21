@@ -1,7 +1,7 @@
 package io.github.apace100.origins.condition.damage;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.github.apace100.origins.api.configuration.FieldConfiguration;
+import io.github.apace100.origins.api.power.factory.DamageCondition;
 import io.github.apace100.origins.util.OriginsCodecs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -10,21 +10,17 @@ import net.minecraft.entity.damage.ProjectileDamageSource;
 
 import java.util.Optional;
 
-public class ProjectileCondition implements DamageCondition {
+public class ProjectileCondition extends DamageCondition<FieldConfiguration<Optional<EntityType<?>>>> {
 
-	public static final Codec<ProjectileCondition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-			OriginsCodecs.OPTIONAL_ENTITY_TYPE.optionalFieldOf("projectile", Optional.empty()).forGetter(x -> x.projectile)
-	).apply(instance, ProjectileCondition::new));
-
-	private final Optional<EntityType<?>> projectile;
-
-	public ProjectileCondition(Optional<EntityType<?>> projectile) {this.projectile = projectile;}
+	public ProjectileCondition() {
+		super(FieldConfiguration.codec(OriginsCodecs.OPTIONAL_ENTITY_TYPE, "projectile", Optional.empty()));
+	}
 
 	@Override
-	public boolean test(DamageSource source, float f) {
+	protected boolean check(FieldConfiguration<Optional<EntityType<?>>> configuration, DamageSource source, float amount) {
 		if (source instanceof ProjectileDamageSource) {
 			Entity projectile = source.getSource();
-			return projectile != null && this.projectile.map(projectile.getType()::equals).orElse(true);
+			return projectile != null && configuration.value().map(projectile.getType()::equals).orElse(true);
 		}
 		return false;
 	}

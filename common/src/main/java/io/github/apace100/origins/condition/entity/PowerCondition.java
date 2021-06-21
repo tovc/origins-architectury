@@ -1,32 +1,19 @@
 package io.github.apace100.origins.condition.entity;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.github.apace100.origins.power.PowerType;
-import io.github.apace100.origins.power.PowerTypeRegistry;
-import io.github.apace100.origins.registry.ModComponentsArchitectury;
+import io.github.apace100.origins.action.configuration.PowerReference;
+import io.github.apace100.origins.api.OriginsAPI;
+import io.github.apace100.origins.api.component.OriginComponent;
+import io.github.apace100.origins.api.power.factory.EntityCondition;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.util.Identifier;
+import net.minecraft.entity.player.PlayerEntity;
 
-import java.util.function.Predicate;
+public class PowerCondition extends EntityCondition<PowerReference> {
 
-public class PowerCondition implements Predicate<LivingEntity> {
-
-	public static final Codec<PowerCondition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-			Identifier.CODEC.fieldOf("power").forGetter(x -> x.power)
-	).apply(instance, PowerCondition::new));
-
-	private final Identifier power;
-
-	public PowerCondition(Identifier power) {this.power = power;}
+	public PowerCondition() {super(PowerReference.codec("power"));}
 
 	@Override
-	public boolean test(LivingEntity entity) {
-		try {
-			PowerType<?> powerType = PowerTypeRegistry.get(this.power);
-			return ModComponentsArchitectury.getOriginComponent(entity).hasPower(powerType);
-		} catch (IllegalArgumentException e) {
-			return false;
-		}
+	public boolean check(PowerReference configuration, LivingEntity entity) {
+		OriginComponent component = OriginsAPI.getComponent(entity);
+		return component.hasPower(configuration.power());
 	}
 }
