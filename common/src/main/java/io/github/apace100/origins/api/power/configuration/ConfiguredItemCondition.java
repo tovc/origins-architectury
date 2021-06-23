@@ -6,18 +6,17 @@ import io.github.apace100.origins.api.power.ConditionData;
 import io.github.apace100.origins.api.power.ConfiguredCondition;
 import io.github.apace100.origins.api.power.ConfiguredFactory;
 import io.github.apace100.origins.api.power.factory.ItemCondition;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Function;
 
 public final class ConfiguredItemCondition<C extends IOriginsFeatureConfiguration, F extends ItemCondition<C>> extends ConfiguredCondition<C, F> {
+	public static final Codec<ConfiguredItemCondition<?, ?>> CODEC = ItemCondition.CODEC.dispatch(ConfiguredFactory::getFactory, Function.identity());
+
 	public static boolean check(@Nullable ConfiguredItemCondition<?, ?> condition, ItemStack stack) {
 		return condition == null || condition.check(stack);
 	}
-
-	public static final Codec<ConfiguredItemCondition<?, ?>> CODEC = ItemCondition.CODEC.dispatch(ConfiguredFactory::getFactory, Function.identity());
 
 	public ConfiguredItemCondition(F factory, C configuration, ConditionData data) {
 		super(factory, configuration, data);

@@ -24,7 +24,7 @@ public abstract class PlayerScreenHandlerMixin extends Slot {
 		super(inventory, index, x, y);
 	}
 
-	@Inject(method = "Lnet/minecraft/screen/PlayerScreenHandler$1;canInsert(Lnet/minecraft/item/ItemStack;)Z", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "canInsert(Lnet/minecraft/item/ItemStack;)Z", at = @At("HEAD"), cancellable = true)
 	private void preventArmorInsertion(ItemStack stack, CallbackInfoReturnable<Boolean> info) {
 		PlayerEntity player = ((PlayerInventory) inventory).player;
 		OriginComponent component = ModComponentsArchitectury.getOriginComponent(player);

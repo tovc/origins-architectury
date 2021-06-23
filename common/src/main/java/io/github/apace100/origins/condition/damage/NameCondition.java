@@ -1,12 +1,9 @@
 package io.github.apace100.origins.condition.damage;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.apace100.origins.api.configuration.FieldConfiguration;
 import io.github.apace100.origins.api.power.factory.DamageCondition;
 import net.minecraft.entity.damage.DamageSource;
-
-import java.util.Objects;
 
 public class NameCondition extends DamageCondition<FieldConfiguration<String>> {
 

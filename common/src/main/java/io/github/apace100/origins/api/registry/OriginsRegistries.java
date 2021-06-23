@@ -55,7 +55,9 @@ public class OriginsRegistries {
 	/**
 	 * This is basically {@link net.minecraft.util.registry.Registry}, just altered in such a way that it works with
 	 * architectury's registries.
+	 *
 	 * @param registry The registry to create the codec for.
+	 *
 	 * @return The new codec.
 	 */
 	public static <T> Codec<T> codec(Registry<T> registry) {

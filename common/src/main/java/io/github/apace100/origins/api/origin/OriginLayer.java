@@ -15,10 +15,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-public record OriginLayer(int order, List<ConditionedOrigin> conditionedOrigins, boolean enabled, String name, String missingName,
+public record OriginLayer(int order, List<ConditionedOrigin> conditionedOrigins, boolean enabled, String name,
+						  String missingName,
 						  String missingDescription, boolean allowRandom, boolean randomAllowsUnchoosable,
 						  List<Identifier> randomExcluded, @Nullable Identifier defaultOrigin, boolean autoChoose,
-						  boolean replace, boolean replaceRandomExlusions) implements Comparable<OriginLayer>{
+						  boolean replace, boolean replaceRandomExlusions) implements Comparable<OriginLayer> {
 
 	public static final int NO_ORDER = Integer.MAX_VALUE;
 
@@ -38,6 +39,7 @@ public record OriginLayer(int order, List<ConditionedOrigin> conditionedOrigins,
 			Codec.BOOL.optionalFieldOf("replace_exclude_random", false).forGetter(OriginLayer::replace)
 	).apply(instance, OriginLayer::new));
 
+	public static Builder builder() { return new Builder(); }
 	public static OriginLayer DEFAULT = new OriginLayer(NO_ORDER, ImmutableList.of(), true, "", "", "", false, false, ImmutableList.of(), (Identifier) null, false, false, false);
 
 	public OriginLayer(int order, List<ConditionedOrigin> origins, boolean enabled, String name, String missingName,
@@ -49,8 +51,6 @@ public record OriginLayer(int order, List<ConditionedOrigin> conditionedOrigins,
 	public Optional<Identifier> getDefaultOrigin() {
 		return Optional.ofNullable(this.defaultOrigin());
 	}
-
-	public static Builder builder() { return new Builder(); }
 
 	public Builder copyOf() {
 		Builder builder = builder().order(this.order).enabled(this.enabled).name(this.name).missingName(this.missingName)
@@ -145,9 +145,12 @@ public record OriginLayer(int order, List<ConditionedOrigin> conditionedOrigins,
 		}
 
 		public Builder withIdentifierSafe(Identifier identifier) {
-			if (StringUtils.isEmpty(this.name)) this.name = "layer." + identifier.getNamespace() + "." + identifier.getPath() + ".name";
-			if (StringUtils.isEmpty(this.name)) this.missingName = "layer." + identifier.getNamespace() + "." + identifier.getPath() + ".missing_origin.name";
-			if (StringUtils.isEmpty(this.name)) this.missingDescription = "layer." + identifier.getNamespace() + "." + identifier.getPath() + ".missing_origin.description";
+			if (StringUtils.isEmpty(this.name))
+				this.name = "layer." + identifier.getNamespace() + "." + identifier.getPath() + ".name";
+			if (StringUtils.isEmpty(this.name))
+				this.missingName = "layer." + identifier.getNamespace() + "." + identifier.getPath() + ".missing_origin.name";
+			if (StringUtils.isEmpty(this.name))
+				this.missingDescription = "layer." + identifier.getNamespace() + "." + identifier.getPath() + ".missing_origin.description";
 			return this;
 		}
 

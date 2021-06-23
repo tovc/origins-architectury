@@ -79,6 +79,16 @@ public class ModPowers {
 	public static final RegistrySupplier<ToggleNightVisionPower> TOGGLE_NIGHT_VISION = register("toggle_night_vision", ToggleNightVisionPower::new);
 	public static final RegistrySupplier<WalkOnFluidPower> WALK_ON_FLUID = register("walk_on_fluid", WalkOnFluidPower::new);
 
+	//Those powers are, as far as I know, remains of the previous system.
+	//As such, I've transformed then into actual powers.
+	public static final RegistrySupplier<CooldownPower> WEBBING = register("webbing", CooldownPower::new);
+	public static final RegistrySupplier<DummyPower> WATER_BREATHING = register("water_breathing", DummyPower::new);
+	public static final RegistrySupplier<DummyPower> NO_COBWEB_SLOWDOWN = register("no_cobweb_slowdown", DummyPower::new); //NO_COBWEB_SLOWDOWN & MASTER_OF_WEBS_NO_SLOWDOWN
+	public static final RegistrySupplier<DummyPower> LIKE_WATER = register("like_water", DummyPower::new);
+	public static final RegistrySupplier<DummyPower> WATER_VISION = register("water_vision", DummyPower::new); //TODO Might be worth transforming into a float field.
+	public static final RegistrySupplier<DummyPower> CONDUIT_POWER_ON_LAND = register("conduit_power_on_land", DummyPower::new);
+	public static final RegistrySupplier<DummyPower> SCARE_CREEPERS = register("scare_creepers", DummyPower::new);
+
 	public static void initialize() { }
 
 	@SuppressWarnings("unchecked")

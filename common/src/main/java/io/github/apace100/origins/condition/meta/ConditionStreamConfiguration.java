@@ -10,7 +10,8 @@ import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public record ConditionStreamConfiguration<T, V>(List<T> entries, String name, BiPredicate<T, V> predicate, Predicate<Stream<Boolean>> check) implements IDelegatedConditionConfiguration<V>, IStreamConfiguration<T> {
+public record ConditionStreamConfiguration<T, V>(List<T> entries, String name, BiPredicate<T, V> predicate,
+												 Predicate<Stream<Boolean>> check) implements IDelegatedConditionConfiguration<V>, IStreamConfiguration<T> {
 
 	public static <T, V> Codec<ConditionStreamConfiguration<T, V>> codec(Codec<T> codec, String name, BiPredicate<T, V> predicate, Predicate<Stream<Boolean>> check) {
 		return RecordCodecBuilder.create(instance -> instance.group(

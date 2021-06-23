@@ -1,6 +1,5 @@
 package io.github.apace100.origins.condition.item;
 
-import com.mojang.serialization.Codec;
 import io.github.apace100.origins.api.configuration.IntegerComparisonConfiguration;
 import io.github.apace100.origins.api.power.factory.ItemCondition;
 import net.minecraft.item.ItemStack;

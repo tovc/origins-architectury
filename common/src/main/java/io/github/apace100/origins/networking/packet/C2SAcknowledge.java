@@ -7,11 +7,10 @@ import net.minecraft.network.PacketByteBuf;
 import java.util.function.IntSupplier;
 
 public class C2SAcknowledge implements IntSupplier {
-	private int loginIndex;
-
 	public static C2SAcknowledge decode(PacketByteBuf buf) {
 		return new C2SAcknowledge();
 	}
+	private int loginIndex;
 
 	public C2SAcknowledge() {
 

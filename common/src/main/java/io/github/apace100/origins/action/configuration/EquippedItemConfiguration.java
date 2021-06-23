@@ -7,7 +7,8 @@ import io.github.apace100.origins.api.power.configuration.ConfiguredItemAction;
 import io.github.apace100.origins.util.OriginsCodecs;
 import net.minecraft.entity.EquipmentSlot;
 
-public record EquippedItemConfiguration(EquipmentSlot slot, ConfiguredItemAction<?, ?> action) implements IOriginsFeatureConfiguration {
+public record EquippedItemConfiguration(EquipmentSlot slot,
+										ConfiguredItemAction<?, ?> action) implements IOriginsFeatureConfiguration {
 
 	public static final Codec<EquippedItemConfiguration> CODEC = RecordCodecBuilder.create(instance -> instance.group(
 			OriginsCodecs.EQUIPMENT_SLOT.fieldOf("equipment_slot").forGetter(EquippedItemConfiguration::slot),

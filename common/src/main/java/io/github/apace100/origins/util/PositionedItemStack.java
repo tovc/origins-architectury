@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public record PositionedItemStack(int position, ItemStack stack) implements Comparable<PositionedItemStack> {
 	public static final Codec<Optional<PositionedItemStack>> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-			OriginsCodecs.OPTIONAL_ITEM.fieldOf("item").forGetter(x -> x.map( k -> k.stack().getItem())),
+			OriginsCodecs.OPTIONAL_ITEM.fieldOf("item").forGetter(x -> x.map(k -> k.stack().getItem())),
 			Codec.INT.optionalFieldOf("amount", 1).forGetter(x -> x.map(k -> k.stack().getCount()).orElse(1)),
 			OriginsCodecs.NBT.optionalFieldOf("tag").forGetter(x -> x.map(k -> k.stack().getTag())),
 			Codec.INT.optionalFieldOf("slot", Integer.MIN_VALUE).forGetter(x -> x.map(PositionedItemStack::position).orElse(Integer.MIN_VALUE))

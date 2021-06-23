@@ -1,7 +1,5 @@
 package io.github.apace100.origins.condition.entity;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.api.configuration.FieldConfiguration;
 import io.github.apace100.origins.api.power.factory.EntityCondition;
@@ -17,8 +15,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 
 import java.util.Map;
-import java.util.function.Function;
-import java.util.function.Predicate;
 
 public class AdvancementCondition extends EntityCondition<FieldConfiguration<Identifier>> {
 
@@ -26,7 +22,7 @@ public class AdvancementCondition extends EntityCondition<FieldConfiguration<Ide
 		super(FieldConfiguration.codec(Identifier.CODEC, "builder"));
 	}
 
-	protected boolean testClient(LivingEntity entity) {
+	protected boolean testClient(FieldConfiguration<Identifier> configuration, LivingEntity entity) {
 		return false;
 	}
 
@@ -39,7 +35,7 @@ public class AdvancementCondition extends EntityCondition<FieldConfiguration<Ide
 			else
 				return ((ServerPlayerEntity) entity).getAdvancementTracker().getProgress(advancement).isDone();
 		}
-		return testClient(entity);
+		return testClient(configuration, entity);
 	}
 
 	@Environment(EnvType.CLIENT)
@@ -49,10 +45,10 @@ public class AdvancementCondition extends EntityCondition<FieldConfiguration<Ide
 		}
 
 		@Override
-		protected boolean testClient(LivingEntity entity) {
+		protected boolean testClient(FieldConfiguration<Identifier> configuration, LivingEntity entity) {
 			if (entity instanceof ClientPlayerEntity) {
 				ClientAdvancementManager advancementManager = MinecraftClient.getInstance().getNetworkHandler().getAdvancementHandler();
-				Advancement advancement = advancementManager.getManager().get(this.advancement);
+				Advancement advancement = advancementManager.getManager().get(configuration.value());
 				if (advancement != null) {
 					Map<Advancement, AdvancementProgress> progressMap = advancementManager.advancementProgresses;
 					if (progressMap.containsKey(advancement))

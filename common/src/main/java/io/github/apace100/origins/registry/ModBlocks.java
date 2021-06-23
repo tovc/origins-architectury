@@ -12,20 +12,20 @@ import net.minecraft.util.Identifier;
 
 public class ModBlocks {
 
-    public static final Block TEMPORARY_COBWEB = new TemporaryCobwebBlock(BlockProperties.of(Material.COBWEB).noCollision().requiresTool().strength(4.0F));
+	public static final Block TEMPORARY_COBWEB = new TemporaryCobwebBlock(BlockProperties.of(Material.COBWEB).noCollision().requiresTool().strength(4.0F));
 
-    public static void register() {
-        register("temporary_cobweb", TEMPORARY_COBWEB, false);
-    }
+	public static void register() {
+		register("temporary_cobweb", TEMPORARY_COBWEB, false);
+	}
 
-    private static void register(String blockName, Block block) {
-        register(blockName, block, true);
-    }
+	private static void register(String blockName, Block block) {
+		register(blockName, block, true);
+	}
 
-    private static void register(String blockName, Block block, boolean withBlockItem) {
-        ModRegistriesArchitectury.BLOCKS.register(new Identifier(Origins.MODID, blockName), () -> block);
-        if(withBlockItem) {
-            ModRegistriesArchitectury.ITEMS.register(new Identifier(Origins.MODID, blockName), () -> new BlockItem(block, new Item.Settings().group(ItemGroup.MISC)));
-        }
-    }
+	private static void register(String blockName, Block block, boolean withBlockItem) {
+		ModRegistriesArchitectury.BLOCKS.register(new Identifier(Origins.MODID, blockName), () -> block);
+		if (withBlockItem) {
+			ModRegistriesArchitectury.ITEMS.register(new Identifier(Origins.MODID, blockName), () -> new BlockItem(block, new Item.Settings().group(ItemGroup.MISC)));
+		}
+	}
 }

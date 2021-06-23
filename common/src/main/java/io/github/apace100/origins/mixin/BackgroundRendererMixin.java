@@ -1,8 +1,8 @@
 package io.github.apace100.origins.mixin;
 
 import io.github.apace100.origins.api.power.INightVisionPower;
-import io.github.apace100.origins.power.configuration.PhasingConfiguration;
 import io.github.apace100.origins.power.PhasingPower;
+import io.github.apace100.origins.power.configuration.PhasingConfiguration;
 import io.github.apace100.origins.util.ClientHooks;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;

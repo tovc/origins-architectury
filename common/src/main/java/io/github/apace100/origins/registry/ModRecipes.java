@@ -8,14 +8,14 @@ import net.minecraft.recipe.SpecialRecipeSerializer;
 
 public class ModRecipes {
 
-    public static final SpecialRecipeSerializer<OriginRestrictedCraftingRecipe> ORIGIN_RESTRICTED = register("origin_restricted", new SpecialRecipeSerializer<>(OriginRestrictedCraftingRecipe::new));
+	public static final SpecialRecipeSerializer<OriginRestrictedCraftingRecipe> ORIGIN_RESTRICTED = register("origin_restricted", new SpecialRecipeSerializer<>(OriginRestrictedCraftingRecipe::new));
 
-    public static void register() {
+	public static void register() {
 
-    }
+	}
 
-    static <S extends RecipeSerializer<T>, T extends Recipe<?>> S register(String id, S serializer) {
-        ModRegistriesArchitectury.RECIPE_SERIALIZERS.registerSupplied(Origins.identifier(id), () -> serializer);
-        return serializer;
-    }
+	static <S extends RecipeSerializer<T>, T extends Recipe<?>> S register(String id, S serializer) {
+		ModRegistriesArchitectury.RECIPE_SERIALIZERS.registerSupplied(Origins.identifier(id), () -> serializer);
+		return serializer;
+	}
 }

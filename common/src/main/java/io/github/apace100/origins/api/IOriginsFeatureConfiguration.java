@@ -18,7 +18,6 @@ import java.lang.reflect.RecordComponent;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 /**
@@ -26,6 +25,33 @@ import java.util.function.UnaryOperator;
  * utility methods to help with coding and verification.
  */
 public interface IOriginsFeatureConfiguration {
+	static void populate(ImmutableMap.Builder<String, IOriginsFeatureConfiguration> builder, Iterable<?> iterable, String prefix) {
+		int i = 0;
+		for (Object o : iterable) {
+			if (o instanceof IOriginsFeatureConfiguration config)
+				builder.put(prefix + i, config);
+			else if (o instanceof Map<?, ?> map)
+				populate(builder, map, prefix + i + "/");
+			else if (o instanceof Iterable<?> iterable2)
+				populate(builder, iterable2, prefix + i + "/");
+			++i;
+		}
+	}
+
+	static void populate(ImmutableMap.Builder<String, IOriginsFeatureConfiguration> builder, Map<?, ?> map, String prefix) {
+		map.forEach((o, o2) -> {
+			String key = "?";
+			if (o instanceof String str) key = str;
+			else if (o instanceof StringIdentifiable identifiable) key = identifiable.asString();
+			if (o2 instanceof IOriginsFeatureConfiguration config)
+				builder.put(prefix + key, config);
+			else if (o2 instanceof Map<?, ?> map2)
+				populate(builder, map, prefix + key + "/");
+			else if (o2 instanceof Iterable<?> iterable)
+				populate(builder, iterable, prefix + key + "/");
+		});
+	}
+
 	/**
 	 * Checks if this configuration is valid.
 	 *
@@ -52,33 +78,6 @@ public interface IOriginsFeatureConfiguration {
 		if (name.endsWith("Configuration"))
 			return name.substring(0, name.length() - "Configuration".length());
 		return name;
-	}
-
-	static void populate(ImmutableMap.Builder<String, IOriginsFeatureConfiguration> builder, Iterable<?> iterable, String prefix) {
-		int i = 0;
-		for (Object o : iterable) {
-			if (o instanceof IOriginsFeatureConfiguration config)
-				builder.put(prefix + i, config);
-			else if (o instanceof Map<?, ?> map)
-				populate(builder, map, prefix + i + "/");
-			else if (o instanceof Iterable<?> iterable2)
-				populate(builder, iterable2, prefix + i + "/");
-			++i;
-		}
-	}
-
-	static void populate(ImmutableMap.Builder<String, IOriginsFeatureConfiguration> builder, Map<?, ?> map, String prefix) {
-		map.forEach((o, o2) -> {
-			String key = "?";
-			if (o instanceof String str) key = str;
-			else if (o instanceof StringIdentifiable identifiable) key = identifiable.asString();
-			if (o2 instanceof IOriginsFeatureConfiguration config)
-				builder.put(prefix + key, config);
-			else if (o2 instanceof Map<?, ?> map2)
-				populate(builder, map, prefix + key + "/");
-			else if (o2 instanceof Iterable<?> iterable)
-				populate(builder, iterable, prefix + key + "/");
-		});
 	}
 
 	@NotNull
@@ -111,8 +110,10 @@ public interface IOriginsFeatureConfiguration {
 
 	/**
 	 * Returns a list of powers that are not registered in the dynamic registry.
+	 *
 	 * @param dynamicRegistryManager The dynamic registry manager, use {@link OriginsDynamicRegistries#get(MinecraftServer)} to access it.
-	 * @param identifiers The powers to check the existence of.
+	 * @param identifiers            The powers to check the existence of.
+	 *
 	 * @return A containing all the missing powers.
 	 */
 	@NotNull
@@ -142,5 +143,4 @@ public interface IOriginsFeatureConfiguration {
 		if (config == null) return ImmutableList.of();
 		return config.getWarnings(server).stream().map(fieldName(name, fields)).toList();
 	}
-
 }

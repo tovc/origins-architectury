@@ -10,7 +10,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
-public record ResourceConfiguration(HudRender hudRender, int initialValue, int min, int max, @Nullable ConfiguredEntityAction<?, ?> minAction, @Nullable ConfiguredEntityAction<?, ?> maxAction) implements IHudRenderedVariableIntPowerConfiguration {
+public record ResourceConfiguration(HudRender hudRender, int initialValue, int min, int max,
+									@Nullable ConfiguredEntityAction<?, ?> minAction,
+									@Nullable ConfiguredEntityAction<?, ?> maxAction) implements IHudRenderedVariableIntPowerConfiguration {
 	public static final Codec<ResourceConfiguration> CODEC = RecordCodecBuilder.create(instance -> instance.group(
 			HudRender.CODEC.fieldOf("hud_render").forGetter(IHudRenderedVariableIntPowerConfiguration::hudRender),
 			Codec.INT.optionalFieldOf("start_value").forGetter(x -> x.min() == x.initialValue() ? Optional.empty() : Optional.of(x.initialValue())),

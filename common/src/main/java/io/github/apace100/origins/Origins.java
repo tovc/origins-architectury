@@ -7,10 +7,6 @@ import io.github.apace100.origins.data.OriginLoader;
 import io.github.apace100.origins.data.PowerLoader;
 import io.github.apace100.origins.networking.ModPacketsC2S;
 import io.github.apace100.origins.origin.Origin;
-import io.github.apace100.origins.origin.OriginLayers;
-import io.github.apace100.origins.origin.OriginManager;
-import io.github.apace100.origins.power.PowerTypes;
-import io.github.apace100.origins.factory.PowerFactories;
 import io.github.apace100.origins.registry.*;
 import io.github.apace100.origins.registry.action.ModBlockActions;
 import io.github.apace100.origins.registry.action.ModEntityActions;
@@ -19,13 +15,13 @@ import io.github.apace100.origins.registry.condition.*;
 import io.github.apace100.origins.util.ChoseOriginCriterion;
 import io.github.apace100.origins.util.GainedPowerCriterion;
 import io.github.apace100.origins.util.OriginsConfigSerializer;
+import me.shedaniel.architectury.event.events.CommandRegistrationEvent;
 import me.shedaniel.architectury.platform.Platform;
+import me.shedaniel.architectury.registry.CriteriaTriggersRegistry;
+import me.shedaniel.architectury.registry.ReloadListeners;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
-import me.shedaniel.architectury.event.events.CommandRegistrationEvent;
-import me.shedaniel.architectury.registry.CriteriaTriggersRegistry;
-import me.shedaniel.architectury.registry.ReloadListeners;
 import net.minecraft.command.argument.ArgumentTypes;
 import net.minecraft.command.argument.serialize.ConstantArgumentSerializer;
 import net.minecraft.resource.ResourceType;
@@ -36,10 +32,7 @@ import org.apache.logging.log4j.Logger;
 public class Origins {
 
 	public static final String MODID = OriginsAPI.MODID;
-	public static String VERSION = "";
-	public static int[] SEMVER;
 	public static final Logger LOGGER = LogManager.getLogger(Origins.class);
-	public static ServerConfig config;
 
 	public static void register() {
 		String[] splitVersion = VERSION.split("\\.");
@@ -60,7 +53,7 @@ public class Origins {
 		ModLoot.registerLootTables();
 		ModRecipes.register();
 		ModPowers.register();
-		EntityConditions.register();
+		ModEntityConditions.register();
 		ModItemConditions.register();
 		ModBlockConditions.register();
 		ModDamageConditions.register();
@@ -90,7 +83,9 @@ public class Origins {
 	public static Identifier identifier(String path) {
 		return new Identifier(Origins.MODID, path);
 	}
-
+	public static String VERSION = "";
+	public static int[] SEMVER;
+	public static ServerConfig config;
 
 	@Config(name = Origins.MODID + "_server")
 	public static class ServerConfig implements ConfigData {

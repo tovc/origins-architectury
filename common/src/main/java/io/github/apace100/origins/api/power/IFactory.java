@@ -18,7 +18,9 @@ public interface IFactory<T extends IOriginsFeatureConfiguration, C extends Conf
 
 	/**
 	 * Gets or create a {@link MapCodec} from the given {@link Codec}
+	 *
 	 * @param codec The codec to transform
+	 *
 	 * @return Either the codec itself if it was a boxed MapCodec, or a field with name "value"
 	 */
 	static <T> MapCodec<T> asMap(Codec<T> codec) {
@@ -29,13 +31,16 @@ public interface IFactory<T extends IOriginsFeatureConfiguration, C extends Conf
 
 	/**
 	 * Accesses the {@link Codec} used to serialize the configuration.
+	 *
 	 * @return The codec used to serialize the configuration.
 	 */
 	Codec<T> getCodec();
 
 	/**
 	 * Configures a new {@link ConfiguredFactory} from the given parameters.
+	 *
 	 * @param input
+	 *
 	 * @return
 	 */
 	C configure(T input);

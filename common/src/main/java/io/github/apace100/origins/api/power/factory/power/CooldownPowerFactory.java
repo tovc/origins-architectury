@@ -4,10 +4,9 @@ import com.mojang.serialization.Codec;
 import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.api.power.ICooldownPower;
 import io.github.apace100.origins.api.power.IHudRenderedPower;
-import io.github.apace100.origins.api.power.IVariableIntPower;
 import io.github.apace100.origins.api.power.configuration.ConfiguredPower;
-import io.github.apace100.origins.api.power.factory.PowerFactory;
 import io.github.apace100.origins.api.power.configuration.power.ICooldownPowerConfiguration;
+import io.github.apace100.origins.api.power.factory.PowerFactory;
 import io.github.apace100.origins.util.HudRender;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.LongTag;
@@ -26,14 +25,14 @@ public abstract class CooldownPowerFactory<T extends ICooldownPowerConfiguration
 	}
 
 	@Override
-	public boolean canUse(ConfiguredPower<T, ?> configuration, PlayerEntity player) {
-		return this.getRemainingDuration(configuration, player) <= 0 && configuration.isActive(player);
-	}
-
-	@Override
 	public void use(ConfiguredPower<T, ?> configuration, PlayerEntity player) {
 		this.setLastUseTime(configuration, player, player.getEntityWorld().getTime());
 		OriginComponent.sync(player);
+	}
+
+	@Override
+	public boolean canUse(ConfiguredPower<T, ?> configuration, PlayerEntity player) {
+		return this.getRemainingDuration(configuration, player) <= 0 && configuration.isActive(player);
 	}
 
 	@Override

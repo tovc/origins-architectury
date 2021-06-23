@@ -1,8 +1,8 @@
 package io.github.apace100.origins.action.block;
 
 import io.github.apace100.origins.action.configuration.OffsetConfiguration;
-import io.github.apace100.origins.api.power.factory.BlockAction;
 import io.github.apace100.origins.api.power.configuration.ConfiguredBlockAction;
+import io.github.apace100.origins.api.power.factory.BlockAction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;

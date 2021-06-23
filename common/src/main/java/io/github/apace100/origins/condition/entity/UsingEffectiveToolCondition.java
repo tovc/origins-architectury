@@ -1,5 +1,7 @@
 package io.github.apace100.origins.condition.entity;
 
+import io.github.apace100.origins.api.configuration.NoConfiguration;
+import io.github.apace100.origins.api.power.factory.EntityCondition;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -10,29 +12,31 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
 
-import java.util.function.Predicate;
+public class UsingEffectiveToolCondition extends EntityCondition<NoConfiguration> {
 
-public class UsingEffectiveToolCondition implements Predicate<LivingEntity> {
+	public UsingEffectiveToolCondition() {
+		super(NoConfiguration.CODEC);
+	}
 
-	protected boolean testClient(LivingEntity entity) {
+	protected boolean checkClient(LivingEntity entity) {
 		return false;
 	}
 
 	@Override
-	public boolean test(LivingEntity entity) {
+	public boolean check(NoConfiguration configuration, LivingEntity entity) {
 		if (entity instanceof ServerPlayerEntity) {
 			ServerPlayerInteractionManager interactionMngr = ((ServerPlayerEntity) entity).interactionManager;
 			if (interactionMngr.mining) {
 				return ((PlayerEntity) entity).isUsingEffectiveTool(entity.world.getBlockState(interactionMngr.miningPos));
 			}
 		}
-		return testClient(entity);
+		return checkClient(entity);
 	}
 
 	@Environment(EnvType.CLIENT)
 	public static class Client extends UsingEffectiveToolCondition {
 		@Override
-		protected boolean testClient(LivingEntity entity) {
+		protected boolean checkClient(LivingEntity entity) {
 			if (entity instanceof ClientPlayerEntity) {
 				ClientPlayerInteractionManager interactionMngr = MinecraftClient.getInstance().interactionManager;
 				if (interactionMngr.isBreakingBlock())

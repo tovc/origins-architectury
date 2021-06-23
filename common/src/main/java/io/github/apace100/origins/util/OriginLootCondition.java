@@ -21,48 +21,47 @@ import java.util.Map;
 import java.util.Optional;
 
 public class OriginLootCondition implements LootCondition {
-    private final Identifier origin;
+	public static LootCondition.Builder builder(String originId) {
+		return builder(new Identifier(originId));
+	}
 
-    private OriginLootCondition(Identifier origin) {
-        this.origin = origin;
-    }
+	public static LootCondition.Builder builder(Identifier origin) {
+		return () -> new OriginLootCondition(origin);
+	}
+	private final Identifier origin;
 
-    public LootConditionType getType() {
-        return ModLoot.ORIGIN_LOOT_CONDITION;
-    }
+	private OriginLootCondition(Identifier origin) {
+		this.origin = origin;
+	}
 
-    public boolean test(LootContext lootContext) {
-        Optional<OriginComponent> optional = ModComponentsArchitectury.maybeGetOriginComponent(lootContext.get(LootContextParameters.THIS_ENTITY));
-        if(optional.isPresent()){
-            OriginComponent component = optional.get();
-            HashMap<OriginLayer, Origin> map = component.getOrigins();
-            boolean matches = false;
-            for (Map.Entry<OriginLayer, Origin> entry: map.entrySet()) {
-                if(entry.getValue().getIdentifier().equals(origin)) {
-                    matches = true;
-                    break;
-                }
-            }
-            return matches;
-        }
-        return false;
-    }
+	public LootConditionType getType() {
+		return ModLoot.ORIGIN_LOOT_CONDITION;
+	}
 
-    public static LootCondition.Builder builder(String originId) {
-        return builder(new Identifier(originId));
-    }
+	public boolean test(LootContext lootContext) {
+		Optional<OriginComponent> optional = ModComponentsArchitectury.maybeGetOriginComponent(lootContext.get(LootContextParameters.THIS_ENTITY));
+		if (optional.isPresent()) {
+			OriginComponent component = optional.get();
+			HashMap<OriginLayer, Origin> map = component.getOrigins();
+			boolean matches = false;
+			for (Map.Entry<OriginLayer, Origin> entry : map.entrySet()) {
+				if (entry.getValue().getIdentifier().equals(origin)) {
+					matches = true;
+					break;
+				}
+			}
+			return matches;
+		}
+		return false;
+	}
 
-    public static LootCondition.Builder builder(Identifier origin) {
-        return () -> new OriginLootCondition(origin);
-    }
+	public static class Serializer implements JsonSerializer<OriginLootCondition> {
+		public void toJson(JsonObject jsonObject, OriginLootCondition originLootCondition, JsonSerializationContext jsonSerializationContext) {
+			jsonObject.addProperty("origin", originLootCondition.origin.toString());
+		}
 
-    public static class Serializer implements JsonSerializer<OriginLootCondition> {
-        public void toJson(JsonObject jsonObject, OriginLootCondition originLootCondition, JsonSerializationContext jsonSerializationContext) {
-            jsonObject.addProperty("origin", originLootCondition.origin.toString());
-        }
-
-        public OriginLootCondition fromJson(JsonObject jsonObject, JsonDeserializationContext jsonDeserializationContext) {
-            return new OriginLootCondition(new Identifier(JsonHelper.getString(jsonObject, "origin")));
-        }
-    }
+		public OriginLootCondition fromJson(JsonObject jsonObject, JsonDeserializationContext jsonDeserializationContext) {
+			return new OriginLootCondition(new Identifier(JsonHelper.getString(jsonObject, "origin")));
+		}
+	}
 }

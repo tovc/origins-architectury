@@ -1,45 +1,29 @@
 package io.github.apace100.origins.condition.entity;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.github.apace100.origins.api.OriginsAPI;
 import io.github.apace100.origins.api.component.OriginComponent;
-import io.github.apace100.origins.power.CooldownPower;
-import io.github.apace100.origins.power.Power;
-import io.github.apace100.origins.power.PowerType;
-import io.github.apace100.origins.power.VariableIntPower;
-import io.github.apace100.origins.registry.ModComponentsArchitectury;
-import io.github.apace100.origins.util.Comparison;
-import io.github.apace100.origins.util.OriginsCodecs;
+import io.github.apace100.origins.api.power.configuration.ConfiguredPower;
+import io.github.apace100.origins.api.power.factory.EntityCondition;
+import io.github.apace100.origins.condition.configuration.ResourceComparisonConfiguration;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 
-import java.util.function.Predicate;
+import java.util.OptionalInt;
 
-public class ResourceCondition implements Predicate<LivingEntity> {
-	public static Codec<ResourceCondition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-			OriginsCodecs.COMPARISON.fieldOf("comparison").forGetter(x -> x.comparison),
-			Codec.INT.fieldOf("compare_to").forGetter(x -> x.compareTo),
-			OriginsCodecs.POWER_TYPE.fieldOf("resource").forGetter(x -> x.power)
-	).apply(instance, ResourceCondition::new));
+public class ResourceCondition extends EntityCondition<ResourceComparisonConfiguration> {
 
-	private final Comparison comparison;
-	private final int compareTo;
-	private final PowerType<?> power;
-
-	public ResourceCondition(Comparison comparison, int compareTo, PowerType<?> power) {
-		this.comparison = comparison;
-		this.compareTo = compareTo;
-		this.power = power;
+	public ResourceCondition() {
+		super(ResourceComparisonConfiguration.CODEC);
 	}
 
 	@Override
-	public boolean test(LivingEntity t) {
-		int resourceValue = 0;
-		OriginComponent component = ModComponentsArchitectury.getOriginComponent(t);
-		Power p = component.getPower(this.power);
-		if (p instanceof VariableIntPower)
-			resourceValue = ((VariableIntPower) p).getValue();
-		else if (p instanceof CooldownPower)
-			resourceValue = ((CooldownPower) p).getRemainingTicks();
-		return this.comparison.compare(resourceValue, this.compareTo);
+	public boolean check(ResourceComparisonConfiguration configuration, LivingEntity entity) {
+		OriginComponent component = OriginsAPI.getComponent(entity);
+		ConfiguredPower<?, ?> power = component.getPower(configuration.resource().power());
+		if (entity instanceof PlayerEntity player) {
+			OptionalInt value = power.getValue(player);
+			return value.isPresent() && configuration.comparison().check(value.getAsInt());
+		}
+		return false;
 	}
 }

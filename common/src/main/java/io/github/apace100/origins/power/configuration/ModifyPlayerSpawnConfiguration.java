@@ -42,78 +42,6 @@ public record ModifyPlayerSpawnConfiguration(RegistryKey<World> dimension, float
 			OriginsCodecs.OPTIONAL_SOUND_EVENT.optionalFieldOf("respawn_sound", Optional.empty()).forGetter(x -> Optional.ofNullable(x.sound()))
 	).apply(instance, (t1, t2, t3, t4, t5, t6) -> new ModifyPlayerSpawnConfiguration(t1, t2, t3.orElse(null), t4, t5.orElse(null), t6.orElse(null))));
 
-
-	public Pair<ServerWorld, BlockPos> getSpawn(PlayerEntity player, boolean isSpawnObstructed) {
-		if (player instanceof ServerPlayerEntity serverPlayer) {
-			ServerWorld world = serverPlayer.getServerWorld().getServer().getWorld(dimension);
-			BlockPos regularSpawn = serverPlayer.getServerWorld().getServer().getWorld(World.OVERWORLD).getSpawnPos();
-			BlockPos spawnToDimPos;
-			//int iterations = (world.getDimensionHeight() / 2) - 8;
-			int center = world.getDimensionHeight() / 2;
-			BlockPos.Mutable mutable;
-			Vec3d tpPos;
-			int range = 64;
-
-			switch (this.strategy()) {
-				case "center":
-					spawnToDimPos = new BlockPos(0, center, 0);
-					break;
-
-				case "default":
-					if (this.distanceMultiplier() != 0) {
-						spawnToDimPos = new BlockPos(regularSpawn.getX() * this.distanceMultiplier(), regularSpawn.getY(), regularSpawn.getZ() * this.distanceMultiplier());
-					} else {
-						spawnToDimPos = new BlockPos(regularSpawn.getX(), regularSpawn.getY(), regularSpawn.getZ());
-					}
-					break;
-
-				default:
-					Origins.LOGGER.warn("This case does nothing. The game crashes if there is no spawn strategy set");
-					if (this.distanceMultiplier() != 0) {
-						spawnToDimPos = new BlockPos(regularSpawn.getX() * this.distanceMultiplier(), regularSpawn.getY(), regularSpawn.getZ() * this.distanceMultiplier());
-					} else {
-						spawnToDimPos = new BlockPos(regularSpawn.getX(), regularSpawn.getY(), regularSpawn.getZ());
-					}
-			}
-
-			if (this.biome() != null) {
-				Optional<Biome> biomeOptional = world.getRegistryManager().get(Registry.BIOME_KEY).getOrEmpty(this.biome());
-				if (biomeOptional.isPresent()) {
-					BlockPos biomePos = world.locateBiome(biomeOptional.get(), spawnToDimPos, 6400, 8);
-					if (biomePos != null)
-						spawnToDimPos = biomePos;
-					else
-						Origins.LOGGER.warn("Could not find biome \"{}\" in dimension \"{}\".", this.biome(), this.dimension());
-				} else
-					Origins.LOGGER.warn("Biome with ID \"{}\" was not registered.", this.biome());
-			}
-
-			if (structure == null) {
-				tpPos = getValidSpawn(spawnToDimPos, range, world);
-			} else {
-				BlockPos structurePos = getStructureLocation(player, structure, dimension);
-				ChunkPos structureChunkPos;
-
-				if (structurePos == null) {
-					return null;
-				}
-				structureChunkPos = new ChunkPos(structurePos.getX() >> 4, structurePos.getZ() >> 4);
-				StructureStart<?> structureStart = world.getStructureAccessor().getStructureStart(ChunkSectionPos.from(structureChunkPos, 0), structure, world.getChunk(structurePos));
-				BlockPos structureCenter = new BlockPos(structureStart.getBoundingBox().getCenter());
-				tpPos = getValidSpawn(structureCenter, range, world);
-			}
-
-			if (tpPos != null) {
-				mutable = new BlockPos(tpPos.x, tpPos.y, tpPos.z).mutableCopy();
-				BlockPos spawnLocation = mutable;
-				world.getChunkManager().addTicket(ChunkTicketType.START, new ChunkPos(spawnLocation), 11, Unit.INSTANCE);
-				return new Pair<>(world, spawnLocation);
-			}
-			return null;
-		}
-		return null;
-	}
-
 	private static BlockPos getStructureLocation(PlayerEntity player, StructureFeature<?> structure, RegistryKey<World> dimension) {
 		BlockPos blockPos = new BlockPos(0, 70, 0);
 		ServerWorld serverWorld = player.getServer().getWorld(dimension);
@@ -191,5 +119,76 @@ public record ModifyPlayerSpawnConfiguration(RegistryKey<World> dimension, float
 			d--;
 		}
 		return (null);
+	}
+
+	public Pair<ServerWorld, BlockPos> getSpawn(PlayerEntity player, boolean isSpawnObstructed) {
+		if (player instanceof ServerPlayerEntity serverPlayer) {
+			ServerWorld world = serverPlayer.getServerWorld().getServer().getWorld(dimension);
+			BlockPos regularSpawn = serverPlayer.getServerWorld().getServer().getWorld(World.OVERWORLD).getSpawnPos();
+			BlockPos spawnToDimPos;
+			//int iterations = (world.getDimensionHeight() / 2) - 8;
+			int center = world.getDimensionHeight() / 2;
+			BlockPos.Mutable mutable;
+			Vec3d tpPos;
+			int range = 64;
+
+			switch (this.strategy()) {
+				case "center":
+					spawnToDimPos = new BlockPos(0, center, 0);
+					break;
+
+				case "default":
+					if (this.distanceMultiplier() != 0) {
+						spawnToDimPos = new BlockPos(regularSpawn.getX() * this.distanceMultiplier(), regularSpawn.getY(), regularSpawn.getZ() * this.distanceMultiplier());
+					} else {
+						spawnToDimPos = new BlockPos(regularSpawn.getX(), regularSpawn.getY(), regularSpawn.getZ());
+					}
+					break;
+
+				default:
+					Origins.LOGGER.warn("This case does nothing. The game crashes if there is no spawn strategy set");
+					if (this.distanceMultiplier() != 0) {
+						spawnToDimPos = new BlockPos(regularSpawn.getX() * this.distanceMultiplier(), regularSpawn.getY(), regularSpawn.getZ() * this.distanceMultiplier());
+					} else {
+						spawnToDimPos = new BlockPos(regularSpawn.getX(), regularSpawn.getY(), regularSpawn.getZ());
+					}
+			}
+
+			if (this.biome() != null) {
+				Optional<Biome> biomeOptional = world.getRegistryManager().get(Registry.BIOME_KEY).getOrEmpty(this.biome());
+				if (biomeOptional.isPresent()) {
+					BlockPos biomePos = world.locateBiome(biomeOptional.get(), spawnToDimPos, 6400, 8);
+					if (biomePos != null)
+						spawnToDimPos = biomePos;
+					else
+						Origins.LOGGER.warn("Could not find biome \"{}\" in dimension \"{}\".", this.biome(), this.dimension());
+				} else
+					Origins.LOGGER.warn("Biome with ID \"{}\" was not registered.", this.biome());
+			}
+
+			if (structure == null) {
+				tpPos = getValidSpawn(spawnToDimPos, range, world);
+			} else {
+				BlockPos structurePos = getStructureLocation(player, structure, dimension);
+				ChunkPos structureChunkPos;
+
+				if (structurePos == null) {
+					return null;
+				}
+				structureChunkPos = new ChunkPos(structurePos.getX() >> 4, structurePos.getZ() >> 4);
+				StructureStart<?> structureStart = world.getStructureAccessor().getStructureStart(ChunkSectionPos.from(structureChunkPos, 0), structure, world.getChunk(structurePos));
+				BlockPos structureCenter = new BlockPos(structureStart.getBoundingBox().getCenter());
+				tpPos = getValidSpawn(structureCenter, range, world);
+			}
+
+			if (tpPos != null) {
+				mutable = new BlockPos(tpPos.x, tpPos.y, tpPos.z).mutableCopy();
+				BlockPos spawnLocation = mutable;
+				world.getChunkManager().addTicket(ChunkTicketType.START, new ChunkPos(spawnLocation), 11, Unit.INSTANCE);
+				return new Pair<>(world, spawnLocation);
+			}
+			return null;
+		}
+		return null;
 	}
 }

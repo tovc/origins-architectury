@@ -40,27 +40,27 @@ public record FireProjectileConfiguration(int duration, HudRender hudRender, Ent
 
 
 	public void fireProjectiles(PlayerEntity player) {
-		if(soundEvent != null) {
+		if (soundEvent != null) {
 			player.world.playSound(null, player.getX(), player.getY(), player.getZ(), soundEvent, SoundCategory.NEUTRAL, 0.5F, 0.4F / (player.getRandom().nextFloat() * 0.4F + 0.8F));
 		}
 		if (!player.world.isClient) {
-			for(int i = 0; i < projectileCount; i++) {
+			for (int i = 0; i < projectileCount; i++) {
 				fireProjectile(player);
 			}
 		}
 	}
 
 	private void fireProjectile(PlayerEntity player) {
-		if(entityType != null) {
+		if (entityType != null) {
 			Entity entity = entityType.create(player.world);
-			if(entity == null) {
+			if (entity == null) {
 				return;
 			}
 			Vec3d rotationVector = player.getRotationVector();
 			Vec3d spawnPos = player.getPos().add(0, player.getEyeHeight(player.getPose(), player.getDimensions(player.getPose())), 0).add(rotationVector);
 			entity.refreshPositionAndAngles(spawnPos.getX(), spawnPos.getY(), spawnPos.getZ(), player.pitch, player.yaw);
-			if(entity instanceof ProjectileEntity projectile) {
-				if(projectile instanceof ExplosiveProjectileEntity explosiveProjectileEntity) {
+			if (entity instanceof ProjectileEntity projectile) {
+				if (projectile instanceof ExplosiveProjectileEntity explosiveProjectileEntity) {
 					explosiveProjectileEntity.posX = rotationVector.x * speed;
 					explosiveProjectileEntity.posY = rotationVector.y * speed;
 					explosiveProjectileEntity.posZ = rotationVector.z * speed;
@@ -71,12 +71,12 @@ public record FireProjectileConfiguration(int duration, HudRender hudRender, Ent
 				float f = -MathHelper.sin(player.yaw * 0.017453292F) * MathHelper.cos(player.pitch * 0.017453292F);
 				float g = -MathHelper.sin(player.pitch * 0.017453292F);
 				float h = MathHelper.cos(player.yaw * 0.017453292F) * MathHelper.cos(player.pitch * 0.017453292F);
-				Vec3d vec3d = (new Vec3d(f, g, h)).normalize().add(player.getRandom().nextGaussian() * 0.007499999832361937D * (double)divergence, player.getRandom().nextGaussian() * 0.007499999832361937D * (double)divergence, player.getRandom().nextGaussian() * 0.007499999832361937D * (double)divergence).multiply(speed);
+				Vec3d vec3d = (new Vec3d(f, g, h)).normalize().add(player.getRandom().nextGaussian() * 0.007499999832361937D * (double) divergence, player.getRandom().nextGaussian() * 0.007499999832361937D * (double) divergence, player.getRandom().nextGaussian() * 0.007499999832361937D * (double) divergence).multiply(speed);
 				entity.setVelocity(vec3d);
 				Vec3d playerVelo = player.getVelocity();
 				entity.setVelocity(entity.getVelocity().add(playerVelo.x, player.isOnGround() ? 0.0D : playerVelo.y, playerVelo.z));
 			}
-			if(tag != null) {
+			if (tag != null) {
 				CompoundTag mergedTag = entity.toTag(new CompoundTag());
 				mergedTag.copyFrom(tag);
 				entity.fromTag(mergedTag);

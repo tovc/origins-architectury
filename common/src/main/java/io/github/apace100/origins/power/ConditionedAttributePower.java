@@ -1,8 +1,8 @@
 package io.github.apace100.origins.power;
 
+import io.github.apace100.origins.api.configuration.ListConfiguration;
 import io.github.apace100.origins.api.power.configuration.ConfiguredPower;
 import io.github.apace100.origins.api.power.factory.PowerFactory;
-import io.github.apace100.origins.api.configuration.ListConfiguration;
 import io.github.apace100.origins.power.configuration.ConditionedAttributeConfiguration;
 import io.github.apace100.origins.util.AttributedEntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributeInstance;

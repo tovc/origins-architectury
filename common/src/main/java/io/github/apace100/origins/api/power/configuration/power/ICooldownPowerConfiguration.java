@@ -5,5 +5,6 @@ import io.github.apace100.origins.util.HudRender;
 
 public interface ICooldownPowerConfiguration extends IOriginsFeatureConfiguration {
 	int duration();
+
 	HudRender hudRender();
 }

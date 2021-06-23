@@ -29,7 +29,6 @@ import java.util.function.Function;
 
 public class RecipeCodec implements Codec<Recipe<?>> {
 	private static final Map<Class<? extends Recipe<?>>, Function<? extends Recipe<?>, RecipeJsonProvider>> SERIALIZABLE_TYPES = new HashMap<>();
-	public static Codec<Recipe<?>> CODEC = new RecipeCodec();
 
 	static {
 		add(ShapedRecipe.class, RecipeCodec::convertShaped);
@@ -89,6 +88,7 @@ public class RecipeCodec implements Codec<Recipe<?>> {
 			return DataResult.error("Malformed resource: " + type);
 		return Registry.RECIPE_SERIALIZER.getOrEmpty(identifier).map(DataResult::success).orElseGet(() -> DataResult.error("Unknown recipe serializer: " + type)).map(Function.identity());
 	}
+	public static Codec<Recipe<?>> CODEC = new RecipeCodec();
 
 	private boolean isDataContext(DynamicOps<?> ops) {
 		return ops instanceof JsonOps && !ops.compressMaps();

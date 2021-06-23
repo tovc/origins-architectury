@@ -15,41 +15,40 @@ import net.minecraft.util.JsonHelper;
 
 public class ChoseOriginCriterion extends AbstractCriterion<ChoseOriginCriterion.Conditions> {
 
-    public static ChoseOriginCriterion INSTANCE = new ChoseOriginCriterion();
+	private static final Identifier ID = new Identifier(Origins.MODID, "chose_origin");
+	public static ChoseOriginCriterion INSTANCE = new ChoseOriginCriterion();
 
-    private static final Identifier ID = new Identifier(Origins.MODID, "chose_origin");
+	@Override
+	protected Conditions conditionsFromJson(JsonObject obj, EntityPredicate.Extended playerPredicate, AdvancementEntityPredicateDeserializer predicateDeserializer) {
+		Identifier id = Identifier.tryParse(JsonHelper.getString(obj, "origin"));
+		return new Conditions(playerPredicate, id);
+	}
 
-    @Override
-    protected Conditions conditionsFromJson(JsonObject obj, EntityPredicate.Extended playerPredicate, AdvancementEntityPredicateDeserializer predicateDeserializer) {
-        Identifier id = Identifier.tryParse(JsonHelper.getString(obj, "origin"));
-        return new Conditions(playerPredicate, id);
-    }
+	public void trigger(ServerPlayerEntity player, Origin origin) {
+		this.test(player, (conditions -> conditions.matches(origin)));
+	}
 
-    public void trigger(ServerPlayerEntity player, Origin origin) {
-        this.test(player, (conditions -> conditions.matches(origin)));
-    }
+	@Override
+	public Identifier getId() {
+		return ID;
+	}
 
-    @Override
-    public Identifier getId() {
-        return ID;
-    }
+	public static class Conditions extends AbstractCriterionConditions {
+		private final Identifier originId;
 
-    public static class Conditions extends AbstractCriterionConditions {
-        private final Identifier originId;
+		public Conditions(EntityPredicate.Extended player, Identifier originId) {
+			super(ChoseOriginCriterion.ID, player);
+			this.originId = originId;
+		}
 
-        public Conditions(EntityPredicate.Extended player, Identifier originId) {
-            super(ChoseOriginCriterion.ID, player);
-            this.originId = originId;
-        }
+		public boolean matches(Origin origin) {
+			return origin.getIdentifier().equals(originId);
+		}
 
-        public boolean matches(Origin origin) {
-            return origin.getIdentifier().equals(originId);
-        }
-
-        public JsonObject toJson(AdvancementEntityPredicateSerializer predicateSerializer) {
-            JsonObject jsonObject = super.toJson(predicateSerializer);
-            jsonObject.add("origin", new JsonPrimitive(originId.toString()));
-            return jsonObject;
-        }
-    }
+		public JsonObject toJson(AdvancementEntityPredicateSerializer predicateSerializer) {
+			JsonObject jsonObject = super.toJson(predicateSerializer);
+			jsonObject.add("origin", new JsonPrimitive(originId.toString()));
+			return jsonObject;
+		}
+	}
 }

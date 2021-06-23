@@ -1,10 +1,10 @@
 package io.github.apace100.origins;
 
+import io.github.apace100.origins.factory.condition.EntityConditionsClient;
 import io.github.apace100.origins.networking.ModPackets;
 import io.github.apace100.origins.networking.ModPacketsS2C;
 import io.github.apace100.origins.power.Active;
 import io.github.apace100.origins.power.Power;
-import io.github.apace100.origins.factory.condition.EntityConditionsClient;
 import io.github.apace100.origins.registry.ModBlocks;
 import io.github.apace100.origins.registry.ModComponentsArchitectury;
 import io.github.apace100.origins.registry.ModEntities;
@@ -38,134 +38,130 @@ import java.util.List;
 
 public class OriginsClient {
 
-    public static KeyBinding usePrimaryActivePowerKeybind;
-    public static KeyBinding useSecondaryActivePowerKeybind;
-    public static KeyBinding viewCurrentOriginKeybind;
+	public static void registerPowerKeybinding(String keyId, KeyBinding keyBinding) {
+		idToKeyBindingMap.put(keyId, keyBinding);
+	}
 
-    public static ClientConfig config;
+	@Environment(EnvType.CLIENT)
+	public static void register() {
+		EntityRenderers.register(ModEntities.ENDERIAN_PEARL,
+				(dispatcher) -> new FlyingItemEntityRenderer<>(dispatcher, MinecraftClient.getInstance().getItemRenderer()));
 
-    public static boolean isServerRunningOrigins = false;
+		ModPacketsS2C.register();
 
-    private static HashMap<String, KeyBinding> idToKeyBindingMap = new HashMap<>();
-    private static HashMap<String, Boolean> lastKeyBindingStates = new HashMap<>();
-    private static boolean initializedKeyBindingMap = false;
+		EntityConditionsClient.register();
+		OriginClientEventHandler.register();
 
-    public static void registerPowerKeybinding(String keyId, KeyBinding keyBinding) {
-        idToKeyBindingMap.put(keyId, keyBinding);
-    }
+		AutoConfig.register(ClientConfig.class, OriginsConfigSerializer::new);
+		config = AutoConfig.getConfigHolder(ClientConfig.class).getConfig();
 
-    @Environment(EnvType.CLIENT)
-    public static void register() {
-        EntityRenderers.register(ModEntities.ENDERIAN_PEARL,
-            (dispatcher) -> new FlyingItemEntityRenderer<>(dispatcher, MinecraftClient.getInstance().getItemRenderer()));
+		usePrimaryActivePowerKeybind = new KeyBinding("key.conditionedOrigins.primary_active", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_G, "category." + Origins.MODID);
+		useSecondaryActivePowerKeybind = new KeyBinding("key.conditionedOrigins.secondary_active", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category." + Origins.MODID);
+		viewCurrentOriginKeybind = new KeyBinding("key.conditionedOrigins.view_origin", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_O, "category." + Origins.MODID);
 
-        ModPacketsS2C.register();
+		registerPowerKeybinding("key.conditionedOrigins.primary_active", usePrimaryActivePowerKeybind);
+		registerPowerKeybinding("key.conditionedOrigins.secondary_active", useSecondaryActivePowerKeybind);
+		registerPowerKeybinding("primary", usePrimaryActivePowerKeybind);
+		registerPowerKeybinding("secondary", useSecondaryActivePowerKeybind);
 
-        EntityConditionsClient.register();
-        OriginClientEventHandler.register();
+		KeyBindings.registerKeyBinding(usePrimaryActivePowerKeybind);
+		KeyBindings.registerKeyBinding(useSecondaryActivePowerKeybind);
+		KeyBindings.registerKeyBinding(viewCurrentOriginKeybind);
 
-        AutoConfig.register(ClientConfig.class, OriginsConfigSerializer::new);
-        config = AutoConfig.getConfigHolder(ClientConfig.class).getConfig();
+		ClientTickEvent.CLIENT_PRE.register(tick -> {
+			if (tick.player != null) {
+				List<Power> powers = ModComponentsArchitectury.getOriginComponent(tick.player).getPowers();
+				List<Power> pressedPowers = new LinkedList<>();
+				HashMap<String, Boolean> currentKeyBindingStates = new HashMap<>();
+				for (Power power : powers) {
+					if (power instanceof Active) {
+						Active active = (Active) power;
+						Active.Key key = active.getKey();
+						KeyBinding keyBinding = getKeyBinding(key.key);
+						if (keyBinding != null) {
+							if (!currentKeyBindingStates.containsKey(key.key)) {
+								currentKeyBindingStates.put(key.key, keyBinding.isPressed());
+							}
+							if (currentKeyBindingStates.get(key.key) && (key.continuous || !lastKeyBindingStates.getOrDefault(key.key, false))) {
+								pressedPowers.add(power);
+							}
+						}
+					}
+				}
+				lastKeyBindingStates = currentKeyBindingStates;
+				if (pressedPowers.size() > 0) {
+					performActivePowers(pressedPowers);
+				}
+			}
+			while (viewCurrentOriginKeybind.wasPressed()) {
+				if (!(MinecraftClient.getInstance().currentScreen instanceof ViewOriginScreen)) {
+					MinecraftClient.getInstance().openScreen(new ViewOriginScreen());
+				}
+			}
+		});
 
-        usePrimaryActivePowerKeybind = new KeyBinding("key.conditionedOrigins.primary_active", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_G, "category." + Origins.MODID);
-        useSecondaryActivePowerKeybind = new KeyBinding("key.conditionedOrigins.secondary_active", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category." + Origins.MODID);
-        viewCurrentOriginKeybind = new KeyBinding("key.conditionedOrigins.view_origin", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_O, "category." + Origins.MODID);
+		GameHudRender.HUD_RENDERS.add(new PowerHudRenderer());
+	}
 
-        registerPowerKeybinding("key.conditionedOrigins.primary_active", usePrimaryActivePowerKeybind);
-        registerPowerKeybinding("key.conditionedOrigins.secondary_active", useSecondaryActivePowerKeybind);
-        registerPowerKeybinding("primary", usePrimaryActivePowerKeybind);
-        registerPowerKeybinding("secondary", useSecondaryActivePowerKeybind);
+	/**
+	 * Forge uses a delegate for RenderType assignment, which means
+	 * it needs to be called after the registries have initialized.
+	 */
+	public static void setup() {
+		RenderTypes.register(RenderLayer.getCutout(), ModBlocks.TEMPORARY_COBWEB);
+	}
 
-        KeyBindings.registerKeyBinding(usePrimaryActivePowerKeybind);
-        KeyBindings.registerKeyBinding(useSecondaryActivePowerKeybind);
-        KeyBindings.registerKeyBinding(viewCurrentOriginKeybind);
+	@Environment(EnvType.CLIENT)
+	private static void performActivePowers(List<Power> powers) {
+		PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
+		buffer.writeInt(powers.size());
+		for (Power power : powers) {
+			buffer.writeIdentifier(power.getType().getIdentifier());
+			((Active) power).onUse();
+		}
+		NetworkManager.sendToServer(ModPackets.USE_ACTIVE_POWERS, buffer);
+	}
 
-        ClientTickEvent.CLIENT_PRE.register(tick -> {
-            if(tick.player != null) {
-                List<Power> powers = ModComponentsArchitectury.getOriginComponent(tick.player).getPowers();
-                List<Power> pressedPowers = new LinkedList<>();
-                HashMap<String, Boolean> currentKeyBindingStates = new HashMap<>();
-                for(Power power : powers) {
-                    if(power instanceof Active) {
-                        Active active = (Active)power;
-                        Active.Key key = active.getKey();
-                        KeyBinding keyBinding = getKeyBinding(key.key);
-                        if(keyBinding != null) {
-                            if(!currentKeyBindingStates.containsKey(key.key)) {
-                               currentKeyBindingStates.put(key.key, keyBinding.isPressed());
-                            }
-                            if(currentKeyBindingStates.get(key.key) && (key.continuous || !lastKeyBindingStates.getOrDefault(key.key, false))) {
-                                pressedPowers.add(power);
-                            }
-                        }
-                    }
-                }
-                lastKeyBindingStates = currentKeyBindingStates;
-                if(pressedPowers.size() > 0) {
-                    performActivePowers(pressedPowers);
-                }
-            }
-            while(viewCurrentOriginKeybind.wasPressed()) {
-                if(!(MinecraftClient.getInstance().currentScreen instanceof ViewOriginScreen)) {
-                    MinecraftClient.getInstance().openScreen(new ViewOriginScreen());
-                }
-            }
-        });
+	@Environment(EnvType.CLIENT)
+	private static KeyBinding getKeyBinding(String key) {
+		if (!idToKeyBindingMap.containsKey(key)) {
+			if (!initializedKeyBindingMap) {
+				initializedKeyBindingMap = true;
+				MinecraftClient client = MinecraftClient.getInstance();
+				for (int i = 0; i < client.options.keysAll.length; i++) {
+					idToKeyBindingMap.put(client.options.keysAll[i].getTranslationKey(), client.options.keysAll[i]);
+				}
+				return getKeyBinding(key);
+			}
+			return null;
+		}
+		return idToKeyBindingMap.get(key);
+	}
+	public static KeyBinding usePrimaryActivePowerKeybind;
+	public static KeyBinding useSecondaryActivePowerKeybind;
+	public static KeyBinding viewCurrentOriginKeybind;
+	public static ClientConfig config;
+	public static boolean isServerRunningOrigins = false;
+	private static HashMap<String, KeyBinding> idToKeyBindingMap = new HashMap<>();
+	private static HashMap<String, Boolean> lastKeyBindingStates = new HashMap<>();
+	private static boolean initializedKeyBindingMap = false;
 
-        GameHudRender.HUD_RENDERS.add(new PowerHudRenderer());
-    }
+	@Config(name = Origins.MODID)
+	public static class ClientConfig implements ConfigData {
 
-    /**
-     * Forge uses a delegate for RenderType assignment, which means
-     * it needs to be called after the registries have initialized.
-     */
-    public static void setup() {
-        RenderTypes.register(RenderLayer.getCutout(), ModBlocks.TEMPORARY_COBWEB);
-    }
+		public int xOffset = 0;
+		public int yOffset = 0;
 
-    @Environment(EnvType.CLIENT)
-    private static void performActivePowers(List<Power> powers) {
-        PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
-        buffer.writeInt(powers.size());
-        for(Power power : powers) {
-            buffer.writeIdentifier(power.getType().getIdentifier());
-            ((Active)power).onUse();
-        }
-        NetworkManager.sendToServer(ModPackets.USE_ACTIVE_POWERS, buffer);
-    }
+		@ConfigEntry.BoundedDiscrete(max = 1)
+		public float phantomizedOverlayStrength = 0.8F;
 
-    @Environment(EnvType.CLIENT)
-    private static KeyBinding getKeyBinding(String key) {
-        if(!idToKeyBindingMap.containsKey(key)) {
-            if(!initializedKeyBindingMap) {
-                initializedKeyBindingMap = true;
-                MinecraftClient client = MinecraftClient.getInstance();
-                for(int i = 0; i < client.options.keysAll.length; i++) {
-                    idToKeyBindingMap.put(client.options.keysAll[i].getTranslationKey(), client.options.keysAll[i]);
-                }
-                return getKeyBinding(key);
-            }
-            return null;
-        }
-        return idToKeyBindingMap.get(key);
-    }
-
-    @Config(name = Origins.MODID)
-    public static class ClientConfig implements ConfigData {
-
-        public int xOffset = 0;
-        public int yOffset = 0;
-
-        @ConfigEntry.BoundedDiscrete(max = 1)
-        public float phantomizedOverlayStrength = 0.8F;
-
-        @Override
-        public void validatePostLoad() {
-            if (phantomizedOverlayStrength < 0F) {
-                phantomizedOverlayStrength = 0F;
-            } else if (phantomizedOverlayStrength > 1F) {
-                phantomizedOverlayStrength = 1F;
-            }
-        }
-    }
+		@Override
+		public void validatePostLoad() {
+			if (phantomizedOverlayStrength < 0F) {
+				phantomizedOverlayStrength = 0F;
+			} else if (phantomizedOverlayStrength > 1F) {
+				phantomizedOverlayStrength = 1F;
+			}
+		}
+	}
 }

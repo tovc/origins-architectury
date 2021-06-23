@@ -1,9 +1,9 @@
 package io.github.apace100.origins.power;
 
 import com.mojang.serialization.Codec;
+import io.github.apace100.origins.api.configuration.ListConfiguration;
 import io.github.apace100.origins.api.power.configuration.ConfiguredPower;
 import io.github.apace100.origins.api.power.factory.PowerFactory;
-import io.github.apace100.origins.api.configuration.ListConfiguration;
 import io.github.apace100.origins.util.OriginsCodecs;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
@@ -19,12 +19,12 @@ public class SimpleStatusEffectPower extends PowerFactory<ListConfiguration<Stat
 	}
 
 	@Override
-	protected void tick(ListConfiguration<StatusEffectInstance> configuration, PlayerEntity player) {
-		configuration.getContent().forEach(sei -> player.applyStatusEffect(new StatusEffectInstance(sei)));
+	public int tickInterval(ConfiguredPower<ListConfiguration<StatusEffectInstance>, ?> configuration, PlayerEntity player) {
+		return 10;
 	}
 
 	@Override
-	public int tickInterval(ConfiguredPower<ListConfiguration<StatusEffectInstance>, ?> configuration, PlayerEntity player) {
-		return 10;
+	protected void tick(ListConfiguration<StatusEffectInstance> configuration, PlayerEntity player) {
+		configuration.getContent().forEach(sei -> player.applyStatusEffect(new StatusEffectInstance(sei)));
 	}
 }

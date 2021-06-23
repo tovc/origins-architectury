@@ -17,12 +17,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(EntityRenderDispatcher.class)
 public class EntityRenderDispatcherMixin {
 
-    @Inject(method = "shouldRender", at = @At("HEAD"), cancellable = true)
-    private void preventRenderingEntities(Entity entity, Frustum frustum, double x, double y, double z, CallbackInfoReturnable<Boolean> cir) {
-        ClientPlayerEntity player = MinecraftClient.getInstance().player;
-        if(player != null) {
-            if(PreventEntityRenderPower.isRenderPrevented(player, entity))
-                cir.setReturnValue(false);
-        }
-    }
+	@Inject(method = "shouldRender", at = @At("HEAD"), cancellable = true)
+	private void preventRenderingEntities(Entity entity, Frustum frustum, double x, double y, double z, CallbackInfoReturnable<Boolean> cir) {
+		ClientPlayerEntity player = MinecraftClient.getInstance().player;
+		if (player != null) {
+			if (PreventEntityRenderPower.isRenderPrevented(player, entity))
+				cir.setReturnValue(false);
+		}
+	}
 }

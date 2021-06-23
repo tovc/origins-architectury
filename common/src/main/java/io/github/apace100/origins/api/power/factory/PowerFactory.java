@@ -7,7 +7,6 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.apace100.origins.api.IOriginsFeatureConfiguration;
-import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.api.power.IFactory;
 import io.github.apace100.origins.api.power.PowerData;
 import io.github.apace100.origins.api.power.configuration.ConfiguredPower;
@@ -18,7 +17,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 
 import java.util.Map;
-import java.util.function.Supplier;
 
 public abstract class PowerFactory<T extends IOriginsFeatureConfiguration> extends RegistryEntry<PowerFactory<?>> implements Codec<ConfiguredPower<T, ?>> {
 	public static final Codec<PowerFactory<?>> CODEC = OriginsRegistries.codec(OriginsRegistries.POWER_FACTORY);
@@ -42,14 +40,16 @@ public abstract class PowerFactory<T extends IOriginsFeatureConfiguration> exten
 	/**
 	 * Creates a new power factory.
 	 *
-	 * @param codec The codec used to serialize the configuration of this power.
+	 * @param codec           The codec used to serialize the configuration of this power.
 	 * @param allowConditions Determines whether this power will use the global field {@link PowerData#conditions()} or not.
+	 *
 	 * @see #PowerFactory(Codec) for a version with allow conditions true by default.
 	 */
 	protected PowerFactory(Codec<T> codec, boolean allowConditions) {
 		this.codec = powerCodec(codec);
 		this.allowConditions = allowConditions;
 	}
+
 	/**
 	 * Marks this power has having a ticking function, if this isn't done,
 	 * the mod won't bother calling the {@link #tick(ConfiguredPower, PlayerEntity)} function.

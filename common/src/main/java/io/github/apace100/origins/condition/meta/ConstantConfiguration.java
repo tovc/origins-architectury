@@ -2,8 +2,6 @@ package io.github.apace100.origins.condition.meta;
 
 import com.mojang.serialization.Codec;
 
-import java.util.function.Predicate;
-
 public record ConstantConfiguration<T>(boolean value) implements IDelegatedConditionConfiguration<T> {
 
 	public static <T> Codec<ConstantConfiguration<T>> codec() {

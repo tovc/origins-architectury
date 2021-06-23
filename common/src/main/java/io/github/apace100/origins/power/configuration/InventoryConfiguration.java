@@ -10,7 +10,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Optional;
 
 public record InventoryConfiguration(String inventoryName, boolean dropOnDeath,
-									 @Nullable ConfiguredItemCondition<?, ?> dropFilter, IActivePower.Key key) implements IOriginsFeatureConfiguration {
+									 @Nullable ConfiguredItemCondition<?, ?> dropFilter,
+									 IActivePower.Key key) implements IOriginsFeatureConfiguration {
 	public static final Codec<InventoryConfiguration> CODEC = RecordCodecBuilder.create(instance -> instance.group(
 			Codec.STRING.optionalFieldOf("name", "container.inventory").forGetter(InventoryConfiguration::inventoryName),
 			Codec.BOOL.optionalFieldOf("drop_on_death", false).forGetter(InventoryConfiguration::dropOnDeath),

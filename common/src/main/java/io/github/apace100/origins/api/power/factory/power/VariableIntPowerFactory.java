@@ -1,7 +1,6 @@
 package io.github.apace100.origins.api.power.factory.power;
 
 import com.mojang.serialization.Codec;
-import io.github.apace100.origins.api.power.IHudRenderedPower;
 import io.github.apace100.origins.api.power.IVariableIntPower;
 import io.github.apace100.origins.api.power.configuration.ConfiguredPower;
 import io.github.apace100.origins.api.power.configuration.power.IVariableIntPowerConfiguration;
@@ -23,6 +22,7 @@ public abstract class VariableIntPowerFactory<T extends IVariableIntPowerConfigu
 	}
 
 	protected abstract int get(ConfiguredPower<T, ?> configuration, PlayerEntity player);
+
 	protected abstract void set(ConfiguredPower<T, ?> configuration, PlayerEntity player, int value);
 
 	@Override

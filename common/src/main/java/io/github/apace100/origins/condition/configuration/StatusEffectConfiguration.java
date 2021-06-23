@@ -5,9 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.apace100.origins.api.IOriginsFeatureConfiguration;
 import io.github.apace100.origins.util.OriginsCodecs;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.server.MinecraftServer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -28,8 +26,13 @@ public record StatusEffectConfiguration(@Nullable StatusEffect effect,
 	).apply(instance, (t1, t2, t3, t4, t5) -> new StatusEffectConfiguration(t1.orElse(null), t2, t3, t4, t5)));
 
 	@Override
-	public boolean isConfigurationValid() {
-		return effect() != null && this.minAmplifier() <= this.maxAmplifier() && this.minDuration() <= this.maxDuration();
+	public @NotNull List<String> getErrors(@NotNull MinecraftServer server) {
+		ImmutableList.Builder<String> builder = ImmutableList.builder();
+		if (this.minAmplifier() <= this.maxAmplifier())
+			builder.add("%s/Amplifier range is invalid: [%d,%d]".formatted(name(), this.minAmplifier(), this.maxAmplifier()));
+		if (this.minDuration() <= this.maxDuration())
+			builder.add("%s/Duration range is invalid: [%d,%d]".formatted(name(), this.minDuration(), this.maxDuration()));
+		return builder.build();
 	}
 
 	@Override
@@ -40,10 +43,7 @@ public record StatusEffectConfiguration(@Nullable StatusEffect effect,
 	}
 
 	@Override
-	public @NotNull List<String> getErrors(@NotNull MinecraftServer server) {
-		ImmutableList.Builder<String> builder = ImmutableList.builder();
-		if (this.minAmplifier() <= this.maxAmplifier()) builder.add("%s/Amplifier range is invalid: [%d,%d]".formatted(name(), this.minAmplifier(), this.maxAmplifier()));
-		if (this.minDuration() <= this.maxDuration()) builder.add("%s/Duration range is invalid: [%d,%d]".formatted(name(), this.minDuration(), this.maxDuration()));
-		return builder.build();
+	public boolean isConfigurationValid() {
+		return effect() != null && this.minAmplifier() <= this.maxAmplifier() && this.minDuration() <= this.maxDuration();
 	}
 }

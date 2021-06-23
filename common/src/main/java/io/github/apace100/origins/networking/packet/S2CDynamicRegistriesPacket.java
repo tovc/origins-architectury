@@ -4,7 +4,6 @@ import io.github.apace100.origins.networking.INetworkHandler;
 import io.github.apace100.origins.registry.OriginsDynamicRegistryManager;
 import net.minecraft.network.PacketByteBuf;
 
-import java.util.function.Consumer;
 import java.util.function.IntSupplier;
 
 public class S2CDynamicRegistriesPacket implements IntSupplier {

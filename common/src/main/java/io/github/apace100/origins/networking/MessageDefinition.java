@@ -1,6 +1,5 @@
 package io.github.apace100.origins.networking;
 
-import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.minecraft.network.PacketByteBuf;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;

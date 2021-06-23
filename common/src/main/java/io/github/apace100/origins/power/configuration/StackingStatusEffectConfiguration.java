@@ -8,7 +8,8 @@ import io.github.apace100.origins.util.OriginsCodecs;
 import net.minecraft.entity.effect.StatusEffectInstance;
 
 public record StackingStatusEffectConfiguration(ListConfiguration<StatusEffectInstance> effects,
-												int min, int max, int duration) implements IOriginsFeatureConfiguration {
+												int min, int max,
+												int duration) implements IOriginsFeatureConfiguration {
 	public static final Codec<StackingStatusEffectConfiguration> CODEC = RecordCodecBuilder.create(instance -> instance.group(
 			ListConfiguration.mapCodec(OriginsCodecs.STATUS_EFFECT_INSTANCE, "effect", "effects").forGetter(StackingStatusEffectConfiguration::effects),
 			Codec.INT.fieldOf("min_stacks").forGetter(StackingStatusEffectConfiguration::min),

@@ -2,7 +2,6 @@ package io.github.apace100.origins.action.configuration;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.github.apace100.origins.action.entity.DamageAction;
 import io.github.apace100.origins.api.IOriginsFeatureConfiguration;
 import io.github.apace100.origins.util.OriginsCodecs;
 import net.minecraft.entity.damage.DamageSource;

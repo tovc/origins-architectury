@@ -149,14 +149,6 @@ public class ArchitecturyWrappedRegistry<T, S> implements Registry<T> {
 			this.value = value;
 		}
 
-		@Override
-		public boolean equals(Object o) {
-			if (this == o) return true;
-			if (o == null || getClass() != o.getClass()) return false;
-			Wrapper<?, ?> wrapper = (Wrapper<?, ?>) o;
-			return Objects.equals(value, wrapper.value);
-		}
-
 		public T get() {
 			return value;
 		}
@@ -164,6 +156,14 @@ public class ArchitecturyWrappedRegistry<T, S> implements Registry<T> {
 		@Override
 		public int hashCode() {
 			return Objects.hash(value);
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || getClass() != o.getClass()) return false;
+			Wrapper<?, ?> wrapper = (Wrapper<?, ?>) o;
+			return Objects.equals(value, wrapper.value);
 		}
 
 		@Override

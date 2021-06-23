@@ -13,10 +13,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(CapeFeatureRenderer.class)
 public class CapeFeatureRendererMixin {
 
-    @Inject(at = @At("HEAD"), method = "render", cancellable = true)
-    private void preventCapeRendering(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, AbstractClientPlayerEntity abstractClientPlayerEntity, float f, float g, float h, float j, float k, float l, CallbackInfo ci) {
-        if(ElytraFlightPower.shouldRenderElytra(abstractClientPlayerEntity)) {
-            ci.cancel();
-        }
-    }
+	@Inject(at = @At("HEAD"), method = "render", cancellable = true)
+	private void preventCapeRendering(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, AbstractClientPlayerEntity abstractClientPlayerEntity, float f, float g, float h, float j, float k, float l, CallbackInfo ci) {
+		if (ElytraFlightPower.shouldRenderElytra(abstractClientPlayerEntity)) {
+			ci.cancel();
+		}
+	}
 }

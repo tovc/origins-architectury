@@ -11,6 +11,7 @@ import java.util.function.Function;
 /**
  * If you are wondering what this is, for the sake of your sanity please don't.
  * This just allows codecs to be flattened.
+ *
  * @param <E> The serialized type
  * @param <A> The type providing the codec.
  */

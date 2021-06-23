@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.apace100.origins.api.IOriginsFeatureConfiguration;
-import io.github.apace100.origins.api.OriginsAPI;
 import io.github.apace100.origins.api.registry.OriginsDynamicRegistries;
 import io.github.apace100.origins.util.OriginsCodecs;
 import net.minecraft.server.MinecraftServer;
@@ -16,7 +15,7 @@ import java.util.List;
 public record ChangeResourceConfiguration(Identifier resource, int amount) implements IOriginsFeatureConfiguration {
 
 	public static final Codec<ChangeResourceConfiguration> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-			OriginsCodecs.POWER_TYPE.fieldOf("resource").forGetter(ChangeResourceConfiguration::resource),
+			OriginsCodecs.IDENTIFIER.fieldOf("resource").forGetter(ChangeResourceConfiguration::resource),
 			Codec.INT.fieldOf("change").forGetter(ChangeResourceConfiguration::amount)
 	).apply(instance, ChangeResourceConfiguration::new));
 

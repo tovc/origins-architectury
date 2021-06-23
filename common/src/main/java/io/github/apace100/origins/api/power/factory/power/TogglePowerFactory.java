@@ -10,7 +10,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.ByteTag;
 import net.minecraft.nbt.Tag;
 
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class TogglePowerFactory<T extends ITogglePowerConfiguration> extends PowerFactory<T> implements IActivePower<T> {
@@ -23,6 +22,7 @@ public abstract class TogglePowerFactory<T extends ITogglePowerConfiguration> ex
 	}
 
 	protected abstract void setStatus(ConfiguredPower<T, ?> configuration, PlayerEntity player, boolean status);
+
 	protected abstract boolean getStatus(ConfiguredPower<T, ?> configuration, PlayerEntity player);
 
 	@Override

@@ -1,10 +1,8 @@
 package io.github.apace100.origins.condition.damage;
 
 import com.mojang.serialization.Codec;
-import io.github.apace100.origins.api.power.factory.BlockCondition;
 import io.github.apace100.origins.api.power.factory.DamageCondition;
 import io.github.apace100.origins.condition.meta.IDelegatedConditionConfiguration;
-import net.minecraft.block.pattern.CachedBlockPosition;
 import net.minecraft.entity.damage.DamageSource;
 import org.apache.commons.lang3.tuple.Pair;
 

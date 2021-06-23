@@ -26,34 +26,36 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(AbstractBlock.AbstractBlockState.class)
 public abstract class AbstractBlockStateMixin {
 
-    @Shadow
-    public abstract Block getBlock();
+	@Shadow
+	public abstract Block getBlock();
 
-    @Shadow protected abstract BlockState asBlockState();
+	@Shadow
+	protected abstract BlockState asBlockState();
 
-    @Shadow public abstract VoxelShape getOutlineShape(BlockView world, BlockPos pos);
+	@Shadow
+	public abstract VoxelShape getOutlineShape(BlockView world, BlockPos pos);
 
-    @Inject(at = @At("HEAD"), method = "getCollisionShape(Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/ShapeContext;)Lnet/minecraft/util/shape/VoxelShape;", cancellable = true)
-    private void phaseThroughBlocks(BlockView world, BlockPos pos, ShapeContext context, CallbackInfoReturnable<VoxelShape> info) {
-        VoxelShape blockShape = getBlock().getCollisionShape(asBlockState(), world, pos, context);
-        if(!blockShape.isEmpty() && context instanceof EntityShapeContext) {
-            Entity entity = EntityShapeContextAccessor.getEntity((EntityShapeContext) context);
-            if(entity instanceof PlayerEntity player) {
-                boolean isAbove = isAbove(player, blockShape, pos, false);
-                if (PhasingPower.shouldPhaseThrough(player, new CachedBlockPosition(world instanceof WorldView wv ? wv : player.world, pos, true), isAbove))
-                    info.setReturnValue(VoxelShapes.empty());
-            }
-        }
-    }
+	@Inject(at = @At("HEAD"), method = "getCollisionShape(Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/ShapeContext;)Lnet/minecraft/util/shape/VoxelShape;", cancellable = true)
+	private void phaseThroughBlocks(BlockView world, BlockPos pos, ShapeContext context, CallbackInfoReturnable<VoxelShape> info) {
+		VoxelShape blockShape = getBlock().getCollisionShape(asBlockState(), world, pos, context);
+		if (!blockShape.isEmpty() && context instanceof EntityShapeContext) {
+			Entity entity = EntityShapeContextAccessor.getEntity((EntityShapeContext) context);
+			if (entity instanceof PlayerEntity player) {
+				boolean isAbove = isAbove(player, blockShape, pos, false);
+				if (PhasingPower.shouldPhaseThrough(player, new CachedBlockPosition(world instanceof WorldView wv ? wv : player.world, pos, true), isAbove))
+					info.setReturnValue(VoxelShapes.empty());
+			}
+		}
+	}
 
-    @Unique
-    private boolean isAbove(Entity entity, VoxelShape shape, BlockPos pos, boolean defaultValue) {
-        return entity.getY() > (double)pos.getY() + shape.getMax(Direction.Axis.Y) - (entity.isOnGround() ? 8.05/16.0 : 0.0015);
-    }
+	@Unique
+	private boolean isAbove(Entity entity, VoxelShape shape, BlockPos pos, boolean defaultValue) {
+		return entity.getY() > (double) pos.getY() + shape.getMax(Direction.Axis.Y) - (entity.isOnGround() ? 8.05 / 16.0 : 0.0015);
+	}
 
-    @Inject(method = "onEntityCollision", at = @At("HEAD"), cancellable = true)
-    private void preventCollisionWhenPhasing(World world, BlockPos pos, Entity entity, CallbackInfo ci) {
-        if (entity instanceof LivingEntity le && PhasingPower.shouldPhaseThrough(le, new CachedBlockPosition(world, pos, true)))
-            ci.cancel();
-    }
+	@Inject(method = "onEntityCollision", at = @At("HEAD"), cancellable = true)
+	private void preventCollisionWhenPhasing(World world, BlockPos pos, Entity entity, CallbackInfo ci) {
+		if (entity instanceof LivingEntity le && PhasingPower.shouldPhaseThrough(le, new CachedBlockPosition(world, pos, true)))
+			ci.cancel();
+	}
 }

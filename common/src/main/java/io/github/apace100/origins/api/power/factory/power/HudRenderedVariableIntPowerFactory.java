@@ -2,16 +2,12 @@ package io.github.apace100.origins.api.power.factory.power;
 
 import com.mojang.serialization.Codec;
 import io.github.apace100.origins.api.power.IHudRenderedPower;
-import io.github.apace100.origins.api.power.IVariableIntPower;
 import io.github.apace100.origins.api.power.configuration.ConfiguredPower;
 import io.github.apace100.origins.api.power.configuration.power.IHudRenderedVariableIntPowerConfiguration;
-import io.github.apace100.origins.api.power.configuration.power.IVariableIntPowerConfiguration;
-import io.github.apace100.origins.api.power.factory.PowerFactory;
 import io.github.apace100.origins.util.HudRender;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.util.math.MathHelper;
 
 import java.util.concurrent.atomic.AtomicInteger;
 

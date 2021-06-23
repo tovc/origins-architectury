@@ -49,6 +49,7 @@ public class PowerLoader extends MultiJsonDataLoader {
 			newPower.getContainedPowers().forEach((s, configuredPower) -> register(registry, new Identifier(identifier.getNamespace(), identifier.getPath() + s), configuredPower));
 		}
 	}
+
 	public static String CURRENT_NAMESPACE;
 	public static String CURRENT_PATH;
 
@@ -75,5 +76,7 @@ public class PowerLoader extends MultiJsonDataLoader {
 			definition.ifPresentOrElse(def -> register(powers, identifier, def),
 					() -> Origins.LOGGER.error("Loading for all instances of power \"{}\" failed. It won't be registered", identifier));
 		});
+		CURRENT_NAMESPACE = null;
+		CURRENT_PATH = null;
 	}
 }

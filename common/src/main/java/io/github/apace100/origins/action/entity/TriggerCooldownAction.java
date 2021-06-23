@@ -1,6 +1,6 @@
 package io.github.apace100.origins.action.entity;
 
-import io.github.apace100.origins.action.configuration.PowerReference;
+import io.github.apace100.origins.api.configuration.PowerReference;
 import io.github.apace100.origins.api.power.ICooldownPower;
 import io.github.apace100.origins.api.power.configuration.ConfiguredPower;
 import io.github.apace100.origins.api.power.factory.EntityAction;

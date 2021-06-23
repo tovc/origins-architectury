@@ -9,7 +9,10 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.registry.*;
+import net.minecraft.util.registry.MutableRegistry;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.RegistryKey;
+import net.minecraft.util.registry.SimpleRegistry;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,7 +21,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -27,7 +29,6 @@ import java.util.function.Supplier;
 public class OriginsDynamicRegistryManager implements IOriginsDynamicRegistryManager {
 
 	private static final Map<MinecraftServer, OriginsDynamicRegistryManager> INSTANCES = new ConcurrentHashMap<>();
-	private static OriginsDynamicRegistryManager clientInstance = null;
 
 	public static OriginsDynamicRegistryManager getInstance(MinecraftServer server) {
 		if (server == null) return clientInstance;
@@ -52,6 +53,33 @@ public class OriginsDynamicRegistryManager implements IOriginsDynamicRegistryMan
 		OriginsDynamicRegistryManager.clientInstance = clientInstance;
 	}
 
+	public static OriginsDynamicRegistryManager decode(PacketByteBuf buffer) {
+		int registryCount = buffer.readVarInt();
+		OriginsDynamicRegistryManager manager = new OriginsDynamicRegistryManager();
+		for (int i = 0; i < registryCount; i++) {
+			readRegistry(buffer, manager);
+		}
+		return manager;
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <T> void readRegistry(PacketByteBuf buffer, OriginsDynamicRegistryManager manager) {
+		RegistryKey<Registry<T>> key = RegistryKey.ofRegistry(buffer.readIdentifier());
+		int count = buffer.readVarInt();
+		MutableRegistry<T> registry = manager.get(key);
+		Codec<T> codec = (Codec<T>) manager.definitions.get(key).codec();
+		for (int i = 0; i < count; i++) {
+			RegistryKey<T> objectKey = RegistryKey.of(key, buffer.readIdentifier());
+			try {
+				T decode = buffer.decode(codec);
+				registry.add(objectKey, decode, Lifecycle.stable());
+			} catch (IOException e) {
+				Origins.LOGGER.error("Failed to decode entry {}.", objectKey, e);
+			}
+		}
+	}
+
+	private static OriginsDynamicRegistryManager clientInstance = null;
 	private final Map<RegistryKey<?>, SimpleRegistry<?>> registries;
 	private final Map<RegistryKey<?>, RegistryDefinition<?>> definitions;
 
@@ -86,6 +114,19 @@ public class OriginsDynamicRegistryManager implements IOriginsDynamicRegistryMan
 		return (SimpleRegistry<T>) registry;
 	}
 
+	@Override
+	@SuppressWarnings("unchecked")
+	public <T> Optional<MutableRegistry<T>> getOrEmpty(RegistryKey<Registry<T>> key) {
+		return Optional.ofNullable((MutableRegistry<T>) this.registries.get(key));
+	}
+
+	@Override
+	public <T> T register(RegistryKey<Registry<T>> registry, RegistryKey<T> name, T value) {
+		if (!name.isOf(registry))
+			throw new IllegalArgumentException("Registry key " + name + " doesn't target registry " + registry + ".");
+		return null;
+	}
+
 	public void encode(PacketByteBuf buffer) {
 		//Size, <Names>
 		buffer.writeVarInt(this.registries.size());
@@ -105,45 +146,6 @@ public class OriginsDynamicRegistryManager implements IOriginsDynamicRegistryMan
 				Origins.LOGGER.error("Failed to encode entry {}.", entry.getKey(), e);
 			}
 		});
-	}
-
-	public static OriginsDynamicRegistryManager decode(PacketByteBuf buffer) {
-		int registryCount = buffer.readVarInt();
-		OriginsDynamicRegistryManager manager = new OriginsDynamicRegistryManager();
-		for (int i = 0; i < registryCount; i++) {
-			readRegistry(buffer, manager);
-		}
-		return manager;
-	}
-
-	@SuppressWarnings("unchecked")
-	private static <T> void readRegistry(PacketByteBuf buffer, OriginsDynamicRegistryManager manager) {
-		RegistryKey<Registry<T>> key = RegistryKey.ofRegistry(buffer.readIdentifier());
-		int count = buffer.readVarInt();
-		MutableRegistry<T> registry = manager.get(key);
-		Codec<T> codec = (Codec<T>) manager.definitions.get(key).codec();
-		for (int i = 0; i < count; i++) {
-			RegistryKey<T> objectKey = RegistryKey.of(key, buffer.readIdentifier());
-			try {
-				T decode = buffer.decode(codec);
-				registry.add(objectKey, decode, Lifecycle.stable());
-			} catch (IOException e) {
-				Origins.LOGGER.error("Failed to decode entry {}.", objectKey, e);
-			}
-		}
-	}
-
-	@Override
-	@SuppressWarnings("unchecked")
-	public <T> Optional<MutableRegistry<T>> getOrEmpty(RegistryKey<Registry<T>> key) {
-		return Optional.ofNullable((MutableRegistry<T>) this.registries.get(key));
-	}
-
-	@Override
-	public <T> T register(RegistryKey<Registry<T>> registry, RegistryKey<T> name, T value) {
-		if (!name.isOf(registry))
-			throw new IllegalArgumentException("Registry key " + name + " doesn't target registry " + registry + ".");
-		return null;
 	}
 
 	private record RegistryDefinition<T>(Supplier<Registry<T>> builtin, Codec<T> codec) {

@@ -22,47 +22,47 @@ import java.util.stream.Collectors;
 
 public class PowerHudRenderer extends DrawableHelper implements GameHudRender {
 
-    @Override
-    @Environment(EnvType.CLIENT)
-    public void render(MatrixStack matrices, float delta) {
-        MinecraftClient client = MinecraftClient.getInstance();
-        OriginComponent component = ModComponentsArchitectury.getOriginComponent(client.player);
-        if(component.hasAllOrigins()) {
-            int x = client.getWindow().getScaledWidth() / 2 + 20 + OriginsClient.config.xOffset;
-            int y = client.getWindow().getScaledHeight() - 47 + OriginsClient.config.yOffset;
-            Entity vehicle = client.player.getVehicle();
-            if(vehicle instanceof LivingEntity && ((LivingEntity)vehicle).getMaxHealth() > 20F) {
-                y -= 8;
-            }
-            if(client.player.isSubmergedIn(FluidTags.WATER) || client.player.getAir() < client.player.getMaxAir()) {
-                y -= 8;
-            }
-            int barWidth = 71;
-            int barHeight = 5;
-            int iconSize = 8;
-            List<HudRendered> hudPowers = component.getPowers().stream().filter(p -> p instanceof HudRendered).map(p -> (HudRendered)p).sorted(
-                Comparator.comparing(hudRenderedA -> hudRenderedA.getRenderSettings().spriteLocation())
-            ).collect(Collectors.toList());
-            Identifier lastLocation = null;
-            RenderSystem.color3f(1f, 1f, 1f);
-            for (HudRendered hudPower : hudPowers) {
-                HudRender render = hudPower.getRenderSettings();
-                if(render.shouldRender(client.player) && hudPower.shouldRender()) {
-                    Identifier currentLocation = render.spriteLocation();
-                    if(currentLocation != lastLocation) {
-                        client.getTextureManager().bindTexture(currentLocation);
-                        lastLocation = currentLocation;
-                    }
-                    drawTexture(matrices, x, y, 0, 0, barWidth, barHeight);
-                    int v = 10 + render.barIndex() * 10;
-                    int w = (int)(hudPower.getFill() * barWidth);
-                    drawTexture(matrices, x, y, 0, v, w, barHeight);
-                    setZOffset(getZOffset() + 1);
-                    drawTexture(matrices, x - iconSize - 2, y - 2, 73, v - 2, iconSize, iconSize);
-                    setZOffset(getZOffset() - 1);
-                    y -= 8;
-                }
-            }
-        }
-    }
+	@Override
+	@Environment(EnvType.CLIENT)
+	public void render(MatrixStack matrices, float delta) {
+		MinecraftClient client = MinecraftClient.getInstance();
+		OriginComponent component = ModComponentsArchitectury.getOriginComponent(client.player);
+		if (component.hasAllOrigins()) {
+			int x = client.getWindow().getScaledWidth() / 2 + 20 + OriginsClient.config.xOffset;
+			int y = client.getWindow().getScaledHeight() - 47 + OriginsClient.config.yOffset;
+			Entity vehicle = client.player.getVehicle();
+			if (vehicle instanceof LivingEntity && ((LivingEntity) vehicle).getMaxHealth() > 20F) {
+				y -= 8;
+			}
+			if (client.player.isSubmergedIn(FluidTags.WATER) || client.player.getAir() < client.player.getMaxAir()) {
+				y -= 8;
+			}
+			int barWidth = 71;
+			int barHeight = 5;
+			int iconSize = 8;
+			List<HudRendered> hudPowers = component.getPowers().stream().filter(p -> p instanceof HudRendered).map(p -> (HudRendered) p).sorted(
+					Comparator.comparing(hudRenderedA -> hudRenderedA.getRenderSettings().spriteLocation())
+			).collect(Collectors.toList());
+			Identifier lastLocation = null;
+			RenderSystem.color3f(1f, 1f, 1f);
+			for (HudRendered hudPower : hudPowers) {
+				HudRender render = hudPower.getRenderSettings();
+				if (render.shouldRender(client.player) && hudPower.shouldRender()) {
+					Identifier currentLocation = render.spriteLocation();
+					if (currentLocation != lastLocation) {
+						client.getTextureManager().bindTexture(currentLocation);
+						lastLocation = currentLocation;
+					}
+					drawTexture(matrices, x, y, 0, 0, barWidth, barHeight);
+					int v = 10 + render.barIndex() * 10;
+					int w = (int) (hudPower.getFill() * barWidth);
+					drawTexture(matrices, x, y, 0, v, w, barHeight);
+					setZOffset(getZOffset() + 1);
+					drawTexture(matrices, x - iconSize - 2, y - 2, 73, v - 2, iconSize, iconSize);
+					setZOffset(getZOffset() - 1);
+					y -= 8;
+				}
+			}
+		}
+	}
 }

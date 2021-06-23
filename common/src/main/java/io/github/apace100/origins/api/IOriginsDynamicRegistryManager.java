@@ -24,7 +24,9 @@ public interface IOriginsDynamicRegistryManager {
 
 	/**
 	 * Resets the given registry, creating a new one from the input data.
+	 *
 	 * @param key The registry to reset.
+	 *
 	 * @return The new registry.
 	 */
 	<T> MutableRegistry<T> reset(RegistryKey<Registry<T>> key);

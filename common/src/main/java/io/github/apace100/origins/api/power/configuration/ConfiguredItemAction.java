@@ -10,11 +10,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.function.Function;
 
 public final class ConfiguredItemAction<C extends IOriginsFeatureConfiguration, F extends ItemAction<C>> extends ConfiguredFactory<C, F> {
+	public static final Codec<ConfiguredItemAction<?, ?>> CODEC = ItemAction.CODEC.dispatch(ConfiguredFactory::getFactory, Function.identity());
+
 	public static void execute(@Nullable ConfiguredItemAction<?, ?> action, ItemStack stack) {
 		if (action != null) action.execute(stack);
 	}
-
-	public static final Codec<ConfiguredItemAction<?, ?>> CODEC = ItemAction.CODEC.dispatch(ConfiguredFactory::getFactory, Function.identity());
 
 	public ConfiguredItemAction(F factory, C configuration) {
 		super(factory, configuration);

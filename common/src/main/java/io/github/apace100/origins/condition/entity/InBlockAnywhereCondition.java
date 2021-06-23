@@ -1,38 +1,21 @@
 package io.github.apace100.origins.condition.entity;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.github.apace100.origins.factory.condition.ConditionFactory;
-import io.github.apace100.origins.util.Comparison;
-import io.github.apace100.origins.util.OriginsCodecs;
+import io.github.apace100.origins.api.power.factory.EntityCondition;
+import io.github.apace100.origins.condition.configuration.InBlockAnywhereConfiguration;
 import net.minecraft.block.pattern.CachedBlockPosition;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 
-import java.util.function.Predicate;
+public class InBlockAnywhereCondition extends EntityCondition<InBlockAnywhereConfiguration> {
 
-public class InBlockAnywhereCondition implements Predicate<LivingEntity> {
-
-	public static final Codec<InBlockAnywhereCondition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-			Codec.INT.optionalFieldOf("compare_to", 1).forGetter(x -> x.compareTo),
-			OriginsCodecs.COMPARISON.optionalFieldOf("comparison", Comparison.GREATER_THAN_OR_EQUAL).forGetter(x -> x.comparison),
-			OriginsCodecs.BLOCK_CONDITION.fieldOf("block_condition").forGetter(x -> x.blockCondition)
-	).apply(instance, InBlockAnywhereCondition::new));
-
-	private final int compareTo;
-	private final Comparison comparison;
-	private final ConditionFactory.Instance<CachedBlockPosition> blockCondition;
-
-	public InBlockAnywhereCondition(int compareTo, Comparison comparison, ConditionFactory.Instance<CachedBlockPosition> blockCondition) {
-		this.compareTo = compareTo;
-		this.comparison = comparison;
-		this.blockCondition = blockCondition;
+	public InBlockAnywhereCondition() {
+		super(InBlockAnywhereConfiguration.CODEC);
 	}
 
 	@Override
-	public boolean test(LivingEntity entity) {
-		int stopAt = comparison.getOptimalStoppingIndex(compareTo);
+	public boolean check(InBlockAnywhereConfiguration configuration, LivingEntity entity) {
+		int stopAt = configuration.comparison().getOptimalStoppingPoint();
 		int count = 0;
 		Box box = entity.getBoundingBox();
 		BlockPos blockPos = new BlockPos(box.minX + 0.001D, box.minY + 0.001D, box.minZ + 0.001D);
@@ -42,12 +25,12 @@ public class InBlockAnywhereCondition implements Predicate<LivingEntity> {
 			for (int j = blockPos.getY(); j <= blockPos2.getY() && count < stopAt; ++j) {
 				for (int k = blockPos.getZ(); k <= blockPos2.getZ() && count < stopAt; ++k) {
 					mutable.set(i, j, k);
-					if (blockCondition.test(new CachedBlockPosition(entity.world, mutable, false))) {
+					if (configuration.blockCondition().check(new CachedBlockPosition(entity.world, mutable, false))) {
 						count++;
 					}
 				}
 			}
 		}
-		return comparison.compare(count, compareTo);
+		return configuration.comparison().check(count);
 	}
 }

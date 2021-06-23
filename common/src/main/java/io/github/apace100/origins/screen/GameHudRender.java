@@ -10,7 +10,7 @@ import java.util.List;
 @Environment(EnvType.CLIENT)
 public interface GameHudRender {
 
-    List<GameHudRender> HUD_RENDERS = new ArrayList<>();
+	List<GameHudRender> HUD_RENDERS = new ArrayList<>();
 
-    void render(MatrixStack matrixStack, float tickDelta);
+	void render(MatrixStack matrixStack, float tickDelta);
 }

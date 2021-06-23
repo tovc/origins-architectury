@@ -3,9 +3,9 @@ package io.github.apace100.origins.power;
 import com.mojang.serialization.Codec;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import io.github.apace100.origins.api.component.OriginComponent;
+import io.github.apace100.origins.api.configuration.FieldConfiguration;
 import io.github.apace100.origins.api.power.configuration.ConfiguredPower;
 import io.github.apace100.origins.api.power.factory.PowerFactory;
-import io.github.apace100.origins.api.configuration.FieldConfiguration;
 import io.github.apace100.origins.registry.ModPowers;
 import net.minecraft.entity.player.PlayerEntity;
 

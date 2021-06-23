@@ -9,14 +9,14 @@ import net.minecraft.util.Identifier;
 
 public class ModEnchantments {
 
-    public static final Enchantment WATER_PROTECTION = new WaterProtectionEnchantment(Enchantment.Rarity.RARE, EnchantmentTarget.ARMOR, new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET});
+	public static final Enchantment WATER_PROTECTION = new WaterProtectionEnchantment(Enchantment.Rarity.RARE, EnchantmentTarget.ARMOR, new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET});
 
-    public static void register() {
-        register("water_protection", WATER_PROTECTION);
-    }
+	public static void register() {
+		register("water_protection", WATER_PROTECTION);
+	}
 
-    private static Enchantment register(String path, Enchantment enchantment) {
-        ModRegistriesArchitectury.ENCHANTMENTS.register(new Identifier(Origins.MODID, path), () -> enchantment);
-        return enchantment;
-    }
+	private static Enchantment register(String path, Enchantment enchantment) {
+		ModRegistriesArchitectury.ENCHANTMENTS.register(new Identifier(Origins.MODID, path), () -> enchantment);
+		return enchantment;
+	}
 }

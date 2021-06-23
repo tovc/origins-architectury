@@ -7,7 +7,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.apace100.origins.api.IOriginsFeatureConfiguration;
 import io.github.apace100.origins.util.OriginsCodecs;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Optional;

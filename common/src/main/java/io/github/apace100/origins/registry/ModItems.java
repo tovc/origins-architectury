@@ -21,32 +21,32 @@ import net.minecraft.world.World;
 
 public class ModItems {
 
-    public static final Item ORB_OF_ORIGIN = new Item(new Item.Settings().maxCount(1).group(ItemGroup.MISC).rarity(Rarity.RARE)) {
-        @Override
-        public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
-            if(!world.isClient && user instanceof ServerPlayerEntity) { //Avoid fake players (Mainly a forge check)
-                OriginComponent component = ModComponentsArchitectury.getOriginComponent(user);
+	public static final Item ORB_OF_ORIGIN = new Item(new Item.Settings().maxCount(1).group(ItemGroup.MISC).rarity(Rarity.RARE)) {
+		@Override
+		public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
+			if (!world.isClient && user instanceof ServerPlayerEntity) { //Avoid fake players (Mainly a forge check)
+				OriginComponent component = ModComponentsArchitectury.getOriginComponent(user);
 
-                for (OriginLayer layer : OriginsAPI.getLayers()) {
-                    if(layer.enabled()) {
-                        component.setOrigin(layer, ModOrigins.EMPTY);
-                    }
-                }
-                component.checkAutoChoosingLayers(user, false);
-                component.sync();
-                PacketByteBuf data = new PacketByteBuf(Unpooled.buffer());
-                data.writeBoolean(false);
-                NetworkManager.sendToPlayer((ServerPlayerEntity) user, ModPackets.OPEN_ORIGIN_SCREEN, data);
-            }
-            ItemStack stack = user.getStackInHand(hand);
-            if(!user.isCreative()) {
-                stack.decrement(1);
-            }
-            return TypedActionResult.consume(stack);
-        }
-    };
+				for (OriginLayer layer : OriginsAPI.getLayers()) {
+					if (layer.enabled()) {
+						component.setOrigin(layer, ModOrigins.EMPTY);
+					}
+				}
+				component.checkAutoChoosingLayers(user, false);
+				component.sync();
+				PacketByteBuf data = new PacketByteBuf(Unpooled.buffer());
+				data.writeBoolean(false);
+				NetworkManager.sendToPlayer((ServerPlayerEntity) user, ModPackets.OPEN_ORIGIN_SCREEN, data);
+			}
+			ItemStack stack = user.getStackInHand(hand);
+			if (!user.isCreative()) {
+				stack.decrement(1);
+			}
+			return TypedActionResult.consume(stack);
+		}
+	};
 
-    public static void register() {
-        ModRegistriesArchitectury.ITEMS.register(new Identifier(Origins.MODID, "orb_of_origin"), () -> ORB_OF_ORIGIN);
-    }
+	public static void register() {
+		ModRegistriesArchitectury.ITEMS.register(new Identifier(Origins.MODID, "orb_of_origin"), () -> ORB_OF_ORIGIN);
+	}
 }

@@ -8,7 +8,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
-public record ClimbingConfiguration(boolean allowHolding, @Nullable ConfiguredEntityCondition<?, ?> condition) implements IOriginsFeatureConfiguration {
+public record ClimbingConfiguration(boolean allowHolding,
+									@Nullable ConfiguredEntityCondition<?, ?> condition) implements IOriginsFeatureConfiguration {
 	public static final Codec<ClimbingConfiguration> CODEC = RecordCodecBuilder.create(instance -> instance.group(
 			Codec.BOOL.optionalFieldOf("allow_holding", true).forGetter(ClimbingConfiguration::allowHolding),
 			ConfiguredEntityCondition.CODEC.optionalFieldOf("hold_condition").forGetter(x -> Optional.ofNullable(x.condition()))

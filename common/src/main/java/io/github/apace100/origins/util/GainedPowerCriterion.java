@@ -15,41 +15,40 @@ import net.minecraft.util.JsonHelper;
 
 public class GainedPowerCriterion extends AbstractCriterion<GainedPowerCriterion.Conditions> {
 
-    public static GainedPowerCriterion INSTANCE = new GainedPowerCriterion();
+	private static final Identifier ID = new Identifier(Origins.MODID, "gained_power");
+	public static GainedPowerCriterion INSTANCE = new GainedPowerCriterion();
 
-    private static final Identifier ID = new Identifier(Origins.MODID, "gained_power");
+	@Override
+	protected Conditions conditionsFromJson(JsonObject obj, EntityPredicate.Extended playerPredicate, AdvancementEntityPredicateDeserializer predicateDeserializer) {
+		Identifier id = Identifier.tryParse(JsonHelper.getString(obj, "power"));
+		return new Conditions(playerPredicate, id);
+	}
 
-    @Override
-    protected Conditions conditionsFromJson(JsonObject obj, EntityPredicate.Extended playerPredicate, AdvancementEntityPredicateDeserializer predicateDeserializer) {
-        Identifier id = Identifier.tryParse(JsonHelper.getString(obj, "power"));
-        return new Conditions(playerPredicate, id);
-    }
+	public void trigger(ServerPlayerEntity player, PowerType<?> type) {
+		this.test(player, (conditions -> conditions.matches(type)));
+	}
 
-    public void trigger(ServerPlayerEntity player, PowerType<?> type) {
-        this.test(player, (conditions -> conditions.matches(type)));
-    }
+	@Override
+	public Identifier getId() {
+		return ID;
+	}
 
-    @Override
-    public Identifier getId() {
-        return ID;
-    }
+	public static class Conditions extends AbstractCriterionConditions {
+		private final Identifier powerId;
 
-    public static class Conditions extends AbstractCriterionConditions {
-        private final Identifier powerId;
+		public Conditions(EntityPredicate.Extended player, Identifier powerId) {
+			super(GainedPowerCriterion.ID, player);
+			this.powerId = powerId;
+		}
 
-        public Conditions(EntityPredicate.Extended player, Identifier powerId) {
-            super(GainedPowerCriterion.ID, player);
-            this.powerId = powerId;
-        }
+		public boolean matches(PowerType<?> powerType) {
+			return powerType.getIdentifier().equals(powerId);
+		}
 
-        public boolean matches(PowerType<?> powerType) {
-            return powerType.getIdentifier().equals(powerId);
-        }
-
-        public JsonObject toJson(AdvancementEntityPredicateSerializer predicateSerializer) {
-            JsonObject jsonObject = super.toJson(predicateSerializer);
-            jsonObject.add("power", new JsonPrimitive(powerId.toString()));
-            return jsonObject;
-        }
-    }
+		public JsonObject toJson(AdvancementEntityPredicateSerializer predicateSerializer) {
+			JsonObject jsonObject = super.toJson(predicateSerializer);
+			jsonObject.add("power", new JsonPrimitive(powerId.toString()));
+			return jsonObject;
+		}
+	}
 }

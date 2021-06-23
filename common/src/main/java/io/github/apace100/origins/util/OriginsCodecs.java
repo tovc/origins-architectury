@@ -54,9 +54,9 @@ import java.util.stream.Collectors;
 public class OriginsCodecs {
 	//Large Codecs
 	/**
-	 * Reprensents a reference to a power.
+	 * Identifier for power types, support the star (*) as a path to current namespace.
 	 */
-	public static final Codec<Identifier> POWER_TYPE = Codec.STRING.flatXmap(input -> {
+	public static final Codec<Identifier> IDENTIFIER = Codec.STRING.flatXmap(input -> {
 		String namespace = "minecraft";
 		String path;
 		if (input.contains(":")) {

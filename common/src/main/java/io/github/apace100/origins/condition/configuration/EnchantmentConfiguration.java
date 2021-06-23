@@ -12,7 +12,6 @@ import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.StringIdentifiable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,7 +20,6 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.function.Function;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 public record EnchantmentConfiguration(IntegerComparisonConfiguration comparison,
 									   @Nullable Enchantment enchantment,
@@ -33,15 +31,15 @@ public record EnchantmentConfiguration(IntegerComparisonConfiguration comparison
 	).apply(instance, (t1, t2, t3) -> new EnchantmentConfiguration(t1, t2.orElse(null), t3)));
 
 	@Override
+	public @NotNull List<String> getErrors(@NotNull MinecraftServer server) {
+		return IOriginsFeatureConfiguration.super.getErrors(server);
+	}
+
+	@Override
 	public @NotNull List<String> getWarnings(@NotNull MinecraftServer server) {
 		if (this.enchantment() == null)
 			return ImmutableList.of(this.name() + "/Missing Enchantment");
 		return ImmutableList.of();
-	}
-
-	@Override
-	public @NotNull List<String> getErrors(@NotNull MinecraftServer server) {
-		return IOriginsFeatureConfiguration.super.getErrors(server);
 	}
 
 	public boolean applyCheck(Iterable<ItemStack> input) {

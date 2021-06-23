@@ -6,7 +6,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.apace100.origins.api.IOriginsFeatureConfiguration;
 import io.github.apace100.origins.api.power.configuration.ConfiguredEntityAction;
 import io.github.apace100.origins.util.OriginsCodecs;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
@@ -15,7 +14,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 public record SpawnEntityConfiguration(EntityType<?> type, CompoundTag tag,
 									   ConfiguredEntityAction<?, ?> action) implements IOriginsFeatureConfiguration {
@@ -33,17 +31,19 @@ public record SpawnEntityConfiguration(EntityType<?> type, CompoundTag tag,
 	}
 
 	@Override
-	public @NotNull List<String> getWarnings(@NotNull MinecraftServer server) {
+	public @NotNull List<String> getErrors(@NotNull MinecraftServer server) {
 		ImmutableList.Builder<String> builder = ImmutableList.builder();
-		if (this.action() != null) builder.addAll(this.action().getWarnings(server).stream().map("SpawnEntity/%s"::formatted).toList());
-		if (this.type() == null) builder.add("SpawnEntity/Missing Entity");
+		if (this.action() != null)
+			builder.addAll(this.action().getErrors(server).stream().map("SpawnEntity/%s"::formatted).toList());
 		return builder.build();
 	}
 
 	@Override
-	public @NotNull List<String> getErrors(@NotNull MinecraftServer server) {
+	public @NotNull List<String> getWarnings(@NotNull MinecraftServer server) {
 		ImmutableList.Builder<String> builder = ImmutableList.builder();
-		if (this.action() != null) builder.addAll(this.action().getErrors(server).stream().map("SpawnEntity/%s"::formatted).toList());
+		if (this.action() != null)
+			builder.addAll(this.action().getWarnings(server).stream().map("SpawnEntity/%s"::formatted).toList());
+		if (this.type() == null) builder.add("SpawnEntity/Missing Entity");
 		return builder.build();
 	}
 }

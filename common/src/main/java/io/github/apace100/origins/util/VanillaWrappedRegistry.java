@@ -1,6 +1,5 @@
 package io.github.apace100.origins.util;
 
-import com.mojang.datafixers.types.Func;
 import com.mojang.serialization.Lifecycle;
 import me.shedaniel.architectury.registry.Registries;
 import me.shedaniel.architectury.registry.Registry;
@@ -14,12 +13,6 @@ import java.util.*;
 import java.util.function.Function;
 
 public class VanillaWrappedRegistry<S> extends MutableRegistry<S> {
-
-	private final Function<Registries, Registry<S>> toArchRegistry;
-	private final Lifecycle lifecycle;
-	private final Registry<S> archRegistry;
-	private final Map<S, Lifecycle> entryToLifecycle;
-	private final Map<String, Registry<S>> archRegistries;
 
 	public static <T> VanillaWrappedRegistry<T> wrap(Registry<T> arch) {
 		return wrap(arch, Lifecycle.stable());
@@ -41,6 +34,11 @@ public class VanillaWrappedRegistry<S> extends MutableRegistry<S> {
 		Function<Registries, Registry<T>> toArch = s -> new ArchitecturyWrappedRegistry<>(s.get(key), to, from);
 		return new VanillaWrappedRegistry<>(arch, toArch, lifecycle);
 	}
+	private final Function<Registries, Registry<S>> toArchRegistry;
+	private final Lifecycle lifecycle;
+	private final Registry<S> archRegistry;
+	private final Map<S, Lifecycle> entryToLifecycle;
+	private final Map<String, Registry<S>> archRegistries;
 
 	public VanillaWrappedRegistry(Registry<S> archRegistry, Function<Registries, Registry<S>> toArchRegistry, Lifecycle lifecycle) {
 		super(archRegistry.key(), lifecycle);
@@ -65,12 +63,6 @@ public class VanillaWrappedRegistry<S> extends MutableRegistry<S> {
 	@Override
 	public int getRawId(@Nullable S object) {
 		return this.archRegistry.getRawId(object);
-	}
-
-	@Nullable
-	@Override
-	public S get(int i) {
-		return this.archRegistry.byRawId(i);
 	}
 
 	@Nullable
@@ -108,6 +100,12 @@ public class VanillaWrappedRegistry<S> extends MutableRegistry<S> {
 	@Override
 	public boolean containsId(Identifier identifier) {
 		return this.archRegistry.contains(identifier);
+	}
+
+	@Nullable
+	@Override
+	public S get(int i) {
+		return this.archRegistry.byRawId(i);
 	}
 
 	@NotNull

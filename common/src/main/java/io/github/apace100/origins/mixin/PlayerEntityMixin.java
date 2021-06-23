@@ -2,10 +2,8 @@ package io.github.apace100.origins.mixin;
 
 import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.api.power.IInventoryPower;
-import io.github.apace100.origins.power.*;
 import io.github.apace100.origins.power.ActionOnWakeUpPower;
 import io.github.apace100.origins.power.RestrictArmorPower;
-import io.github.apace100.origins.registry.ModBlocks;
 import io.github.apace100.origins.registry.ModComponentsArchitectury;
 import io.github.apace100.origins.registry.ModDamageSources;
 import io.github.apace100.origins.registry.ModPowers;
@@ -104,9 +102,8 @@ public abstract class PlayerEntityMixin extends LivingEntity implements Nameable
 	// NO_COBWEB_SLOWDOWN
 	@Inject(at = @At("HEAD"), method = "slowMovement", cancellable = true)
 	public void slowMovement(BlockState state, Vec3d multiplier, CallbackInfo info) {
-		if (PowerTypes.NO_COBWEB_SLOWDOWN.isActive(this) || PowerTypes.MASTER_OF_WEBS_NO_SLOWDOWN.isActive(this)) {
+		if (OriginComponent.hasPower(this, ModPowers.NO_COBWEB_SLOWDOWN.get()))
 			info.cancel();
-		}
 	}
 
 	@SuppressWarnings({"unchecked", "rawtypes"})
@@ -146,7 +143,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements Nameable
 	// WATER_BREATHING
 	@Inject(at = @At("TAIL"), method = "tick")
 	private void tick(CallbackInfo info) {
-		if (PowerTypes.WATER_BREATHING.isActive(this)) {
+		if (OriginComponent.hasPower(this, ModPowers.WATER_BREATHING.get())) {
 			if (!this.isSubmergedIn(FluidTags.WATER) && !this.hasStatusEffect(StatusEffects.WATER_BREATHING) && !this.hasStatusEffect(StatusEffects.CONDUIT_POWER)) {
 				if (!this.isRainingAtPlayerPosition()) {
 					int landGain = this.getNextAirOnLand(0);
@@ -183,26 +180,6 @@ public abstract class PlayerEntityMixin extends LivingEntity implements Nameable
 	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;isSubmergedIn(Lnet/minecraft/tag/Tag;)Z"), method = "updateTurtleHelmet")
 	public boolean isSubmergedInProxy(PlayerEntity player, Tag<Fluid> fluidTag) {
 		boolean submerged = this.isSubmergedIn(fluidTag);
-		if (PowerTypes.WATER_BREATHING.isActive(this)) {
-			return !submerged;
-		}
-		return submerged;
-	}
-
-	// WEBBING
-	@Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;onAttacking(Lnet/minecraft/entity/Entity;)V"), method = "attack")
-	public void cobwebOnMeleeAttack(Entity target, CallbackInfo info) {
-		if (target instanceof LivingEntity) {
-			if (PowerTypes.WEBBING.isActive(this) && !this.isSneaking()) {
-				CooldownPower power = PowerTypes.WEBBING.get(this);
-				if (power.canUse()) {
-					BlockPos targetPos = target.getBlockPos();
-					if (world.isAir(targetPos) || world.getBlockState(targetPos).getMaterial().isReplaceable()) {
-						world.setBlockState(targetPos, ModBlocks.TEMPORARY_COBWEB.getDefaultState());
-						power.use();
-					}
-				}
-			}
-		}
+		return OriginComponent.hasPower(this, ModPowers.WATER_BREATHING.get()) != submerged;
 	}
 }

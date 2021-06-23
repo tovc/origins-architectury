@@ -1,7 +1,7 @@
 package io.github.apace100.origins.mixin;
 
-import io.github.apace100.origins.power.configuration.ModifyFoodConfiguration;
 import io.github.apace100.origins.power.ModifyFoodPower;
+import io.github.apace100.origins.power.configuration.ModifyFoodConfiguration;
 import net.minecraft.entity.player.HungerManager;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.FoodComponent;

@@ -1,8 +1,8 @@
 package io.github.apace100.origins.action.block;
 
 import com.mojang.serialization.Codec;
-import io.github.apace100.origins.api.power.factory.BlockAction;
 import io.github.apace100.origins.action.meta.IDelegatedActionConfiguration;
+import io.github.apace100.origins.api.power.factory.BlockAction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;

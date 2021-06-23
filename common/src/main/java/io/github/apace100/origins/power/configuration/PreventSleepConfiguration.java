@@ -8,7 +8,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
-public record PreventSleepConfiguration(@Nullable ConfiguredBlockCondition<?, ?> condition, String message, boolean allowSpawn) implements IOriginsFeatureConfiguration {
+public record PreventSleepConfiguration(@Nullable ConfiguredBlockCondition<?, ?> condition, String message,
+										boolean allowSpawn) implements IOriginsFeatureConfiguration {
 	public static final Codec<PreventSleepConfiguration> CODEC = RecordCodecBuilder.create(instance -> instance.group(
 			ConfiguredBlockCondition.CODEC.optionalFieldOf("block_condition").forGetter(x -> Optional.ofNullable(x.condition())),
 			Codec.STRING.optionalFieldOf("message", "origins.cant_sleep").forGetter(PreventSleepConfiguration::message),

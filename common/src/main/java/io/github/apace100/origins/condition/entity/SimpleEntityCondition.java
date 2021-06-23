@@ -4,6 +4,8 @@ import io.github.apace100.origins.api.configuration.NoConfiguration;
 import io.github.apace100.origins.api.power.factory.EntityCondition;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.vehicle.BoatEntity;
+import net.minecraft.util.math.BlockPos;
 
 import java.util.function.Predicate;
 

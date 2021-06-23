@@ -8,6 +8,7 @@ import io.github.apace100.origins.api.IOriginsFeatureConfiguration;
 import io.github.apace100.origins.api.OriginsAPI;
 import io.github.apace100.origins.api.registry.OriginsDynamicRegistries;
 import io.github.apace100.origins.util.OriginsCodecs;
+import net.minecraft.advancement.Advancement;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.MinecraftServer;
@@ -17,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public record Origin(Set<Identifier> powers, ItemStack displayItem,
@@ -48,7 +50,7 @@ public record Origin(Set<Identifier> powers, ItemStack displayItem,
 
 	@NotNull
 	public static Origin get(Identifier identifier) {
-		return OriginsAPI.getOrigins().getOrEmpty(identifier).orElseThrow(() -> new RuntimeException("Tried to access invalid origin at runtime in a nullsafe method."));
+		return OriginsAPI.getOrigins().getOrEmpty(identifier).orElseThrow(() -> new RuntimeException("Tried to access invalid origin at runtime in a null-safe method."));
 	}
 
 	public Builder copyOf() {
@@ -74,6 +76,10 @@ public record Origin(Set<Identifier> powers, ItemStack displayItem,
 	public @NotNull List<String> getErrors(@NotNull MinecraftServer server) {
 		IOriginsDynamicRegistryManager dynamicRegistry = OriginsDynamicRegistries.get(server);
 		return this.checkPower(dynamicRegistry, this.powers.toArray(Identifier[]::new)).stream().map(x -> "Unregistered power" + x).toList();
+	}
+
+	public Optional<OriginUpgrade> getUpgrade(Advancement advancement) {
+		return this.upgrades().stream().filter(x -> x.advancementCondition().equals(advancement.getId())).findFirst();
 	}
 
 	public static class Builder {
@@ -103,8 +109,10 @@ public record Origin(Set<Identifier> powers, ItemStack displayItem,
 		 * Adds translation keys for name and description if those are missing.
 		 */
 		public Builder withIdentifierSafe(Identifier identifier) {
-			if (StringUtils.isEmpty(this.nameTranslationKey)) this.nameTranslationKey = "origin." + identifier.getNamespace() + "." + identifier.getPath() + ".name";
-			if (StringUtils.isEmpty(this.descriptionTranslationKey)) this.descriptionTranslationKey = "origin." + identifier.getNamespace() + "." + identifier.getPath() + ".description";
+			if (StringUtils.isEmpty(this.nameTranslationKey))
+				this.nameTranslationKey = "origin." + identifier.getNamespace() + "." + identifier.getPath() + ".name";
+			if (StringUtils.isEmpty(this.descriptionTranslationKey))
+				this.descriptionTranslationKey = "origin." + identifier.getNamespace() + "." + identifier.getPath() + ".description";
 			return this;
 		}
 

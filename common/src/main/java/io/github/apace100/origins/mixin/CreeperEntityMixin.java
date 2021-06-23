@@ -1,6 +1,7 @@
 package io.github.apace100.origins.mixin;
 
-import io.github.apace100.origins.power.PowerTypes;
+import io.github.apace100.origins.api.component.OriginComponent;
+import io.github.apace100.origins.registry.ModPowers;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.FleeEntityGoal;
 import net.minecraft.entity.ai.goal.FollowTargetGoal;
@@ -19,19 +20,19 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(CreeperEntity.class)
 public abstract class CreeperEntityMixin extends HostileEntity {
-    protected CreeperEntityMixin(EntityType<? extends HostileEntity> entityType, World world) {
-        super(entityType, world);
-    }
+	protected CreeperEntityMixin(EntityType<? extends HostileEntity> entityType, World world) {
+		super(entityType, world);
+	}
 
-    @Inject(at = @At("TAIL"), method = "initGoals")
-    private void addGoals(CallbackInfo info) {
-        Goal goal = new FleeEntityGoal<>(this, PlayerEntity.class, PowerTypes.SCARE_CREEPERS::isActive, 6.0F, 1.0D, 1.2D, EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR::test);
-        this.goalSelector.add(3, goal);
-    }
+	@Inject(at = @At("TAIL"), method = "initGoals")
+	private void addGoals(CallbackInfo info) {
+		Goal goal = new FleeEntityGoal<>(this, PlayerEntity.class, x -> OriginComponent.hasPower(x, ModPowers.SCARE_CREEPERS.get()), 6.0F, 1.0D, 1.2D, EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR::test);
+		this.goalSelector.add(3, goal);
+	}
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/ai/goal/GoalSelector;add(ILnet/minecraft/entity/ai/goal/Goal;)V", ordinal = 8), method = "initGoals")
-    private void redirectTargetGoal(GoalSelector goalSelector, int priority, Goal goal) {
-        Goal newGoal = new FollowTargetGoal<>(this, PlayerEntity.class, 10, true, false, e -> !PowerTypes.SCARE_CREEPERS.isActive(e));
-        goalSelector.add(priority, newGoal);
-    }
+	@Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/ai/goal/GoalSelector;add(ILnet/minecraft/entity/ai/goal/Goal;)V", ordinal = 8), method = "initGoals")
+	private void redirectTargetGoal(GoalSelector goalSelector, int priority, Goal goal) {
+		Goal newGoal = new FollowTargetGoal<>(this, PlayerEntity.class, 10, true, false, e -> !OriginComponent.hasPower(e, ModPowers.SCARE_CREEPERS.get()));
+		goalSelector.add(priority, newGoal);
+	}
 }

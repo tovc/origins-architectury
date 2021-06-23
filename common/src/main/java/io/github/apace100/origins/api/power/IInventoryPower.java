@@ -9,7 +9,10 @@ import net.minecraft.screen.ScreenHandlerFactory;
 
 public interface IInventoryPower<T extends IOriginsFeatureConfiguration> {
 	boolean shouldDropOnDeath(ConfiguredPower<T, ?> configuration, PlayerEntity player, ItemStack stack);
+
 	boolean shouldDropOnDeath(ConfiguredPower<T, ?> configuration, PlayerEntity player);
+
 	Inventory getInventory(ConfiguredPower<T, ?> configuration, PlayerEntity player);
+
 	ScreenHandlerFactory getMenuCreator(ConfiguredPower<T, ?> configuration, PlayerEntity player);
 }

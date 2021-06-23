@@ -1,6 +1,7 @@
-package io.github.apace100.origins.action.configuration;
+package io.github.apace100.origins.api.configuration;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import io.github.apace100.origins.api.IOriginsFeatureConfiguration;
 import io.github.apace100.origins.api.registry.OriginsDynamicRegistries;
 import io.github.apace100.origins.util.OriginsCodecs;
@@ -12,7 +13,11 @@ import java.util.List;
 
 public record PowerReference(Identifier power) implements IOriginsFeatureConfiguration {
 	public static Codec<PowerReference> codec(String fieldName) {
-		return OriginsCodecs.POWER_TYPE.fieldOf(fieldName).xmap(PowerReference::new, PowerReference::power).codec();
+		return mapCodec(fieldName).codec();
+	}
+
+	public static MapCodec<PowerReference> mapCodec(String fieldName) {
+		return OriginsCodecs.IDENTIFIER.fieldOf(fieldName).xmap(PowerReference::new, PowerReference::power);
 	}
 
 	@Override

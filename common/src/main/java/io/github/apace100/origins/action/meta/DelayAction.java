@@ -6,7 +6,8 @@ import io.github.apace100.origins.util.Scheduler;
 
 import java.util.function.BiConsumer;
 
-public record DelayAction<T, V>(T action, int delay, BiConsumer<T, V> executor) implements IDelegatedActionConfiguration<V> {
+public record DelayAction<T, V>(T action, int delay,
+								BiConsumer<T, V> executor) implements IDelegatedActionConfiguration<V> {
 	private static final Scheduler SCHEDULER = new Scheduler();
 
 	public static <T, V> Codec<DelayAction<T, V>> codec(Codec<T> codec, BiConsumer<T, V> executor) {

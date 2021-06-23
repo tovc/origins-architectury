@@ -1,54 +1,23 @@
 package io.github.apace100.origins.condition.entity;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.github.apace100.origins.factory.condition.ConditionFactory;
-import io.github.apace100.origins.util.OriginsCodecs;
+import io.github.apace100.origins.api.power.configuration.ConfiguredBiomeCondition;
+import io.github.apace100.origins.api.power.factory.EntityCondition;
+import io.github.apace100.origins.condition.configuration.BiomeConfiguration;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.world.biome.Biome;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
 //FIXME This is wrong, it should be using RegistryKey instead.
-public class BiomeCondition implements Predicate<LivingEntity> {
+public class BiomeCondition extends EntityCondition<BiomeConfiguration> {
 
-	public static final Codec<BiomeCondition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-			OriginsCodecs.OPTIONAL_BIOME.optionalFieldOf("biome", Optional.empty()).forGetter(BiomeCondition::getSingularBiome),
-			OriginsCodecs.listOf(OriginsCodecs.OPTIONAL_BIOME).optionalFieldOf("biomes", ImmutableList.of()).forGetter(BiomeCondition::getMultipleBiomes),
-			OriginsCodecs.BIOME_CONDITION.optionalFieldOf("condition").forGetter(x -> x.biomeCondition)
-	).apply(instance, BiomeCondition::new));
-
-	private final Set<Biome> biomes;
-	private final Optional<ConditionFactory.Instance<Biome>> biomeCondition;
-
-	public BiomeCondition(Optional<Biome> biome, List<Optional<Biome>> biomes, Optional<ConditionFactory.Instance<Biome>> biomeCondition) {
-		this.biomeCondition = biomeCondition;
-		ImmutableSet.Builder<Biome> builder = ImmutableSet.<Biome>builder().addAll(biomes.stream().filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList()));
-		biome.ifPresent(builder::add);
-		this.biomes = builder.build();
-	}
-
-	private Optional<Biome> getSingularBiome() {
-		return this.biomes.size() == 1 ? this.biomes.stream().findFirst() : Optional.empty();
-	}
-
-	private List<Optional<Biome>> getMultipleBiomes() {
-		return this.biomes.size() == 1 ? ImmutableList.of() : this.biomes.stream().map(Optional::of).collect(ImmutableList.toImmutableList());
+	public BiomeCondition() {
+		super(BiomeConfiguration.CODEC);
 	}
 
 	@Override
-	public boolean test(LivingEntity entity) {
+	public boolean check(BiomeConfiguration configuration, LivingEntity entity) {
 		Biome biome = entity.world.getBiome(entity.getBlockPos());
-		boolean cond = this.biomeCondition.map(x -> x.test(biome)).orElse(true);
-		if (!cond)
+		if (!ConfiguredBiomeCondition.check(configuration.condition(), biome))
 			return false;
-		return biomes.size() <= 0 || biomes.stream().anyMatch(x -> Objects.equals(biome, x));
+		return entity.world.getBiomeKey(entity.getBlockPos()).map(x -> configuration.biomes().getContent().stream().anyMatch(x::equals)).orElse(false);
 	}
 }

@@ -8,13 +8,13 @@ import net.minecraft.util.Identifier;
 
 public class ModEntities {
 
-    public static final EntityType<EnderianPearlEntity> ENDERIAN_PEARL;
+	public static final EntityType<EnderianPearlEntity> ENDERIAN_PEARL;
 
-    static {
-        ENDERIAN_PEARL = EntityType.Builder.<EnderianPearlEntity>create(EnderianPearlEntity::new, SpawnGroup.MISC).setDimensions(0.25F, 0.25F).maxTrackingRange(64).trackingTickInterval(10).build("enderian_pearl");
-    }
+	static {
+		ENDERIAN_PEARL = EntityType.Builder.<EnderianPearlEntity>create(EnderianPearlEntity::new, SpawnGroup.MISC).setDimensions(0.25F, 0.25F).maxTrackingRange(64).trackingTickInterval(10).build("enderian_pearl");
+	}
 
-    public static void register() {
-        ModRegistriesArchitectury.ENTITY_TYPES.register(new Identifier(Origins.MODID, "enderian_pearl"), () -> ENDERIAN_PEARL);
-    }
+	public static void register() {
+		ModRegistriesArchitectury.ENTITY_TYPES.register(new Identifier(Origins.MODID, "enderian_pearl"), () -> ENDERIAN_PEARL);
+	}
 }

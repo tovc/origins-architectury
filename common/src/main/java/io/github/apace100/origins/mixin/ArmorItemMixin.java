@@ -17,9 +17,9 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 @Mixin(ArmorItem.class)
 public class ArmorItemMixin {
 
-    @Inject(method = "use", locals = LocalCapture.CAPTURE_FAILHARD, at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;getEquippedStack(Lnet/minecraft/entity/EquipmentSlot;)Lnet/minecraft/item/ItemStack;"), cancellable = true)
-    private void preventArmorEquipping(World world, PlayerEntity user, Hand hand, CallbackInfoReturnable<TypedActionResult<ItemStack>> info, ItemStack itemStack, EquipmentSlot equipmentSlot) {
-        if(RestrictArmorPower.isForbidden(user, equipmentSlot, itemStack))
-            info.setReturnValue(TypedActionResult.fail(itemStack));
-    }
+	@Inject(method = "use", locals = LocalCapture.CAPTURE_FAILHARD, at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;getEquippedStack(Lnet/minecraft/entity/EquipmentSlot;)Lnet/minecraft/item/ItemStack;"), cancellable = true)
+	private void preventArmorEquipping(World world, PlayerEntity user, Hand hand, CallbackInfoReturnable<TypedActionResult<ItemStack>> info, ItemStack itemStack, EquipmentSlot equipmentSlot) {
+		if (RestrictArmorPower.isForbidden(user, equipmentSlot, itemStack))
+			info.setReturnValue(TypedActionResult.fail(itemStack));
+	}
 }

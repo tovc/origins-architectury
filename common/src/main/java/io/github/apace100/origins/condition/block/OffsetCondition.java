@@ -3,7 +3,6 @@ package io.github.apace100.origins.condition.block;
 import io.github.apace100.origins.action.configuration.OffsetConfiguration;
 import io.github.apace100.origins.api.power.configuration.ConfiguredBlockCondition;
 import io.github.apace100.origins.api.power.factory.BlockCondition;
-import io.github.apace100.origins.factory.condition.ConditionFactory;
 import net.minecraft.block.pattern.CachedBlockPosition;
 
 public class OffsetCondition extends BlockCondition<OffsetConfiguration<ConfiguredBlockCondition<?, ?>>> {

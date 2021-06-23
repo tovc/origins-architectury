@@ -3,7 +3,6 @@ package io.github.apace100.origins.mixin;
 import com.mojang.authlib.GameProfile;
 import io.github.apace100.origins.access.WaterMovingEntity;
 import io.github.apace100.origins.api.component.OriginComponent;
-import io.github.apace100.origins.power.PowerTypes;
 import io.github.apace100.origins.registry.ModPowers;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
@@ -20,41 +19,40 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(ClientPlayerEntity.class)
 public abstract class ClientPlayerEntityMixin extends AbstractClientPlayerEntity implements WaterMovingEntity {
 
-    private boolean isMoving = false;
+	@Shadow
+	@Final
+	public ClientPlayNetworkHandler networkHandler;
+	private boolean isMoving = false;
 
-    @Shadow @Final public ClientPlayNetworkHandler networkHandler;
+	public ClientPlayerEntityMixin(ClientWorld world, GameProfile profile) {
+		super(world, profile);
+	}
 
-    public ClientPlayerEntityMixin(ClientWorld world, GameProfile profile) {
-        super(world, profile);
-    }
+	@Inject(at = @At("HEAD"), method = "getUnderwaterVisibility", cancellable = true)
+	private void getUnderwaterVisibility(CallbackInfoReturnable<Float> info) {
+		if (OriginComponent.hasPower(this, ModPowers.WATER_VISION.get()))
+			info.setReturnValue(1.0F);
+	}
 
-    @Inject(at = @At("HEAD"), method = "getUnderwaterVisibility", cancellable = true)
-    private void getUnderwaterVisibility(CallbackInfoReturnable<Float> info) {
-        if(PowerTypes.WATER_VISION.isActive(this)) {
-            info.setReturnValue(1.0F);
-        }
-    }
+	@Inject(at = @At("HEAD"), method = "isSubmergedInWater", cancellable = true)
+	private void allowSwimming(CallbackInfoReturnable<Boolean> cir) {
+		if (OriginComponent.hasPower(this, ModPowers.SWIMMING.get()))
+			cir.setReturnValue(true);
+		else if (OriginComponent.hasPower(this, ModPowers.IGNORE_WATER.get()))
+			cir.setReturnValue(false);
+	}
 
-    @Inject(at = @At("HEAD"), method = "isSubmergedInWater", cancellable = true)
-    private void allowSwimming(CallbackInfoReturnable<Boolean> cir)  {
-        if(OriginComponent.hasPower(this, ModPowers.SWIMMING.get())) {
-            cir.setReturnValue(true);
-        } else if(OriginComponent.hasPower(this, ModPowers.IGNORE_WATER.get())) {
-            cir.setReturnValue(false);
-        }
-    }
+	@Inject(at = @At("HEAD"), method = "tickMovement")
+	private void beginMovementPhase(CallbackInfo ci) {
+		isMoving = true;
+	}
 
-    @Inject(at = @At("HEAD"), method = "tickMovement")
-    private void beginMovementPhase(CallbackInfo ci) {
-        isMoving = true;
-    }
+	@Inject(at = @At("TAIL"), method = "tickMovement")
+	private void endMovementPhase(CallbackInfo ci) {
+		isMoving = false;
+	}
 
-    @Inject(at = @At("TAIL"), method = "tickMovement")
-    private void endMovementPhase(CallbackInfo ci) {
-        isMoving = false;
-    }
-
-    public boolean isInMovementPhase() {
-        return isMoving;
-    }
+	public boolean isInMovementPhase() {
+		return isMoving;
+	}
 }

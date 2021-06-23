@@ -9,16 +9,16 @@ import io.github.apace100.origins.api.power.configuration.ConfiguredPower;
 import io.github.apace100.origins.api.registry.OriginsBuiltinRegistries;
 import io.github.apace100.origins.api.registry.OriginsDynamicRegistries;
 import io.github.apace100.origins.networking.ModPackets;
-import io.github.apace100.origins.power.PreventBlockActionPower;
-import io.github.apace100.origins.power.PreventItemActionPower;
-import io.github.apace100.origins.registry.ModComponentsArchitectury;
-import io.github.apace100.origins.registry.ModOrigins;
-import io.github.apace100.origins.registry.OriginsDynamicRegistryManager;
+import io.github.apace100.origins.power.*;
+import io.github.apace100.origins.registry.*;
 import io.netty.buffer.Unpooled;
+import me.shedaniel.architectury.event.events.EntityEvent;
 import me.shedaniel.architectury.event.events.InteractionEvent;
 import me.shedaniel.architectury.event.events.LifecycleEvent;
 import me.shedaniel.architectury.event.events.PlayerEvent;
 import me.shedaniel.architectury.networking.NetworkManager;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
@@ -28,6 +28,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.world.World;
 
 import java.util.List;
 
@@ -43,6 +44,7 @@ public class OriginEventHandler {
 		PlayerEvent.PLAYER_RESPAWN.register(OriginEventHandler::respawn);
 		LifecycleEvent.SERVER_BEFORE_START.register(OriginsDynamicRegistryManager::addInstance);
 		LifecycleEvent.SERVER_STOPPED.register(OriginsDynamicRegistryManager::removeInstance);
+		EntityEvent.LIVING_ATTACK.register(OriginEventHandler::handleAttack);
 
 		OriginsDynamicRegistryEvent.INITIALIZE_EVENT.register(t -> {
 			//Registers builtin registries.
@@ -50,6 +52,30 @@ public class OriginEventHandler {
 			t.add(OriginsDynamicRegistries.ORIGIN_KEY, () -> OriginsBuiltinRegistries.ORIGINS, Origin.CODEC);
 			t.add(OriginsDynamicRegistries.ORIGIN_LAYER_KEY, () -> OriginsBuiltinRegistries.ORIGIN_LAYERS, OriginLayer.CODEC);
 		});
+	}
+
+	private static ActionResult handleAttack(LivingEntity victim, DamageSource source, float amount) {
+		if (victim instanceof PlayerEntity player) {
+			SelfActionWhenHitPower.execute(player, source, amount);
+			AttackerActionWhenHitPower.execute(player, source, amount);
+		}
+		if (source.getAttacker() instanceof PlayerEntity attacker) {
+			SelfCombatActionPower.onHit(attacker, victim, source, amount);
+			TargetCombatActionPower.onHit(attacker, victim, source, amount);
+			if (!attacker.isSneaking()) {
+				OriginComponent.getPowers(attacker, ModPowers.WEBBING.get()).stream().findFirst().ifPresent(power -> {
+					if (power.getFactory().canUse(power, attacker)) {
+						BlockPos targetPos = victim.getBlockPos();
+						World world = attacker.getEntityWorld();
+						if (world.isAir(targetPos) || world.getBlockState(targetPos).getMaterial().isReplaceable()) {
+							world.setBlockState(targetPos, ModBlocks.TEMPORARY_COBWEB.getDefaultState());
+							power.getFactory().use(power, attacker);
+						}
+					}
+				});
+			}
+		}
+		return ActionResult.PASS;
 	}
 
 	private static ActionResult preventBlockUse(PlayerEntity player, Hand hand, BlockPos blockPos, Direction direction) {
