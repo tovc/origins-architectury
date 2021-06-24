@@ -30,6 +30,12 @@ allprojects {
 	apply plugin: "architectury-plugin"
 	apply plugin: "maven-publish"
 
+	java {
+		toolchain {
+			languageVersion = JavaLanguageVersion.of(16)
+		}
+	}
+
 	archivesBaseName = rootProject.archives_base_name
 	version = rootProject.mod_version
 	group = rootProject.maven_group

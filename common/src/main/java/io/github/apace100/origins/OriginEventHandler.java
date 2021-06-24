@@ -9,19 +9,17 @@ import io.github.apace100.origins.api.power.configuration.ConfiguredPower;
 import io.github.apace100.origins.api.registry.OriginsBuiltinRegistries;
 import io.github.apace100.origins.api.registry.OriginsDynamicRegistries;
 import io.github.apace100.origins.networking.ModPackets;
+import io.github.apace100.origins.networking.packet.S2COpenOriginScreenPacket;
 import io.github.apace100.origins.power.*;
 import io.github.apace100.origins.registry.*;
-import io.netty.buffer.Unpooled;
 import me.shedaniel.architectury.event.events.EntityEvent;
 import me.shedaniel.architectury.event.events.InteractionEvent;
 import me.shedaniel.architectury.event.events.LifecycleEvent;
 import me.shedaniel.architectury.event.events.PlayerEvent;
-import me.shedaniel.architectury.networking.NetworkManager;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -112,11 +110,8 @@ public class OriginEventHandler {
 				component.getOrigins().values().stream()
 						.flatMap(o -> o.powers().stream())
 						.forEach(x -> component.getPower(x).onChosen(player, false));
-			} else {
-				PacketByteBuf data = new PacketByteBuf(Unpooled.buffer());
-				data.writeBoolean(true);
-				NetworkManager.sendToPlayer(player, ModPackets.OPEN_ORIGIN_SCREEN, data);
-			}
+			} else
+				ModPackets.CHANNEL.sendToPlayer(player, new S2COpenOriginScreenPacket(true));
 		}
 	}
 

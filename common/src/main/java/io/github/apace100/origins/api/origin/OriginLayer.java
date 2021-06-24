@@ -3,6 +3,7 @@ package io.github.apace100.origins.api.origin;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.github.apace100.origins.api.power.configuration.ConfiguredEntityCondition;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Identifier;
 import org.apache.commons.lang3.StringUtils;
@@ -89,6 +90,10 @@ public record OriginLayer(int order, List<ConditionedOrigin> conditionedOrigins,
 
 	public int optionCount(PlayerEntity player) {
 		return Math.toIntExact(this.origins(player).filter(Origin::isChoosable).count() + (this.allowRandom() && this.randomOrigins(player).findAny().isPresent() ? 1 : 0));
+	}
+
+	public boolean contains(Identifier origin, PlayerEntity playerEntity) {
+		return this.conditionedOrigins().stream().anyMatch(x -> x.origins().contains(origin) && ConfiguredEntityCondition.check(x.condition(), playerEntity));
 	}
 
 	public static class Builder {

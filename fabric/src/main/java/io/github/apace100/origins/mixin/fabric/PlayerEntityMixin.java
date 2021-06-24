@@ -1,7 +1,8 @@
 package io.github.apace100.origins.mixin.fabric;
 
+import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.power.ModifyDamageDealtPower;
-import io.github.apace100.origins.power.PowerTypes;
+import io.github.apace100.origins.registry.ModPowers;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -24,7 +25,7 @@ public abstract class PlayerEntityMixin extends LivingEntity {
 	// AQUA_AFFINITY
 	@ModifyConstant(method = "getBlockBreakingSpeed", constant = @Constant(ordinal = 0, floatValue = 5.0F))
 	private float modifyWaterBlockBreakingSpeed(float in) {
-		if(PowerTypes.AQUA_AFFINITY.isActive(this)) {
+		if (OriginComponent.hasPower(this, ModPowers.AQUA_AFFINITY.get())) {
 			return 1F;
 		}
 		return in;
@@ -33,7 +34,7 @@ public abstract class PlayerEntityMixin extends LivingEntity {
 	// AQUA_AFFINITY
 	@ModifyConstant(method = "getBlockBreakingSpeed", constant = @Constant(ordinal = 1, floatValue = 5.0F))
 	private float modifyUngroundedBlockBreakingSpeed(float in) {
-		if(this.isInsideWaterOrBubbleColumn() && PowerTypes.AQUA_AFFINITY.isActive(this)) {
+		if (this.isInsideWaterOrBubbleColumn() && OriginComponent.hasPower(this, ModPowers.AQUA_AFFINITY.get())) {
 			return 1F;
 		}
 		return in;
@@ -42,7 +43,7 @@ public abstract class PlayerEntityMixin extends LivingEntity {
 	// ModifyDamageDealt
 	@ModifyVariable(method = "attack", at = @At(value = "STORE", ordinal = 0), name = "f", ordinal = 0)
 	public float modifyDamage(float f, Entity target) {
-		DamageSource source = DamageSource.player((PlayerEntity)(Object)this);
+		DamageSource source = DamageSource.player((PlayerEntity) (Object) this);
 		return ModifyDamageDealtPower.modifyMelee(this, target instanceof LivingEntity le ? le : null, source, f);
 	}
 }

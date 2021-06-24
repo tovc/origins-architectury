@@ -2,7 +2,7 @@ package io.github.apace100.origins.networking.fabric;
 
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.networking.ModPackets;
-import io.github.apace100.origins.networking.NetworkChannel;
+import io.github.apace100.origins.api.network.NetworkChannel;
 import io.github.apace100.origins.networking.OriginsNetworkManager;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerLoginNetworking;
@@ -34,18 +34,18 @@ public class OriginsFabricNetworkServer {
 		Set<Identifier> received = new HashSet<>();
 		for (int i = 0; i < channels; i++) {
 			Identifier name = buf.readIdentifier();
-			NetworkChannel channel = OriginsNetworkManagerImpl.channels.get(name);
+			NetworkChannelFabric channel = OriginsNetworkManagerImpl.channels.get(name);
 			String version = buf.readString(Short.MAX_VALUE);
 			received.add(name);
 			if (channel == null)
 				continue; //If the channel was required serverside, the client would have disconnected itself.
-			if (!channel.acceptedServerVersion().test(version))
+			if (!channel.getChannel().acceptedServerVersion().test(version))
 				mismatching.add(Pair.of(name, version));
 		}
-		List<NetworkChannel> networkChannels = OriginsNetworkManagerImpl.channels.values().stream().filter(x -> !received.contains(x.channel())).toList();
-		for (NetworkChannel networkChannel : networkChannels) {
-			if (!networkChannel.acceptedServerVersion().test(OriginsNetworkManager.ABSENT))
-				mismatching.add(Pair.of(networkChannel.channel(), "missing"));
+		List<NetworkChannelFabric> networkChannels = OriginsNetworkManagerImpl.channels.values().stream().filter(x -> !received.contains(x.getChannel().channel())).toList();
+		for (NetworkChannelFabric networkChannel : networkChannels) {
+			if (!networkChannel.getChannel().acceptedServerVersion().test(OriginsNetworkManager.ABSENT))
+				mismatching.add(Pair.of(networkChannel.getChannel().channel(), "missing"));
 		}
 		if (mismatching.size() > 0)
 			handler.disconnect(new TranslatableText("origins.gui.login.mismatching_channels", String.join(", ", mismatching.stream().map(x -> "[" + x.getLeft() + ": " + x.getRight() + "]").toList())));

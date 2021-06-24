@@ -3,7 +3,8 @@ package io.github.apace100.origins.util;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import io.github.apace100.origins.Origins;
-import io.github.apace100.origins.power.PowerType;
+import io.github.apace100.origins.api.OriginsAPI;
+import io.github.apace100.origins.api.power.configuration.ConfiguredPower;
 import net.minecraft.advancement.criterion.AbstractCriterion;
 import net.minecraft.advancement.criterion.AbstractCriterionConditions;
 import net.minecraft.predicate.entity.AdvancementEntityPredicateDeserializer;
@@ -12,6 +13,8 @@ import net.minecraft.predicate.entity.EntityPredicate;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
+
+import java.util.Objects;
 
 public class GainedPowerCriterion extends AbstractCriterion<GainedPowerCriterion.Conditions> {
 
@@ -24,7 +27,7 @@ public class GainedPowerCriterion extends AbstractCriterion<GainedPowerCriterion
 		return new Conditions(playerPredicate, id);
 	}
 
-	public void trigger(ServerPlayerEntity player, PowerType<?> type) {
+	public void trigger(ServerPlayerEntity player, ConfiguredPower<?, ?> type) {
 		this.test(player, (conditions -> conditions.matches(type)));
 	}
 
@@ -41,8 +44,8 @@ public class GainedPowerCriterion extends AbstractCriterion<GainedPowerCriterion
 			this.powerId = powerId;
 		}
 
-		public boolean matches(PowerType<?> powerType) {
-			return powerType.getIdentifier().equals(powerId);
+		public boolean matches(ConfiguredPower<?, ?> powerType) {
+			return Objects.equals(OriginsAPI.getPowers().getId(powerType), powerId);
 		}
 
 		public JsonObject toJson(AdvancementEntityPredicateSerializer predicateSerializer) {

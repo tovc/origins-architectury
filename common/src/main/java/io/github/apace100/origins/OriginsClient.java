@@ -1,20 +1,17 @@
 package io.github.apace100.origins;
 
-import io.github.apace100.origins.factory.condition.EntityConditionsClient;
+import io.github.apace100.origins.api.OriginsAPI;
+import io.github.apace100.origins.api.power.IActivePower;
+import io.github.apace100.origins.api.power.configuration.ConfiguredPower;
 import io.github.apace100.origins.networking.ModPackets;
-import io.github.apace100.origins.networking.ModPacketsS2C;
-import io.github.apace100.origins.power.Active;
-import io.github.apace100.origins.power.Power;
+import io.github.apace100.origins.networking.packet.C2SUseActivePowersPacket;
 import io.github.apace100.origins.registry.ModBlocks;
-import io.github.apace100.origins.registry.ModComponentsArchitectury;
 import io.github.apace100.origins.registry.ModEntities;
 import io.github.apace100.origins.screen.GameHudRender;
 import io.github.apace100.origins.screen.PowerHudRenderer;
 import io.github.apace100.origins.screen.ViewOriginScreen;
 import io.github.apace100.origins.util.OriginsConfigSerializer;
-import io.netty.buffer.Unpooled;
 import me.shedaniel.architectury.event.events.client.ClientTickEvent;
-import me.shedaniel.architectury.networking.NetworkManager;
 import me.shedaniel.architectury.registry.KeyBindings;
 import me.shedaniel.architectury.registry.RenderTypes;
 import me.shedaniel.architectury.registry.entity.EntityRenderers;
@@ -29,7 +26,8 @@ import net.minecraft.client.options.KeyBinding;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.entity.FlyingItemEntityRenderer;
 import net.minecraft.client.util.InputUtil;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.Registry;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.HashMap;
@@ -47,9 +45,6 @@ public class OriginsClient {
 		EntityRenderers.register(ModEntities.ENDERIAN_PEARL,
 				(dispatcher) -> new FlyingItemEntityRenderer<>(dispatcher, MinecraftClient.getInstance().getItemRenderer()));
 
-		ModPacketsS2C.register();
-
-		EntityConditionsClient.register();
 		OriginClientEventHandler.register();
 
 		AutoConfig.register(ClientConfig.class, OriginsConfigSerializer::new);
@@ -70,19 +65,18 @@ public class OriginsClient {
 
 		ClientTickEvent.CLIENT_PRE.register(tick -> {
 			if (tick.player != null) {
-				List<Power> powers = ModComponentsArchitectury.getOriginComponent(tick.player).getPowers();
-				List<Power> pressedPowers = new LinkedList<>();
+				List<ConfiguredPower<?, ?>> powers = OriginsAPI.getComponent(tick.player).getPowers();
+				List<ConfiguredPower<?, ?>> pressedPowers = new LinkedList<>();
 				HashMap<String, Boolean> currentKeyBindingStates = new HashMap<>();
-				for (Power power : powers) {
-					if (power instanceof Active) {
-						Active active = (Active) power;
-						Active.Key key = active.getKey();
-						KeyBinding keyBinding = getKeyBinding(key.key);
+				for (ConfiguredPower<?, ?> power : powers) {
+					if (power.asActive().isPresent()) {
+						IActivePower.Key key = power.getKey(tick.player).get();
+						KeyBinding keyBinding = getKeyBinding(key.key());
 						if (keyBinding != null) {
-							if (!currentKeyBindingStates.containsKey(key.key)) {
-								currentKeyBindingStates.put(key.key, keyBinding.isPressed());
+							if (!currentKeyBindingStates.containsKey(key.key())) {
+								currentKeyBindingStates.put(key.key(), keyBinding.isPressed());
 							}
-							if (currentKeyBindingStates.get(key.key) && (key.continuous || !lastKeyBindingStates.getOrDefault(key.key, false))) {
+							if (currentKeyBindingStates.get(key.key()) && (key.continuous() || !lastKeyBindingStates.getOrDefault(key.key(), false))) {
 								pressedPowers.add(power);
 							}
 						}
@@ -112,14 +106,11 @@ public class OriginsClient {
 	}
 
 	@Environment(EnvType.CLIENT)
-	private static void performActivePowers(List<Power> powers) {
-		PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
-		buffer.writeInt(powers.size());
-		for (Power power : powers) {
-			buffer.writeIdentifier(power.getType().getIdentifier());
-			((Active) power).onUse();
-		}
-		NetworkManager.sendToServer(ModPackets.USE_ACTIVE_POWERS, buffer);
+	private static void performActivePowers(List<ConfiguredPower<?, ?>> powers) {
+		Registry<ConfiguredPower<?, ?>> registry = OriginsAPI.getPowers();
+		for (ConfiguredPower<?, ?> power : powers)
+			power.activate(MinecraftClient.getInstance().player);
+		ModPackets.CHANNEL.sendToServer(new C2SUseActivePowersPacket(powers.stream().map(registry::getId).toArray(Identifier[]::new)));
 	}
 
 	@Environment(EnvType.CLIENT)
@@ -137,12 +128,13 @@ public class OriginsClient {
 		}
 		return idToKeyBindingMap.get(key);
 	}
+
 	public static KeyBinding usePrimaryActivePowerKeybind;
 	public static KeyBinding useSecondaryActivePowerKeybind;
 	public static KeyBinding viewCurrentOriginKeybind;
 	public static ClientConfig config;
 	public static boolean isServerRunningOrigins = false;
-	private static HashMap<String, KeyBinding> idToKeyBindingMap = new HashMap<>();
+	private static final HashMap<String, KeyBinding> idToKeyBindingMap = new HashMap<>();
 	private static HashMap<String, Boolean> lastKeyBindingStates = new HashMap<>();
 	private static boolean initializedKeyBindingMap = false;
 

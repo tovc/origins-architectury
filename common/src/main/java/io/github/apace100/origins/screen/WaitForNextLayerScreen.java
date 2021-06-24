@@ -1,7 +1,7 @@
 package io.github.apace100.origins.screen;
 
 import io.github.apace100.origins.api.component.OriginComponent;
-import io.github.apace100.origins.origin.OriginLayer;
+import io.github.apace100.origins.api.origin.OriginLayer;
 import io.github.apace100.origins.registry.ModComponentsArchitectury;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
@@ -25,7 +25,7 @@ public class WaitForNextLayerScreen extends Screen {
 		this.showDirtBackground = showDirtBackground;
 		PlayerEntity player = MinecraftClient.getInstance().player;
 		OriginLayer currentLayer = layerList.get(currentLayerIndex);
-		maxSelection = currentLayer.getOriginOptionCount(player);
+		maxSelection = currentLayer.optionCount(player);
 	}
 
 	public void openSelection() {
@@ -33,7 +33,7 @@ public class WaitForNextLayerScreen extends Screen {
 		PlayerEntity player = MinecraftClient.getInstance().player;
 		OriginComponent component = ModComponentsArchitectury.getOriginComponent(player);
 		while (index < layerList.size()) {
-			if (!component.hasOrigin(layerList.get(index)) && layerList.get(index).getOrigins(player).size() > 0) {
+			if (!component.hasOrigin(layerList.get(index)) && layerList.get(index).origins(player).findAny().isPresent()) {
 				MinecraftClient.getInstance().openScreen(new ChooseOriginScreen(layerList, index, showDirtBackground));
 				return;
 			}

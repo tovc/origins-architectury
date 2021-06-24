@@ -1,18 +1,16 @@
 package io.github.apace100.origins.util;
 
 import io.github.apace100.origins.Origins;
-import io.github.apace100.origins.origin.OriginLayers;
-import io.github.apace100.origins.origin.OriginRegistry;
-import io.github.apace100.origins.power.PowerTypeRegistry;
+import io.github.apace100.origins.api.OriginsAPI;
 
 public class DebugInfo {
 
 	public static void printRegistrySizes(String at) {
 		printInfo(new String[]{
 				"Registry Size at " + at,
-				"Origins: " + OriginRegistry.size(),
-				"Layers:  " + OriginLayers.size(),
-				"Powers:  " + PowerTypeRegistry.size()
+				"Origins: " + OriginsAPI.getOrigins().getEntries().size(),
+				"Layers:  " + OriginsAPI.getLayers().getEntries().size(),
+				"Powers:  " + OriginsAPI.getOrigins().getEntries().size()
 		});
 	}
 

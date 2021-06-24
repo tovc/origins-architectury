@@ -5,8 +5,7 @@ import io.github.apace100.origins.command.*;
 import io.github.apace100.origins.data.OriginLayerLoader;
 import io.github.apace100.origins.data.OriginLoader;
 import io.github.apace100.origins.data.PowerLoader;
-import io.github.apace100.origins.networking.ModPacketsC2S;
-import io.github.apace100.origins.origin.Origin;
+import io.github.apace100.origins.networking.ModPackets;
 import io.github.apace100.origins.registry.*;
 import io.github.apace100.origins.registry.action.ModBlockActions;
 import io.github.apace100.origins.registry.action.ModEntityActions;
@@ -47,7 +46,7 @@ public class Origins {
 		ModBlocks.register();
 		ModItems.register();
 		ModTags.register();
-		ModPacketsC2S.register();
+		ModPackets.register();
 		ModEnchantments.register();
 		ModEntities.register();
 		ModLoot.registerLootTables();
@@ -62,7 +61,7 @@ public class Origins {
 		ModEntityActions.register();
 		ModItemActions.register();
 		ModBlockActions.register();
-		Origin.init();
+		ModOrigins.register();
 		OriginEventHandler.register();
 		CommandRegistrationEvent.EVENT.register((dispatcher, dedicated) -> {
 			OriginCommand.register(dispatcher);
@@ -83,6 +82,7 @@ public class Origins {
 	public static Identifier identifier(String path) {
 		return new Identifier(Origins.MODID, path);
 	}
+
 	public static String VERSION = "";
 	public static int[] SEMVER;
 	public static ServerConfig config;

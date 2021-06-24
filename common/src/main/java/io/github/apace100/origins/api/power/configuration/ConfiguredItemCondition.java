@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.function.Function;
 
 public final class ConfiguredItemCondition<C extends IOriginsFeatureConfiguration, F extends ItemCondition<C>> extends ConfiguredCondition<C, F> {
-	public static final Codec<ConfiguredItemCondition<?, ?>> CODEC = ItemCondition.CODEC.dispatch(ConfiguredFactory::getFactory, Function.identity());
+	public static final Codec<ConfiguredItemCondition<?, ?>> CODEC = ItemCondition.CODEC.dispatch(ConfiguredItemCondition::getFactory, Function.identity());
 
 	public static boolean check(@Nullable ConfiguredItemCondition<?, ?> condition, ItemStack stack) {
 		return condition == null || condition.check(stack);

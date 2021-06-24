@@ -5,6 +5,7 @@ import io.github.apace100.origins.api.OriginsAPI;
 import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.api.origin.OriginLayer;
 import io.github.apace100.origins.networking.ModPackets;
+import io.github.apace100.origins.networking.packet.S2COpenOriginScreenPacket;
 import io.netty.buffer.Unpooled;
 import me.shedaniel.architectury.networking.NetworkManager;
 import net.minecraft.entity.player.PlayerEntity;
@@ -24,7 +25,7 @@ public class ModItems {
 	public static final Item ORB_OF_ORIGIN = new Item(new Item.Settings().maxCount(1).group(ItemGroup.MISC).rarity(Rarity.RARE)) {
 		@Override
 		public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
-			if (!world.isClient && user instanceof ServerPlayerEntity) { //Avoid fake players (Mainly a forge check)
+			if (!world.isClient && user instanceof ServerPlayerEntity spe) { //Avoid fake players (Mainly a forge check)
 				OriginComponent component = ModComponentsArchitectury.getOriginComponent(user);
 
 				for (OriginLayer layer : OriginsAPI.getLayers()) {
@@ -34,9 +35,7 @@ public class ModItems {
 				}
 				component.checkAutoChoosingLayers(user, false);
 				component.sync();
-				PacketByteBuf data = new PacketByteBuf(Unpooled.buffer());
-				data.writeBoolean(false);
-				NetworkManager.sendToPlayer((ServerPlayerEntity) user, ModPackets.OPEN_ORIGIN_SCREEN, data);
+				ModPackets.CHANNEL.sendToPlayer(spe, new S2COpenOriginScreenPacket(false));
 			}
 			ItemStack stack = user.getStackInHand(hand);
 			if (!user.isCreative()) {

@@ -1,18 +1,18 @@
 package io.github.apace100.origins.networking.packet;
 
 import io.github.apace100.origins.Origins;
-import io.github.apace100.origins.networking.INetworkHandler;
+import io.github.apace100.origins.api.network.INetworkHandler;
 import net.minecraft.network.PacketByteBuf;
 
 import java.util.function.IntSupplier;
 
-public class C2SAcknowledge implements IntSupplier {
-	public static C2SAcknowledge decode(PacketByteBuf buf) {
-		return new C2SAcknowledge();
+public class C2SAcknowledgePacket implements IntSupplier {
+	public static C2SAcknowledgePacket decode(PacketByteBuf buf) {
+		return new C2SAcknowledgePacket();
 	}
 	private int loginIndex;
 
-	public C2SAcknowledge() {
+	public C2SAcknowledgePacket() {
 
 	}
 

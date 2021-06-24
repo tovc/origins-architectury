@@ -1,9 +1,9 @@
 package io.github.apace100.origins.registry;
 
+import dev.architectury.injectables.annotations.ExpectPlatform;
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.util.OriginLootCondition;
 import io.github.apace100.origins.util.PowerLootCondition;
-import me.shedaniel.architectury.annotations.ExpectPlatform;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.loot.condition.LootCondition;
 import net.minecraft.loot.condition.LootConditionType;

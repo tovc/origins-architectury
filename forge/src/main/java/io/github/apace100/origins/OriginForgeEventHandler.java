@@ -4,6 +4,7 @@ import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.api.power.configuration.ConfiguredBlockCondition;
 import io.github.apace100.origins.components.ForgePlayerOriginComponent;
 import io.github.apace100.origins.networking.ModPackets;
+import io.github.apace100.origins.networking.packet.S2COpenOriginScreenPacket;
 import io.github.apace100.origins.power.ActionOnBlockBreakPower;
 import io.github.apace100.origins.power.ModifyDamageDealtPower;
 import io.github.apace100.origins.power.ModifyDamageTakenPower;
@@ -47,7 +48,7 @@ public class OriginForgeEventHandler {
 		if (hardness <= 0)
 			return;
 		float speed = event.getNewSpeed();
-		if (PowerTypes.AQUA_AFFINITY.isActive(player)) {
+		if (OriginComponent.hasPower(player, ModPowers.AQUA_AFFINITY.get())) {
 			if (player.isSubmergedIn(FluidTags.WATER) && !EnchantmentHelper.hasAquaAffinity(player))
 				speed *= 5;
 			if (!player.isOnGround() && player.isInsideWaterOrBubbleColumn())
@@ -139,9 +140,7 @@ public class OriginForgeEventHandler {
 	private static void checkOrigins(ServerPlayerEntity entity) {
 		OriginComponent component = ModComponentsArchitectury.getOriginComponent(entity);
 		if (!component.hasAllOrigins()) {
-			PacketByteBuf data = new PacketByteBuf(Unpooled.buffer());
-			data.writeBoolean(true);
-			NetworkManager.sendToPlayer(entity, ModPackets.OPEN_ORIGIN_SCREEN, data);
+			ModPackets.CHANNEL.sendToPlayer(entity, new S2COpenOriginScreenPacket(true));
 		}
 	}
 

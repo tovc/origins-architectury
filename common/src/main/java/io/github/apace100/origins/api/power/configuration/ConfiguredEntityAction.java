@@ -10,7 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.function.Function;
 
 public final class ConfiguredEntityAction<C extends IOriginsFeatureConfiguration, F extends EntityAction<C>> extends ConfiguredFactory<C, F> {
-	public static final Codec<ConfiguredEntityAction<?, ?>> CODEC = EntityAction.CODEC.dispatch(ConfiguredFactory::getFactory, Function.identity());
+	public static final Codec<ConfiguredEntityAction<?, ?>> CODEC = EntityAction.CODEC.dispatch(ConfiguredEntityAction::getFactory, Function.identity());
 
 	public static void execute(@Nullable ConfiguredEntityAction<?, ?> action, Entity entity) {
 		if (action != null)

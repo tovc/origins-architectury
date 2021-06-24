@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.function.Function;
 
 public final class ConfiguredEntityCondition<C extends IOriginsFeatureConfiguration, F extends EntityCondition<C>> extends ConfiguredCondition<C, F> {
-	public static final Codec<ConfiguredEntityCondition<?, ?>> CODEC = EntityCondition.CODEC.dispatch(ConfiguredFactory::getFactory, Function.identity());
+	public static final Codec<ConfiguredEntityCondition<?, ?>> CODEC = EntityCondition.CODEC.dispatch(ConfiguredEntityCondition::getFactory, Function.identity());
 
 	public static boolean check(@Nullable ConfiguredEntityCondition<?, ?> condition, LivingEntity entity) {
 		return condition == null || condition.check(entity);

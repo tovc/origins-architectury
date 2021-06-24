@@ -1,7 +1,8 @@
 package io.github.apace100.origins.mixin.fabric;
 
-import io.github.apace100.origins.power.PowerTypes;
+import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.power.ModifyJumpPower;
+import io.github.apace100.origins.registry.ModPowers;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -22,9 +23,9 @@ public abstract class LivingEntityMixin extends Entity {
 	// SLOW_FALLING
 	@ModifyVariable(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;getFluidState(Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/fluid/FluidState;"), method = "travel", name = "d", ordinal = 0)
 	public double doAvianSlowFalling(double in) {
-		if(PowerTypes.SLOW_FALLING.isActive(this)) {
+		if (OriginComponent.hasPower(this, ModPowers.SLOW_FALLING.get())) {
 			this.fallDistance = 0;
-			if(this.getVelocity().y <= 0.0D) {
+			if (this.getVelocity().y <= 0.0D) {
 				return 0.01D;
 			}
 		}

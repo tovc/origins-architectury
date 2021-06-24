@@ -1,8 +1,8 @@
 package io.github.apace100.origins;
 
+import io.github.apace100.origins.api.OriginsAPI;
 import io.github.apace100.origins.api.component.OriginComponent;
-import io.github.apace100.origins.origin.OriginLayer;
-import io.github.apace100.origins.origin.OriginLayers;
+import io.github.apace100.origins.api.origin.OriginLayer;
 import io.github.apace100.origins.registry.ModComponentsArchitectury;
 import io.github.apace100.origins.screen.ChooseOriginScreen;
 import io.github.apace100.origins.screen.GameHudRender;
@@ -49,7 +49,7 @@ public class OriginsForgeClient {
 				Screen currentScreen = instance.currentScreen;
 				if (OriginsForge.SHOULD_QUEUE_SCREEN && currentScreen == null && instance.player != null && instance.world != null) {
 					OriginComponent component = ModComponentsArchitectury.getOriginComponent(instance.player);
-					ArrayList<OriginLayer> layers = OriginLayers.getLayers().stream().filter(layer -> layer.isEnabled() && !component.hasOrigin(layer)).sorted().collect(Collectors.toCollection(ArrayList::new));
+					ArrayList<OriginLayer> layers = OriginsAPI.getLayers().stream().filter(layer -> layer.enabled() && !component.hasOrigin(layer)).sorted().collect(Collectors.toCollection(ArrayList::new));
 					if (layers.isEmpty()) {
 						OriginsForge.SHOULD_QUEUE_SCREEN = false;
 						return; //Should be useless, but networking isn't the most accurate science.

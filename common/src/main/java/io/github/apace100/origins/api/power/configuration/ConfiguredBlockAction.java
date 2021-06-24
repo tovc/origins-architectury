@@ -11,7 +11,7 @@ import net.minecraft.world.World;
 import java.util.function.Function;
 
 public final class ConfiguredBlockAction<C extends IOriginsFeatureConfiguration, F extends BlockAction<C>> extends ConfiguredFactory<C, F> {
-	public static final Codec<ConfiguredBlockAction<?, ?>> CODEC = BlockAction.CODEC.dispatch(ConfiguredFactory::getFactory, Function.identity());
+	public static final Codec<ConfiguredBlockAction<?, ?>> CODEC = BlockAction.CODEC.dispatch(ConfiguredBlockAction::getFactory, Function.identity());
 
 	public ConfiguredBlockAction(F factory, C configuration) {
 		super(factory, configuration);

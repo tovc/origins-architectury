@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.function.Function;
 
 public final class ConfiguredBiomeCondition<C extends IOriginsFeatureConfiguration, F extends BiomeCondition<C>> extends ConfiguredCondition<C, F> {
-	public static final Codec<ConfiguredBiomeCondition<?, ?>> CODEC = BiomeCondition.CODEC.dispatch(ConfiguredFactory::getFactory, Function.identity());
+	public static final Codec<ConfiguredBiomeCondition<?, ?>> CODEC = BiomeCondition.CODEC.dispatch(ConfiguredBiomeCondition::getFactory, Function.identity());
 
 	public static boolean check(@Nullable ConfiguredBiomeCondition<?, ?> condition, Biome biome) {
 		return condition == null || condition.check(biome);

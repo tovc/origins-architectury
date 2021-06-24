@@ -1,6 +1,6 @@
 package io.github.apace100.origins.networking.packet;
 
-import io.github.apace100.origins.networking.INetworkHandler;
+import io.github.apace100.origins.api.network.INetworkHandler;
 import io.github.apace100.origins.registry.OriginsDynamicRegistryManager;
 import net.minecraft.network.PacketByteBuf;
 
@@ -32,7 +32,7 @@ public class S2CDynamicRegistriesPacket implements IntSupplier {
 
 	public void handle(INetworkHandler handler) {
 		handler.queue(() -> OriginsDynamicRegistryManager.setClientInstance(this.manager));
-		handler.reply(new C2SAcknowledge());
+		handler.reply(new C2SAcknowledgePacket());
 		handler.setHandled(true);
 	}
 

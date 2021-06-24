@@ -3,10 +3,9 @@ package io.github.apace100.origins.api.power.configuration;
 import com.mojang.serialization.Codec;
 import io.github.apace100.origins.api.IOriginsFeatureConfiguration;
 import io.github.apace100.origins.api.OriginsAPI;
-import io.github.apace100.origins.api.power.ConfiguredFactory;
-import io.github.apace100.origins.api.power.IVariableIntPower;
-import io.github.apace100.origins.api.power.PowerData;
+import io.github.apace100.origins.api.power.*;
 import io.github.apace100.origins.api.power.factory.PowerFactory;
+import io.github.apace100.origins.util.HudRender;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.Tag;
 
@@ -17,7 +16,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public final class ConfiguredPower<C extends IOriginsFeatureConfiguration, F extends PowerFactory<C>> extends ConfiguredFactory<C, F> {
-	public static final Codec<ConfiguredPower<?, ?>> CODEC = PowerFactory.CODEC.dispatch(ConfiguredFactory::getFactory, Function.identity());
+	public static final Codec<ConfiguredPower<?, ?>> CODEC = PowerFactory.CODEC.dispatch(ConfiguredPower::getFactory, Function.identity());
 	private final PowerData data;
 
 	public ConfiguredPower(F factory, C configuration, PowerData data) {
@@ -128,5 +127,41 @@ public final class ConfiguredPower<C extends IOriginsFeatureConfiguration, F ext
 
 	public OptionalInt decrement(PlayerEntity player) {
 		return this.asVariableIntPower().map(t -> t.decrement(this, player)).map(OptionalInt::of).orElseGet(OptionalInt::empty);
+	}
+
+	//Hud Renderered Power
+
+	@SuppressWarnings("unchecked")
+	public Optional<IHudRenderedPower<C>> asHudRendered() {
+		return this.getFactory() instanceof IHudRenderedPower<?> hudRenderedPower ? Optional.of((IHudRenderedPower<C>) hudRenderedPower) : Optional.empty();
+	}
+
+	public Optional<HudRender> getRenderSettings(PlayerEntity player) {
+		return this.asHudRendered().map(x -> x.getRenderSettings(this, player));
+	}
+
+	public Optional<Boolean> shouldRender(PlayerEntity player) {
+		return this.asHudRendered().map(x -> x.shouldRender(this, player));
+	}
+
+	public Optional<Float> getFill(PlayerEntity player) {
+		return this.asHudRendered().map(x -> x.getFill(this, player));
+	}
+
+	//Active Power
+
+	@SuppressWarnings("unchecked")
+	public Optional<IActivePower<C>> asActive() {
+		return this.getFactory() instanceof IActivePower<?> hudRenderedPower ? Optional.of((IActivePower<C>) hudRenderedPower) : Optional.empty();
+	}
+
+	public boolean activate(PlayerEntity player) {
+		Optional<IActivePower<C>> ciActivePower = this.asActive();
+		ciActivePower.ifPresent(x -> x.activate(this, player));
+		return ciActivePower.isPresent();
+	}
+
+	public Optional<IActivePower.Key> getKey(PlayerEntity player) {
+		return this.asActive().map(x -> x.getKey(this, player));
 	}
 }

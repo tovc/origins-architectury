@@ -4,8 +4,6 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import io.github.apace100.origins.api.component.OriginComponent;
-import io.github.apace100.origins.power.PowerType;
-import io.github.apace100.origins.power.PowerTypeReference;
 import io.github.apace100.origins.registry.ModComponentsArchitectury;
 import io.github.apace100.origins.registry.ModLoot;
 import net.minecraft.loot.condition.LootCondition;
@@ -24,19 +22,12 @@ public class PowerLootCondition implements LootCondition {
 	}
 
 	public static Builder builder(Identifier powerId) {
-		return builder(new PowerTypeReference<>(powerId));
+		return () -> new PowerLootCondition(powerId);
 	}
 
-	public static Builder builder(PowerType<?> powerType) {
-		return () -> new PowerLootCondition(powerType);
-	}
-	private final PowerType<?> powerType;
+	private final Identifier powerType;
 
-	private PowerLootCondition(Identifier powerId) {
-		this(new PowerTypeReference<>(powerId));
-	}
-
-	private PowerLootCondition(PowerType<?> powerType) {
+	private PowerLootCondition(Identifier powerType) {
 		this.powerType = powerType;
 	}
 
@@ -55,7 +46,7 @@ public class PowerLootCondition implements LootCondition {
 
 	public static class Serializer implements JsonSerializer<PowerLootCondition> {
 		public void toJson(JsonObject jsonObject, PowerLootCondition originLootCondition, JsonSerializationContext jsonSerializationContext) {
-			jsonObject.addProperty("power", originLootCondition.powerType.getIdentifier().toString());
+			jsonObject.addProperty("power", originLootCondition.powerType.toString());
 		}
 
 		public PowerLootCondition fromJson(JsonObject jsonObject, JsonDeserializationContext jsonDeserializationContext) {

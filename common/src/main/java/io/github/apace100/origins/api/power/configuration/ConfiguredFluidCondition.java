@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.function.Function;
 
 public final class ConfiguredFluidCondition<C extends IOriginsFeatureConfiguration, F extends FluidCondition<C>> extends ConfiguredCondition<C, F> {
-	public static final Codec<ConfiguredFluidCondition<?, ?>> CODEC = FluidCondition.CODEC.dispatch(ConfiguredFactory::getFactory, Function.identity());
+	public static final Codec<ConfiguredFluidCondition<?, ?>> CODEC = FluidCondition.CODEC.dispatch(ConfiguredFluidCondition::getFactory, Function.identity());
 
 	public static boolean check(@Nullable ConfiguredFluidCondition<?, ?> condition, FluidState position) {
 		return condition == null || condition.check(position);

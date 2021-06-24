@@ -6,6 +6,8 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.apace100.origins.api.power.configuration.ConfiguredEntityCondition;
 import io.github.apace100.origins.util.OriginsCodecs;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import org.apache.commons.lang3.StringUtils;
 
@@ -13,19 +15,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 public record PowerData(List<ConfiguredEntityCondition<?, ?>> conditions, boolean hidden, int loadingPriority,
-						String nameTranslationKey, String descriptionTranslationKey) {
+						String name, String description) {
 	public static final PowerData DEFAULT = new PowerData(ImmutableList.of(), false, 0, "", "");
 
 	public static final MapCodec<PowerData> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
 			OriginsCodecs.listOf(ConfiguredEntityCondition.CODEC).optionalFieldOf("conditions", ImmutableList.of()).forGetter(PowerData::conditions),
 			Codec.BOOL.optionalFieldOf("hidden", false).forGetter(PowerData::hidden),
 			Codec.INT.optionalFieldOf("loading_priority", 0).forGetter(PowerData::loadingPriority),
-			Codec.STRING.optionalFieldOf("name", "").forGetter(PowerData::nameTranslationKey),
-			Codec.STRING.optionalFieldOf("description", "").forGetter(PowerData::descriptionTranslationKey)
+			Codec.STRING.optionalFieldOf("name", "").forGetter(PowerData::name),
+			Codec.STRING.optionalFieldOf("description", "").forGetter(PowerData::description)
 	).apply(instance, PowerData::new));
 
 	public static Builder builder() {
 		return new Builder();
+	}
+
+	public TranslatableText getName() {
+		return new TranslatableText(this.name());
+	}
+
+	public TranslatableText getDescription() {
+		return new TranslatableText(this.description());
 	}
 
 	/**
@@ -38,13 +48,13 @@ public record PowerData(List<ConfiguredEntityCondition<?, ?>> conditions, boolea
 	 */
 	public PowerData complete(Identifier identifier) {
 		return new PowerData(conditions, hidden, loadingPriority,
-				StringUtils.isEmpty(this.nameTranslationKey) ? "power." + identifier.getNamespace() + "." + identifier.getPath() + ".name" : this.nameTranslationKey,
-				StringUtils.isEmpty(this.descriptionTranslationKey) ? "power." + identifier.getNamespace() + "." + identifier.getPath() + ".description" : this.descriptionTranslationKey);
+				StringUtils.isEmpty(this.name) ? "power." + identifier.getNamespace() + "." + identifier.getPath() + ".name" : this.name,
+				StringUtils.isEmpty(this.description) ? "power." + identifier.getNamespace() + "." + identifier.getPath() + ".description" : this.description);
 	}
 
 	public Builder copyOf() {
 		Builder builder = builder().hidden(this.hidden).withPriority(this.loadingPriority)
-				.withName(this.nameTranslationKey).withDescription(this.descriptionTranslationKey);
+				.withName(this.name).withDescription(this.description);
 		this.conditions.forEach(builder::addCondition);
 		return builder;
 	}

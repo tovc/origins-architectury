@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.function.Function;
 
 public final class ConfiguredDamageCondition<C extends IOriginsFeatureConfiguration, F extends DamageCondition<C>> extends ConfiguredCondition<C, F> {
-	public static final Codec<ConfiguredDamageCondition<?, ?>> CODEC = DamageCondition.CODEC.dispatch(ConfiguredFactory::getFactory, Function.identity());
+	public static final Codec<ConfiguredDamageCondition<?, ?>> CODEC = DamageCondition.CODEC.dispatch(ConfiguredDamageCondition::getFactory, Function.identity());
 
 	public static boolean check(@Nullable ConfiguredDamageCondition<?, ?> condition, DamageSource damageSource, float amount) {
 		return condition == null || condition.check(damageSource, amount);

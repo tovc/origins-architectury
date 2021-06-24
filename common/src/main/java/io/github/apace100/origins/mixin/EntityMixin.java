@@ -4,6 +4,7 @@ import io.github.apace100.origins.access.MovingEntity;
 import io.github.apace100.origins.access.WaterMovingEntity;
 import io.github.apace100.origins.api.component.OriginComponent;
 import io.github.apace100.origins.networking.ModPackets;
+import io.github.apace100.origins.networking.packet.C2SPlayerLandedPacket;
 import io.github.apace100.origins.power.ActionOnLandPower;
 import io.github.apace100.origins.power.EntityGlowPower;
 import io.github.apace100.origins.power.InvulnerablePower;
@@ -101,7 +102,7 @@ public abstract class EntityMixin implements MovingEntity {
 	private void invokeActionOnSoftLand(double heightDifference, boolean onGround, BlockState landedState, BlockPos landedPosition, CallbackInfo ci) {
 		if (!wasGrounded && (Object) this instanceof PlayerEntity) {
 			ActionOnLandPower.execute((PlayerEntity) (Object) this);
-			NetworkManager.sendToServer(ModPackets.PLAYER_LANDED, new PacketByteBuf(Unpooled.buffer()));
+			ModPackets.CHANNEL.sendToServer(new C2SPlayerLandedPacket());
 		}
 	}
 

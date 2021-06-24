@@ -34,7 +34,6 @@ public class OriginsForge {
 			.simpleChannel();
 
 	static {
-		ForgeNetworkHandler.initializeNetwork();
 	}
 
 	public static boolean SHOULD_QUEUE_SCREEN = false;

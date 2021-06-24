@@ -1,4 +1,4 @@
-package io.github.apace100.origins.networking;
+package io.github.apace100.origins.api.network;
 
 public enum PacketDirection {
 	/**

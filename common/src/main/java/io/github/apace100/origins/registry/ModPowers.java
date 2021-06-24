@@ -88,6 +88,8 @@ public class ModPowers {
 	public static final RegistrySupplier<DummyPower> WATER_VISION = register("water_vision", DummyPower::new); //TODO Might be worth transforming into a float field.
 	public static final RegistrySupplier<DummyPower> CONDUIT_POWER_ON_LAND = register("conduit_power_on_land", DummyPower::new);
 	public static final RegistrySupplier<DummyPower> SCARE_CREEPERS = register("scare_creepers", DummyPower::new);
+	public static final RegistrySupplier<DummyPower> AQUA_AFFINITY = register("aqua_affinity", DummyPower::new);
+	public static final RegistrySupplier<DummyPower> SLOW_FALLING = register("slow_falling", DummyPower::new);
 
 	public static void initialize() { }
 

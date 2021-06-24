@@ -1,6 +1,7 @@
 package io.github.apace100.origins.mixin.forge;
 
-import io.github.apace100.origins.power.PowerTypes;
+import io.github.apace100.origins.api.component.OriginComponent;
+import io.github.apace100.origins.registry.ModPowers;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -30,7 +31,7 @@ public abstract class LivingEntityMixin extends Entity {
 			locals = LocalCapture.CAPTURE_FAILHARD,
 			at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/attribute/EntityAttributeInstance;getValue()D", ordinal = 0))
 	public void doAvianSlowFall(Vec3d p_213352_1_, CallbackInfo ci, double d0, EntityAttributeInstance gravity, boolean flag) {
-		if (flag && PowerTypes.SLOW_FALLING.isActive(this)) {
+		if (flag && OriginComponent.hasPower(this, ModPowers.SLOW_FALLING.get())) {
 			//Will be removed if neither the potion effect nor the power is active.
 			//Currently these won't stack. It is technically possible to make it so they stack,
 			//but that won't keep parity between both versions.

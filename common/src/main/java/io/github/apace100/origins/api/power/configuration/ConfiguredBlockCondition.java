@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.function.Function;
 
 public final class ConfiguredBlockCondition<T extends IOriginsFeatureConfiguration, F extends BlockCondition<T>> extends ConfiguredCondition<T, F> {
-	public static final Codec<ConfiguredBlockCondition<?, ?>> CODEC = BlockCondition.CODEC.dispatch(ConfiguredFactory::getFactory, Function.identity());
+	public static final Codec<ConfiguredBlockCondition<?, ?>> CODEC = BlockCondition.CODEC.dispatch(ConfiguredBlockCondition::getFactory, Function.identity());
 
 	public static boolean check(@Nullable ConfiguredBlockCondition<?, ?> condition, CachedBlockPosition position) {
 		return condition == null || condition.check(position);

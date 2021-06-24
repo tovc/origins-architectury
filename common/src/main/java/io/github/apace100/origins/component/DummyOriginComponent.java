@@ -20,6 +20,13 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public class DummyOriginComponent implements OriginComponent {
+
+	private static final DummyOriginComponent INSTANCE = new DummyOriginComponent();
+
+	public static @NotNull DummyOriginComponent getInstance() {
+		return INSTANCE;
+	}
+
 	@Override
 	public boolean hasOrigin(OriginLayer layer) {
 		return false;
@@ -91,7 +98,7 @@ public class DummyOriginComponent implements OriginComponent {
 	}
 
 	@Override
-	public CompoundTag writeToNbt(CompoundTag compoundTag) {
+	public CompoundTag writeNbt(CompoundTag compoundTag) {
 		if (compoundTag == null) throw new NullPointerException();
 		return compoundTag;
 	}

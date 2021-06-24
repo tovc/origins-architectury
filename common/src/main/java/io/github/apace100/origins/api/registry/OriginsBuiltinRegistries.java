@@ -16,6 +16,6 @@ public class OriginsBuiltinRegistries {
 
 	@SuppressWarnings("unchecked")
 	private static <T> Registry<T> create(RegistryKey<? extends Registry<T>> key, Lifecycle lifecycle) {
-		return Registry.register(((Registry<MutableRegistry<?>>) Registry.REGISTRIES), key.getValue(), new SimpleRegistry<>(key, lifecycle));
+		return Registry.register((Registry) Registry.REGISTRIES, key.getValue(), new SimpleRegistry<>(key, lifecycle));
 	}
 }

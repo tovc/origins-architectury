@@ -116,7 +116,12 @@ public interface OriginComponent {
 	void readFromNbt(CompoundTag compoundTag);
 
 	@Contract("null -> fail; _ -> param1")
-	CompoundTag writeToNbt(CompoundTag compoundTag);
+	CompoundTag writeNbt(CompoundTag compoundTag);
+
+	@Contract(value = "null -> fail", mutates = "param1")
+	default void writeToNbt(CompoundTag compoundTag) {
+		this.writeNbt(compoundTag);
+	}
 
 	void applySyncPacket(PacketByteBuf buf);
 

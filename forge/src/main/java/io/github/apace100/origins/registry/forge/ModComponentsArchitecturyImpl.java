@@ -1,9 +1,9 @@
 package io.github.apace100.origins.registry.forge;
 
-import io.github.apace100.origins.OriginsForge;
 import io.github.apace100.origins.api.component.OriginComponent;
-import io.github.apace100.origins.components.DummyOriginComponent;
-import io.github.apace100.origins.networking.packet.OriginSynchronizationMessage;
+import io.github.apace100.origins.component.DummyOriginComponent;
+import io.github.apace100.origins.networking.ModPackets;
+import io.github.apace100.origins.networking.packet.S2COriginSynchronizationPacket;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundTag;
@@ -13,8 +13,6 @@ import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.util.math.Direction;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
-import net.minecraftforge.fml.network.NetworkDirection;
-import net.minecraftforge.fml.network.PacketDistributor;
 
 import java.util.Optional;
 
@@ -28,25 +26,18 @@ public class ModComponentsArchitecturyImpl {
 	public static void syncOriginComponent(Entity player) {
 		if (!(player.getEntityWorld().getChunkManager() instanceof ServerChunkManager))
 			return; //Skip client side calls.
-		if (player instanceof ServerPlayerEntity)
-			OriginSynchronizationMessage.self(player).map(x -> OriginsForge.channel.toVanillaPacket(x, NetworkDirection.PLAY_TO_CLIENT)).ifPresent(packet -> PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player));
-		OriginSynchronizationMessage.other(player).map(x -> OriginsForge.channel.toVanillaPacket(x, NetworkDirection.PLAY_TO_CLIENT)).ifPresent(packet -> {
-			if (player instanceof ServerPlayerEntity)
-				PacketDistributor.TRACKING_ENTITY.with(() -> player).send(packet);
-			else
-				PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player).send(packet);
-		});
+		if (player instanceof ServerPlayerEntity spe)
+			S2COriginSynchronizationPacket.self(player).ifPresent(packet -> ModPackets.CHANNEL.sendToPlayer(spe, packet));
+		S2COriginSynchronizationPacket.other(player).ifPresent(packet -> ModPackets.CHANNEL.sendToTracking(player, packet));
 	}
 
 	public static void syncWith(ServerPlayerEntity player, Entity provider) {
-		Optional<OriginSynchronizationMessage> message;
+		Optional<S2COriginSynchronizationPacket> message;
 		if (player == provider)
-			message = OriginSynchronizationMessage.self(provider);
+			message = S2COriginSynchronizationPacket.self(provider);
 		else
-			message = OriginSynchronizationMessage.other(provider);
-
-		message.map(x -> OriginsForge.channel.toVanillaPacket(x, NetworkDirection.PLAY_TO_CLIENT))
-				.ifPresent(packet -> PacketDistributor.PLAYER.with(() -> player).send(packet));
+			message = S2COriginSynchronizationPacket.other(provider);
+		message.ifPresent(packet -> ModPackets.CHANNEL.sendToPlayer(player, packet));
 	}
 
 	public static Optional<OriginComponent> maybeGetOriginComponent(Entity player) {
@@ -61,7 +52,7 @@ public class ModComponentsArchitecturyImpl {
 	public static class OriginStorage implements Capability.IStorage<OriginComponent> {
 		@Override
 		public Tag writeNBT(Capability<OriginComponent> capability, OriginComponent object, Direction arg) {
-			return object.writeToNbt(new CompoundTag());
+			return object.writeNbt(new CompoundTag());
 		}
 
 		@Override

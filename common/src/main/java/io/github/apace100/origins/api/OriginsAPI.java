@@ -7,6 +7,8 @@ import io.github.apace100.origins.api.origin.OriginLayer;
 import io.github.apace100.origins.api.power.configuration.ConfiguredPower;
 import io.github.apace100.origins.api.registry.OriginsDynamicRegistries;
 import io.github.apace100.origins.registry.ModComponentsArchitectury;
+import me.shedaniel.architectury.utils.EnvExecutor;
+import me.shedaniel.architectury.utils.GameInstance;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
@@ -20,6 +22,9 @@ public class OriginsAPI {
 		return new Identifier(MODID, val);
 	}
 
+	/**
+	 * Returns the server on the server, null on the client.
+	 */
 	@ExpectPlatform
 	public static MinecraftServer getServer() {
 		throw new AssertionError();

@@ -3,9 +3,10 @@ package io.github.apace100.origins.util;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
+import io.github.apace100.origins.api.OriginsAPI;
 import io.github.apace100.origins.api.component.OriginComponent;
-import io.github.apace100.origins.origin.Origin;
-import io.github.apace100.origins.origin.OriginLayer;
+import io.github.apace100.origins.api.origin.Origin;
+import io.github.apace100.origins.api.origin.OriginLayer;
 import io.github.apace100.origins.registry.ModComponentsArchitectury;
 import io.github.apace100.origins.registry.ModLoot;
 import net.minecraft.loot.condition.LootCondition;
@@ -15,8 +16,8 @@ import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
 import net.minecraft.util.JsonSerializer;
+import net.minecraft.util.registry.Registry;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -28,6 +29,7 @@ public class OriginLootCondition implements LootCondition {
 	public static LootCondition.Builder builder(Identifier origin) {
 		return () -> new OriginLootCondition(origin);
 	}
+
 	private final Identifier origin;
 
 	private OriginLootCondition(Identifier origin) {
@@ -42,10 +44,11 @@ public class OriginLootCondition implements LootCondition {
 		Optional<OriginComponent> optional = ModComponentsArchitectury.maybeGetOriginComponent(lootContext.get(LootContextParameters.THIS_ENTITY));
 		if (optional.isPresent()) {
 			OriginComponent component = optional.get();
-			HashMap<OriginLayer, Origin> map = component.getOrigins();
+			Map<OriginLayer, Origin> map = component.getOrigins();
+			Registry<Origin> origins = OriginsAPI.getOrigins();
 			boolean matches = false;
 			for (Map.Entry<OriginLayer, Origin> entry : map.entrySet()) {
-				if (entry.getValue().getIdentifier().equals(origin)) {
+				if (origin.equals(origins.getId(entry.getValue()))) {
 					matches = true;
 					break;
 				}

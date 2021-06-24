@@ -12,20 +12,21 @@ import net.minecraft.advancement.Advancement;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 public record Origin(Set<Identifier> powers, ItemStack displayItem,
 					 Impact impact, boolean choosable, int order,
 					 int loadingPriority, Set<OriginUpgrade> upgrades,
 					 boolean special, String name,
-					 String descriptionTranslationKey) implements IOriginsFeatureConfiguration {
+					 String description) implements IOriginsFeatureConfiguration {
+
+	public static final Comparator<Origin> ORDER_COMPARATOR = Comparator.comparing(Origin::impact, Impact.COMPARATOR).thenComparingInt(Origin::order);
 
 	public static final Codec<Origin> CODEC = RecordCodecBuilder.create(instance -> instance.group(
 			OriginsCodecs.setOf(Identifier.CODEC).optionalFieldOf("powers", ImmutableSet.of()).forGetter(Origin::powers),
@@ -37,8 +38,9 @@ public record Origin(Set<Identifier> powers, ItemStack displayItem,
 			OriginsCodecs.setOf(OriginUpgrade.CODEC).optionalFieldOf("upgrades", ImmutableSet.of()).forGetter(Origin::upgrades),
 			Codec.BOOL.optionalFieldOf("special", false).forGetter(Origin::special),
 			Codec.STRING.optionalFieldOf("name", "").forGetter(Origin::name),
-			Codec.STRING.optionalFieldOf("description", "").forGetter(Origin::descriptionTranslationKey)
+			Codec.STRING.optionalFieldOf("description", "").forGetter(Origin::description)
 	).apply(instance, Origin::new));
+
 
 	public static Builder builder() {
 		return new Builder();
@@ -53,6 +55,14 @@ public record Origin(Set<Identifier> powers, ItemStack displayItem,
 		return OriginsAPI.getOrigins().getOrEmpty(identifier).orElseThrow(() -> new RuntimeException("Tried to access invalid origin at runtime in a null-safe method."));
 	}
 
+	public Text getName() {
+		return new TranslatableText(this.name());
+	}
+
+	public Text getDescription() {
+		return new TranslatableText(this.description());
+	}
+
 	public Builder copyOf() {
 		Builder builder = builder()
 				.withDisplay(displayItem)
@@ -60,7 +70,7 @@ public record Origin(Set<Identifier> powers, ItemStack displayItem,
 				.withOrder(order)
 				.withLoadingPriority(loadingPriority)
 				.name(name)
-				.description(descriptionTranslationKey);
+				.description(description);
 		this.powers.forEach(builder::addPower);
 		this.upgrades.forEach(builder::addUpgrade);
 		if (!this.choosable) builder.disableChoice();

@@ -39,7 +39,7 @@ public class OriginsRegistries {
 
 	static {
 		Registries registries = REGISTRIES.get();
-		//TODO All network calls after login should use integer instead of identifiers.
+		//TODO All network calls after login should use integer instead of powers.
 		POWER_FACTORY = registries.<PowerFactory<?>>builder(POWER_FACTORY_KEY.getValue()).syncToClients().build();
 		ENTITY_CONDITION = registries.<EntityCondition<?>>builder(ENTITY_CONDITION_KEY.getValue()).syncToClients().build();
 		ITEM_CONDITION = registries.<ItemCondition<?>>builder(ITEM_CONDITION_KEY.getValue()).syncToClients().build();

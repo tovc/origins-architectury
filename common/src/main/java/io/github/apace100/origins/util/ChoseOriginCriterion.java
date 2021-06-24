@@ -3,7 +3,8 @@ package io.github.apace100.origins.util;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import io.github.apace100.origins.Origins;
-import io.github.apace100.origins.origin.Origin;
+import io.github.apace100.origins.api.OriginsAPI;
+import io.github.apace100.origins.api.origin.Origin;
 import net.minecraft.advancement.criterion.AbstractCriterion;
 import net.minecraft.advancement.criterion.AbstractCriterionConditions;
 import net.minecraft.predicate.entity.AdvancementEntityPredicateDeserializer;
@@ -12,6 +13,8 @@ import net.minecraft.predicate.entity.EntityPredicate;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
+
+import java.util.Objects;
 
 public class ChoseOriginCriterion extends AbstractCriterion<ChoseOriginCriterion.Conditions> {
 
@@ -42,7 +45,7 @@ public class ChoseOriginCriterion extends AbstractCriterion<ChoseOriginCriterion
 		}
 
 		public boolean matches(Origin origin) {
-			return origin.getIdentifier().equals(originId);
+			return Objects.equals(OriginsAPI.getOrigins().getId(origin), originId);
 		}
 
 		public JsonObject toJson(AdvancementEntityPredicateSerializer predicateSerializer) {

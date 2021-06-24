@@ -149,7 +149,7 @@ public class PlayerOriginComponent implements OriginComponent {
 
 	@Override
 	@Contract("null -> fail; _ -> param1")
-	public CompoundTag writeToNbt(CompoundTag compoundTag) {
+	public CompoundTag writeNbt(CompoundTag compoundTag) {
 		Registry<OriginLayer> layerRegistry = OriginsAPI.getLayers();
 		Registry<Origin> originsRegistry = OriginsAPI.getOrigins();
 		CompoundTag origins = new CompoundTag();

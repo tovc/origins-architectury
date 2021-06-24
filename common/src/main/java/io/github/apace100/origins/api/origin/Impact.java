@@ -3,12 +3,16 @@ package io.github.apace100.origins.api.origin;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 
-public enum Impact {
+import java.util.Comparator;
+
+public enum Impact{
 
 	NONE(0, "none", Formatting.GRAY),
 	LOW(1, "low", Formatting.GREEN),
 	MEDIUM(2, "medium", Formatting.YELLOW),
 	HIGH(3, "high", Formatting.RED);
+
+	public static final Comparator<Impact> COMPARATOR = Comparator.comparingInt(Impact::getImpactValue);
 
 	public static Impact getByValue(int impactValue) {
 		return Impact.values()[impactValue];
