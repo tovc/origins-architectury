@@ -27,6 +27,8 @@ public interface OriginComponent {
 	boolean hasOrigin(OriginLayer layer);
 	boolean hasAllOrigins();
 
+	boolean hasServerData();
+
 	HashMap<OriginLayer, Origin> getOrigins();
 	Origin getOrigin(OriginLayer layer);
 

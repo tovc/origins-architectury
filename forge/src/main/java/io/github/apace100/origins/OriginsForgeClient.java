@@ -49,6 +49,8 @@ public class OriginsForgeClient {
 				Screen currentScreen = instance.currentScreen;
 				if (OriginsForge.SHOULD_QUEUE_SCREEN && currentScreen == null && instance.player != null && instance.world != null) {
 					OriginComponent component = ModComponentsArchitectury.getOriginComponent(instance.player);
+					if (!component.hasServerData())
+						return; //Wait for the server to send client data to avoid having to pick every origin everytime.
 					ArrayList<OriginLayer> layers = OriginLayers.getLayers().stream().filter(layer -> layer.isEnabled() && !component.hasOrigin(layer)).sorted().collect(Collectors.toCollection(ArrayList::new));
 					if (layers.isEmpty()) {
 						OriginsForge.SHOULD_QUEUE_SCREEN = false;

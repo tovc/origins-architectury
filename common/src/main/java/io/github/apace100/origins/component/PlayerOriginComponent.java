@@ -20,6 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class PlayerOriginComponent implements OriginComponent {
 
     private final PlayerEntity player;
+    private boolean hasServerData = false;
     private final HashMap<OriginLayer, Origin> origins = new HashMap<>();
     private final ConcurrentHashMap<PowerType<?>, Power> powers = new ConcurrentHashMap<>();
 
@@ -33,6 +34,11 @@ public class PlayerOriginComponent implements OriginComponent {
     public boolean hasAllOrigins() {
         return OriginLayers.getLayers().stream().allMatch(layer -> !layer.isEnabled() || layer.getOrigins(player).size() == 0 ||
                                                                    (origins.containsKey(layer) && origins.get(layer) != null && origins.get(layer) != Origin.EMPTY));
+    }
+
+    @Override
+    public boolean hasServerData() {
+        return this.hasServerData;
     }
 
     @Override
@@ -268,6 +274,7 @@ public class PlayerOriginComponent implements OriginComponent {
         if(compoundTag != null) {
             this.fromTag(compoundTag, false);
         }
+        this.hasServerData = true;
     }
 
     @Override

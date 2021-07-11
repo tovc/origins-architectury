@@ -1,7 +1,7 @@
 package io.github.apace100.origins.entity;
 
+import dev.architectury.injectables.annotations.ExpectPlatform;
 import io.github.apace100.origins.registry.ModEntities;
-import me.shedaniel.architectury.annotations.ExpectPlatform;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.entity.Entity;

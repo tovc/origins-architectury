@@ -1,7 +1,7 @@
 plugins {
 	id "java"
-	id "architectury-plugin" version "3.0.99"
-	id "forgified-fabric-loom" version "0.6.90" apply false
+	id "architectury-plugin" version "3.2-SNAPSHOT"
+	id "forgified-fabric-loom" version "0.7.0-SNAPSHOT" apply false
 	id "maven-publish"
 }
 
@@ -30,6 +30,12 @@ allprojects {
 	apply plugin: "architectury-plugin"
 	apply plugin: "maven-publish"
 
+	java {
+		toolchain {
+			languageVersion = JavaLanguageVersion.of(8)
+		}
+	}
+
 	archivesBaseName = rootProject.archives_base_name
 	version = rootProject.mod_version
 	group = rootProject.maven_group
@@ -39,18 +45,6 @@ allprojects {
 		maven { url 'https://maven.jamieswhiteshirt.com/libs-release/' }
 		maven { url 'https://maven.shedaniel.me/' }
 		mavenLocal()
-	}
-
-	tasks.withType(JavaCompile) {
-		options.encoding = "UTF-8"
-
-		// The Minecraft launcher currently installs Java 8 for users, so your mod probably wants to target Java 8 too
-		// JDK 9 introduced a new way of specifying this that will make sure no newer classes or methods are used.
-		// We'll use that if it's available, but otherwise we'll use the older option.
-		def targetVersion = 8
-		if (JavaVersion.current().isJava9Compatible()) {
-			options.release = targetVersion
-		}
 	}
 
 	java {

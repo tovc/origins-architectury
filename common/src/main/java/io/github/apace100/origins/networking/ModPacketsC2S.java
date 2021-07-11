@@ -1,5 +1,6 @@
 package io.github.apace100.origins.networking;
 
+import dev.architectury.injectables.annotations.ExpectPlatform;
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.component.OriginComponent;
 import io.github.apace100.origins.origin.Origin;
@@ -9,7 +10,6 @@ import io.github.apace100.origins.origin.OriginRegistry;
 import io.github.apace100.origins.power.*;
 import io.github.apace100.origins.registry.ModComponentsArchitectury;
 import io.netty.buffer.Unpooled;
-import me.shedaniel.architectury.annotations.ExpectPlatform;
 import me.shedaniel.architectury.networking.NetworkManager;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketByteBuf;

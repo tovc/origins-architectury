@@ -33,6 +33,11 @@ public class DummyOriginComponent implements OriginComponent {
 	}
 
 	@Override
+	public boolean hasServerData() {
+		return false;
+	}
+
+	@Override
 	public HashMap<OriginLayer, Origin> getOrigins() {
 		return new HashMap<>();
 	}

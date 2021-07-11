@@ -5,21 +5,15 @@ import io.github.apace100.origins.OriginsForge;
 import io.github.apace100.origins.component.OriginComponent;
 import io.github.apace100.origins.components.DummyOriginComponent;
 import io.github.apace100.origins.networking.packet.OriginSynchronizationMessage;
-import io.netty.buffer.Unpooled;
-import me.shedaniel.architectury.networking.NetworkManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.Packet;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerChunkManager;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
-import net.minecraftforge.fml.network.NetworkDirection;
 import net.minecraftforge.fml.network.PacketDistributor;
 
 import java.util.Optional;
@@ -35,13 +29,8 @@ public class ModComponentsArchitecturyImpl {
 		if (!(player.getEntityWorld().getChunkManager() instanceof ServerChunkManager))
 			return; //Skip client side calls.
 		if (player instanceof ServerPlayerEntity)
-			OriginSynchronizationMessage.self(player).map(x -> OriginsForge.channel.toVanillaPacket(x, NetworkDirection.PLAY_TO_CLIENT)).ifPresent(packet -> PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player));
-		OriginSynchronizationMessage.other(player).map(x -> OriginsForge.channel.toVanillaPacket(x, NetworkDirection.PLAY_TO_CLIENT)).ifPresent(packet -> {
-			if (player instanceof ServerPlayerEntity)
-				PacketDistributor.TRACKING_ENTITY.with(() -> player).send(packet);
-			else
-				PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player).send(packet);
-		});
+			OriginSynchronizationMessage.self(player).ifPresent(packet -> OriginsForge.channel.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player), packet));
+		OriginSynchronizationMessage.other(player).ifPresent(packet -> OriginsForge.channel.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player), packet));
 	}
 
 	public static void syncWith(ServerPlayerEntity player, Entity provider) {
@@ -50,14 +39,16 @@ public class ModComponentsArchitecturyImpl {
 			message = OriginSynchronizationMessage.self(provider);
 		else
 			message = OriginSynchronizationMessage.other(provider);
-
-		message.map(x -> OriginsForge.channel.toVanillaPacket(x, NetworkDirection.PLAY_TO_CLIENT))
-				.ifPresent(packet -> PacketDistributor.PLAYER.with(() -> player).send(packet));
+		message.ifPresent(packet -> OriginsForge.channel.send(PacketDistributor.PLAYER.with(() -> player), packet));
 	}
 
 	public static Optional<OriginComponent> maybeGetOriginComponent(Entity player) {
-		if (player instanceof PlayerEntity)
-			return player.getCapability(ORIGIN_COMPONENT_CAPABILITY).resolve();
+		if (player instanceof PlayerEntity) {
+			Optional<OriginComponent> component = player.getCapability(ORIGIN_COMPONENT_CAPABILITY).resolve();
+			if (!component.isPresent())
+				Origins.LOGGER.error("Player {} doesn't have an attached origin capability. This should be possible.", player.getName());
+			return component;
+		}
 		return Optional.empty();
 	}
 

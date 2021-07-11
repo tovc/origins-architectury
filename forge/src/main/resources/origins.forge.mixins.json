@@ -8,7 +8,8 @@
 		"EnderianPearlEntityMixin",
 		"ForgeHooksMixin",
 		"LivingEntityMixin",
-		"PlayerManagerMixin"
+		"PlayerManagerMixin",
+		"compat.vfp.VfpPantryItemMixin"
 	],
 	"client": [
 		"BackgroundRendererMixin",
