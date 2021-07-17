@@ -9,6 +9,7 @@
 		"ForgeHooksMixin",
 		"LivingEntityMixin",
 		"PlayerManagerMixin",
+		"compat.cconstruct.CulinaryItemBaseMixin",
 		"compat.vfp.VfpPantryItemMixin"
 	],
 	"client": [

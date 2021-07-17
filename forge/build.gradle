@@ -49,6 +49,9 @@ dependencies {
 	//Arch Loom is broken with fuzzy renaming. Do not use those.
 	modCompileOnly "curse.maven:carrotslib-311327:3268243"
 	modCompileOnly "curse.maven:vfp-238170:3268287"
+	//modCompileOnly "curse.maven:structuregel-378802:3268432"
+	//modCompileOnly "curse.maven:blueskies-312918:3385608"
+	modCompileOnly "curse.maven:culinaryconstruct-296676:3217589"
 
 	implementation(project(path: ":common")) {
 		transitive = false
