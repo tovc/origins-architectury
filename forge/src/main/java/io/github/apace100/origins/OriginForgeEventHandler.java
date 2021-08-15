@@ -14,7 +14,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.tag.FluidTags;
@@ -24,7 +23,6 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
-import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -33,7 +31,6 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.network.PacketDistributor;
 
 @Mod.EventBusSubscriber(modid = Origins.MODID)
 public class OriginForgeEventHandler {
@@ -66,12 +63,6 @@ public class OriginForgeEventHandler {
 		}
 	}
 
-	@SubscribeEvent
-	public static void modifyDamageTaken(LivingDamageEvent event) {
-		LivingEntity entityLiving = event.getEntityLiving();
-		event.setAmount(OriginComponent.modify(entityLiving, ModifyDamageTakenPower.class, event.getAmount(), p -> p.doesApply(event.getSource(), event.getAmount()), p -> p.executeActions(event.getSource().getAttacker())));
-	}
-
 	/**
 	 * This needs to be executed after COMBAT's jump overhaul.
 	 */
@@ -94,11 +85,11 @@ public class OriginForgeEventHandler {
 		//Forge only fires on LivingEntity. So we're using that.
 		LivingEntity target = event.getEntityLiving();
 		DamageSource source = event.getSource();
-		if (event.getSource().isProjectile()) {
+		if (event.getSource().isProjectile())
 			event.setAmount(OriginComponent.modify(source.getAttacker(), ModifyProjectileDamagePower.class, event.getAmount(), p -> p.doesApply(source, event.getAmount(), target), p -> p.executeActions(target)));
-		} else {
+		else
 			event.setAmount(OriginComponent.modify(source.getAttacker(), ModifyDamageDealtPower.class, event.getAmount(), p -> p.doesApply(source, event.getAmount(), target), p -> p.executeActions(target)));
-		}
+		event.setAmount(OriginComponent.modify(target, ModifyDamageTakenPower.class, event.getAmount(), p -> p.doesApply(event.getSource(), event.getAmount()), p -> p.executeActions(event.getSource().getAttacker())));
 	}
 
 	@SubscribeEvent
@@ -111,7 +102,7 @@ public class OriginForgeEventHandler {
 	public static void playerTick(TickEvent.PlayerTickEvent event) {
 		if (event.phase == TickEvent.Phase.START && event.side == LogicalSide.SERVER) {
 			ModComponentsArchitectury.getOriginComponent(event.player).serverTick();
-			if((event.player.age & 0x7F) == 0 && event.player instanceof ServerPlayerEntity)
+			if ((event.player.age & 0x7F) == 0 && event.player instanceof ServerPlayerEntity)
 				ModComponentsArchitectury.syncWith((ServerPlayerEntity) event.player, event.player);
 		}
 	}
@@ -137,7 +128,7 @@ public class OriginForgeEventHandler {
 
 	private static void checkOrigins(ServerPlayerEntity entity) {
 		OriginComponent component = ModComponentsArchitectury.getOriginComponent(entity);
-		if(!component.hasAllOrigins()) {
+		if (!component.hasAllOrigins()) {
 			PacketByteBuf data = new PacketByteBuf(Unpooled.buffer());
 			data.writeBoolean(true);
 			NetworkManager.sendToPlayer(entity, ModPackets.OPEN_ORIGIN_SCREEN, data);

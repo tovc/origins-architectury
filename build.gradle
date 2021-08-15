@@ -9,6 +9,8 @@ architectury {
 	minecraft = rootProject.minecraft_version
 }
 
+java.toolchain.languageVersion = JavaLanguageVersion.of(8)
+
 subprojects {
 	apply plugin: "forgified-fabric-loom"
 
