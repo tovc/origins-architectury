@@ -37,7 +37,7 @@ public class OriginsForge {
 
 	static {
 		ForgeNetworkHandler.initializeNetwork();
-		Class<?>[] init = new Class[] {OriginForgeEventHandler.class}; //Mohist didn't do that.
+		Class<?>[] init = new Class[]{OriginForgeEventHandler.class}; //Mohist didn't do that.
 	}
 
 	public static boolean SHOULD_QUEUE_SCREEN = false;
