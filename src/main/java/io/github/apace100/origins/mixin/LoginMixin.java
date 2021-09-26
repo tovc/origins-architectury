@@ -9,10 +9,10 @@ import io.github.apace100.origins.origin.OriginRegistry;
 import io.github.apace100.origins.registry.ModComponents;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.network.ClientConnection;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.server.PlayerManager;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.network.Connection;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.PlayerList;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -22,25 +22,25 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.List;
 
 @SuppressWarnings("rawtypes")
-@Mixin(PlayerManager.class)
+@Mixin(PlayerList.class)
 public abstract class LoginMixin {
 
-	@Shadow public abstract List<ServerPlayerEntity> getPlayerList();
+	@Shadow public abstract List<ServerPlayer> getPlayerList();
 
 	@Inject(at = @At("TAIL"), method = "Lnet/minecraft/server/PlayerManager;onPlayerConnect(Lnet/minecraft/network/ClientConnection;Lnet/minecraft/server/network/ServerPlayerEntity;)V")
-	private void openOriginsGui(ClientConnection connection, ServerPlayerEntity player, CallbackInfo info) {
+	private void openOriginsGui(Connection connection, ServerPlayer player, CallbackInfo info) {
 		OriginComponent component = ModComponents.ORIGIN.get(player);
 
-		PacketByteBuf originListData = new PacketByteBuf(Unpooled.buffer());
+		FriendlyByteBuf originListData = new FriendlyByteBuf(Unpooled.buffer());
 		originListData.writeInt(OriginRegistry.size() - 1);
 		OriginRegistry.entries().forEach((entry) -> {
 			if(entry.getValue() != Origin.EMPTY) {
-				originListData.writeIdentifier(entry.getKey());
+				originListData.writeResourceLocation(entry.getKey());
 				entry.getValue().write(originListData);
 			}
 		});
 
-		PacketByteBuf originLayerData = new PacketByteBuf(Unpooled.buffer());
+		FriendlyByteBuf originLayerData = new FriendlyByteBuf(Unpooled.buffer());
 		originLayerData.writeInt(OriginLayers.size());
 		OriginLayers.getLayers().forEach((layer) -> {
 			layer.write(originLayerData);
@@ -54,7 +54,7 @@ public abstract class LoginMixin {
 		ServerPlayNetworking.send(player, ModPackets.ORIGIN_LIST, originListData);
 		ServerPlayNetworking.send(player, ModPackets.LAYER_LIST, originLayerData);
 
-		List<ServerPlayerEntity> playerList = getPlayerList();
+		List<ServerPlayer> playerList = getPlayerList();
 		playerList.forEach(spe -> ModComponents.ORIGIN.syncWith(spe, ComponentProvider.fromEntity(player)));
 		OriginComponent.sync(player);
 		if(!component.hasAllOrigins()) {
@@ -64,7 +64,7 @@ public abstract class LoginMixin {
 			if(component.hasAllOrigins()) {
 				OriginComponent.onChosen(player, false);
 			} else {
-				PacketByteBuf data = new PacketByteBuf(Unpooled.buffer());
+				FriendlyByteBuf data = new FriendlyByteBuf(Unpooled.buffer());
 				data.writeBoolean(true);
 				ServerPlayNetworking.send(player, ModPackets.OPEN_ORIGIN_SCREEN, data);
 			}

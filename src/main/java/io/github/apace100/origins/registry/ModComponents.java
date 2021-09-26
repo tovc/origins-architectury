@@ -8,14 +8,14 @@ import dev.onyxstudios.cca.api.v3.entity.RespawnCopyStrategy;
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.component.OriginComponent;
 import io.github.apace100.origins.component.PlayerOriginComponent;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 public class ModComponents implements EntityComponentInitializer {
 
     public static final ComponentKey<OriginComponent> ORIGIN;
 
     static {
-        ORIGIN = ComponentRegistry.getOrCreate(new Identifier(Origins.MODID, "origin"), OriginComponent.class);
+        ORIGIN = ComponentRegistry.getOrCreate(new ResourceLocation(Origins.MODID, "origin"), OriginComponent.class);
     }
 
     @Override

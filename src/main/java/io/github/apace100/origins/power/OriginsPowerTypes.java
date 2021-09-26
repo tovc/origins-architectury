@@ -9,19 +9,22 @@ import io.github.apace100.apoli.registry.ApoliRegistries;
 import io.github.apace100.calio.data.SerializableData;
 import io.github.apace100.calio.data.SerializableDataTypes;
 import io.github.apace100.origins.Origins;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.registry.Registry;
+import io.github.edwinmindcraft.apoli.common.power.DummyPower;
+import io.github.edwinmindcraft.origins.common.power.NoSlowdownPower;
+import io.github.edwinmindcraft.origins.common.registry.OriginRegisters;
+import net.minecraft.core.Registry;
+import net.minecraft.world.entity.Entity;
+import net.minecraftforge.fmllegacy.RegistryObject;
 
 @SuppressWarnings("unchecked")
 public class OriginsPowerTypes {
 
     public static final PowerType<?> LIKE_WATER = new PowerTypeReference<>(Origins.identifier("like_water"));
-    public static final PowerType<?> WATER_BREATHING = new PowerTypeReference<>(Origins.identifier("water_breathing"));
-    public static final PowerType<?> SCARE_CREEPERS = new PowerTypeReference<>(Origins.identifier("scare_creepers"));
-    public static final PowerType<?> WATER_VISION = new PowerTypeReference<>(Origins.identifier("water_vision"));
-    public static final PowerType<?> NO_COBWEB_SLOWDOWN = new PowerTypeReference<>(Origins.identifier("no_cobweb_slowdown"));
-    public static final PowerType<?> MASTER_OF_WEBS_NO_SLOWDOWN = new PowerTypeReference<>(Origins.identifier("master_of_webs_no_slowdown"));
-    public static final PowerType<?> CONDUIT_POWER_ON_LAND = new PowerTypeReference<>(Origins.identifier("conduit_power_on_land"));
+    public static final RegistryObject<DummyPower> WATER_BREATHING = OriginRegisters.POWER_FACTORIES.register("water_breathing", DummyPower::new);
+    public static final RegistryObject<DummyPower> SCARE_CREEPERS = OriginRegisters.POWER_FACTORIES.register("scare_creepers", DummyPower::new);
+    public static final RegistryObject<DummyPower> WATER_VISION = OriginRegisters.POWER_FACTORIES.register("water_vision", DummyPower::new);
+    public static final RegistryObject<NoSlowdownPower> NO_SLOWDOWN = OriginRegisters.POWER_FACTORIES.register("no_slowdown", NoSlowdownPower::new);
+    public static final RegistryObject<DummyPower> CONDUIT_POWER_ON_LAND = OriginRegisters.POWER_FACTORIES.register("conduit_power_on_land", DummyPower::new);
 
     public static void register() {
         register(new PowerFactory<>(Origins.identifier("action_on_callback"),

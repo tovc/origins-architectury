@@ -6,10 +6,9 @@ import com.google.gson.JsonElement;
 import io.github.apace100.calio.data.MultiJsonDataLoader;
 import io.github.apace100.origins.Origins;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.profiler.Profiler;
-
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.profiling.ProfilerFiller;
 import java.util.List;
 import java.util.Map;
 
@@ -22,7 +21,7 @@ public class OriginManager extends MultiJsonDataLoader implements IdentifiableRe
 	}
 
 	@Override
-	protected void apply(Map<Identifier, List<JsonElement>> loader, ResourceManager manager, Profiler profiler) {
+	protected void apply(Map<ResourceLocation, List<JsonElement>> loader, ResourceManager manager, ProfilerFiller profiler) {
 		OriginRegistry.reset();
 		loader.forEach((id, jel) -> {
 			jel.forEach(je -> {
@@ -44,7 +43,7 @@ public class OriginManager extends MultiJsonDataLoader implements IdentifiableRe
 	}
 
 	@Override
-	public Identifier getFabricId() {
-		return new Identifier(Origins.MODID, "origins");
+	public ResourceLocation getFabricId() {
+		return new ResourceLocation(Origins.MODID, "origins");
 	}
 }

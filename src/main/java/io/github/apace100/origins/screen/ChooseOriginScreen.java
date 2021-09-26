@@ -1,6 +1,7 @@
 package io.github.apace100.origins.screen;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import io.github.apace100.apoli.power.PowerType;
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.networking.ModPackets;
@@ -11,25 +12,29 @@ import io.github.apace100.origins.origin.OriginRegistry;
 import io.github.apace100.origins.registry.ModItems;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.locale.Language;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.text.*;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Language;
-
+import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ChooseOriginScreen extends Screen {
 
-	private static final Identifier WINDOW = new Identifier(Origins.MODID, "textures/gui/choose_origin.png");
+	private static final ResourceLocation WINDOW = new ResourceLocation(Origins.MODID, "textures/gui/choose_origin.png");
 
 	private ArrayList<OriginLayer> layerList;
 	private int currentLayerIndex = 0;
@@ -47,23 +52,23 @@ public class ChooseOriginScreen extends Screen {
 	private boolean showDirtBackground;
 
 	private Origin randomOrigin;
-	private MutableText randomOriginText;
+	private MutableComponent randomOriginText;
 	
 	public ChooseOriginScreen(ArrayList<OriginLayer> layerList, int currentLayerIndex, boolean showDirtBackground) {
-		super(new TranslatableText(Origins.MODID + ".screen.choose_origin"));
+		super(new TranslatableComponent(Origins.MODID + ".screen.choose_origin"));
 		this.layerList = layerList;
 		this.currentLayerIndex = currentLayerIndex;
 		this.originSelection = new ArrayList<>(10);
-		PlayerEntity player = MinecraftClient.getInstance().player;
+		Player player = Minecraft.getInstance().player;
 		OriginLayer currentLayer = layerList.get(currentLayerIndex);
-		List<Identifier> originIdentifiers = currentLayer.getOrigins(player);
+		List<ResourceLocation> originIdentifiers = currentLayer.getOrigins(player);
 		originIdentifiers.forEach(originId -> {
 			Origin origin = OriginRegistry.get(originId);
 			if(origin.isChoosable()) {
 				ItemStack displayItem = origin.getDisplayItem();
 				if(displayItem.getItem() == Items.PLAYER_HEAD) {
-					if(!displayItem.hasNbt() || !displayItem.getNbt().contains("SkullOwner")) {
-						displayItem.getOrCreateNbt().putString("SkullOwner", player.getDisplayName().getString());
+					if(!displayItem.hasTag() || !displayItem.getTag().contains("SkullOwner")) {
+						displayItem.getOrCreateTag().putString("SkullOwner", player.getDisplayName().getString());
 					}
 				}
 				this.originSelection.add(origin);
@@ -85,7 +90,7 @@ public class ChooseOriginScreen extends Screen {
 	}
 
 	private void openNextLayerScreen() {
-		MinecraftClient.getInstance().setScreen(new WaitForNextLayerScreen(layerList, currentLayerIndex, showDirtBackground));
+		Minecraft.getInstance().setScreen(new WaitForNextLayerScreen(layerList, currentLayerIndex, showDirtBackground));
 	}
 
 	@Override
@@ -98,22 +103,22 @@ public class ChooseOriginScreen extends Screen {
 		super.init();
 		guiLeft = (this.width - windowWidth) / 2;
         guiTop = (this.height - windowHeight) / 2;
-		addDrawableChild(new ButtonWidget(guiLeft - 40,this.height / 2 - 10, 20, 20, new LiteralText("<"), b -> {
+		addRenderableWidget(new Button(guiLeft - 40,this.height / 2 - 10, 20, 20, new TextComponent("<"), b -> {
         	currentOrigin = (currentOrigin - 1 + maxSelection) % maxSelection;
         	scrollPos = 0;
         }));
-		addDrawableChild(new ButtonWidget(guiLeft + windowWidth + 20, this.height / 2 - 10, 20, 20, new LiteralText(">"), b -> {
+		addRenderableWidget(new Button(guiLeft + windowWidth + 20, this.height / 2 - 10, 20, 20, new TextComponent(">"), b -> {
         	currentOrigin = (currentOrigin + 1) % maxSelection;
         	scrollPos = 0;
         }));
-		addDrawableChild(new ButtonWidget(guiLeft + windowWidth / 2 - 50, guiTop + windowHeight + 5, 100, 20, new TranslatableText(Origins.MODID + ".gui.select"), b -> {
-			PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+		addRenderableWidget(new Button(guiLeft + windowWidth / 2 - 50, guiTop + windowHeight + 5, 100, 20, new TranslatableComponent(Origins.MODID + ".gui.select"), b -> {
+			FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
 			if(currentOrigin == originSelection.size()) {
-				buf.writeString(layerList.get(currentLayerIndex).getIdentifier().toString());
+				buf.writeUtf(layerList.get(currentLayerIndex).getIdentifier().toString());
 				ClientPlayNetworking.send(ModPackets.CHOOSE_RANDOM_ORIGIN, buf);
 			} else {
-				buf.writeString(getCurrentOrigin().getIdentifier().toString());
-				buf.writeString(layerList.get(currentLayerIndex).getIdentifier().toString());
+				buf.writeUtf(getCurrentOrigin().getIdentifier().toString());
+				buf.writeUtf(layerList.get(currentLayerIndex).getIdentifier().toString());
 				ClientPlayNetworking.send(ModPackets.CHOOSE_ORIGIN, buf);
 			}
 			openNextLayerScreen();
@@ -132,31 +137,31 @@ public class ChooseOriginScreen extends Screen {
 
 	private void initRandomOrigin() {
 		this.randomOrigin = new Origin(Origins.identifier("random"), new ItemStack(ModItems.ORB_OF_ORIGIN), Impact.NONE, -1, Integer.MAX_VALUE);
-		this.randomOriginText = new LiteralText("");
-		List<Identifier> randoms = layerList.get(currentLayerIndex).getRandomOrigins(MinecraftClient.getInstance().player);
+		this.randomOriginText = new TextComponent("");
+		List<ResourceLocation> randoms = layerList.get(currentLayerIndex).getRandomOrigins(Minecraft.getInstance().player);
 		randoms.sort((ia, ib) -> {
 			Origin a = OriginRegistry.get(ia);
 			Origin b = OriginRegistry.get(ib);
 			int impDelta = a.getImpact().getImpactValue() - b.getImpact().getImpactValue();
 			return impDelta == 0 ? a.getOrder() - b.getOrder() : impDelta;
 		});
-		for(Identifier id : randoms) {
+		for(ResourceLocation id : randoms) {
 			this.randomOriginText.append(OriginRegistry.get(id).getName());
-			this.randomOriginText.append(new LiteralText("\n"));
+			this.randomOriginText.append(new TextComponent("\n"));
 		}
 	}
 
 	@Override
-	public void renderBackground(MatrixStack matrices, int vOffset) {
+	public void renderBackground(PoseStack matrices, int vOffset) {
 		if(showDirtBackground) {
-			super.renderBackgroundTexture(vOffset);
+			super.renderDirtBackground(vOffset);
 		} else {
 			super.renderBackground(matrices, vOffset);
 		}
 	}
 
 	@Override
-	public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+	public void render(PoseStack matrices, int mouseX, int mouseY, float delta) {
 		if(maxSelection == 0) {
 			openNextLayerScreen();
 			return;
@@ -166,52 +171,52 @@ public class ChooseOriginScreen extends Screen {
 		super.render(matrices, mouseX, mouseY, delta);
 	}
 
-	private void renderOriginWindow(MatrixStack matrices, int mouseX, int mouseY) {
+	private void renderOriginWindow(PoseStack matrices, int mouseX, int mouseY) {
 		RenderSystem.enableBlend();
 		renderWindowBackground(matrices, 16, 0);
 		this.renderOriginContent(matrices, mouseX, mouseY);
 		RenderSystem.setShaderTexture(0, WINDOW);
-		this.drawTexture(matrices, guiLeft, guiTop, 0, 0, windowWidth, windowHeight);
+		this.blit(matrices, guiLeft, guiTop, 0, 0, windowWidth, windowHeight);
 		renderOriginName(matrices);
 		RenderSystem.setShaderTexture(0, WINDOW);
 		this.renderOriginImpact(matrices, mouseX, mouseY);
-		Text title = new TranslatableText(Origins.MODID + ".gui.choose_origin.title", new TranslatableText(layerList.get(currentLayerIndex).getTranslationKey()));
-		this.drawCenteredText(matrices, this.textRenderer, title.getString(), width / 2, guiTop - 15, 0xFFFFFF);
+		Component title = new TranslatableComponent(Origins.MODID + ".gui.choose_origin.title", new TranslatableComponent(layerList.get(currentLayerIndex).getTranslationKey()));
+		this.drawCenteredString(matrices, this.font, title.getString(), width / 2, guiTop - 15, 0xFFFFFF);
 		RenderSystem.disableBlend();
 	}
 	
-	private void renderOriginImpact(MatrixStack matrices, int mouseX, int mouseY) {
+	private void renderOriginImpact(PoseStack matrices, int mouseX, int mouseY) {
 		Impact impact = getCurrentOrigin().getImpact();
 		int impactValue = impact.getImpactValue();
 		int wOffset = impactValue * 8;
 		for(int i = 0; i < 3; i++) {
 			if(i < impactValue) {
-				this.drawTexture(matrices, guiLeft + 128 + i * 10, guiTop + 19, windowWidth + wOffset, 16, 8, 8);
+				this.blit(matrices, guiLeft + 128 + i * 10, guiTop + 19, windowWidth + wOffset, 16, 8, 8);
 			} else {
-				this.drawTexture(matrices, guiLeft + 128 + i * 10, guiTop + 19, windowWidth, 16, 8, 8);
+				this.blit(matrices, guiLeft + 128 + i * 10, guiTop + 19, windowWidth, 16, 8, 8);
 			}
 		}
 		if(mouseX >= guiLeft + 128 && mouseX <= guiLeft + 158
 		&& mouseY >= guiTop + 19 && mouseY <= guiTop + 27) {
-			TranslatableText ttc = (TranslatableText) new TranslatableText(Origins.MODID + ".gui.impact.impact").append(": ").append(impact.getTextComponent());
+			TranslatableComponent ttc = (TranslatableComponent) new TranslatableComponent(Origins.MODID + ".gui.impact.impact").append(": ").append(impact.getTextComponent());
 			this.renderTooltip(matrices, ttc, mouseX, mouseY);
 		}
 	}
 	
-	private void renderOriginName(MatrixStack matrices) {
-		StringVisitable originName = textRenderer.trimToWidth(getCurrentOrigin().getName(), windowWidth - 36);
-		this.drawStringWithShadow(matrices, textRenderer, originName.getString(), guiLeft + 39, guiTop + 19, 0xFFFFFF);
+	private void renderOriginName(PoseStack matrices) {
+		FormattedText originName = font.substrByWidth(getCurrentOrigin().getName(), windowWidth - 36);
+		this.drawString(matrices, font, originName.getString(), guiLeft + 39, guiTop + 19, 0xFFFFFF);
 		ItemStack is = getCurrentOrigin().getDisplayItem();
-		this.itemRenderer.renderInGui(is, guiLeft + 15, guiTop + 15);
+		this.itemRenderer.renderAndDecorateFakeItem(is, guiLeft + 15, guiTop + 15);
 	}
 	
-	private void renderWindowBackground(MatrixStack matrices, int offsetYStart, int offsetYEnd) {
+	private void renderWindowBackground(PoseStack matrices, int offsetYStart, int offsetYEnd) {
 		int endX = guiLeft + windowWidth - border;
 		int endY = guiTop + windowHeight - border;
 		RenderSystem.setShaderTexture(0, WINDOW);
 		for(int x = guiLeft; x < endX; x += 16) {
 			for(int y = guiTop + offsetYStart; y < endY + offsetYEnd; y += 16) {
-				this.drawTexture(matrices, x, y, windowWidth, 0, Math.max(16, endX - x), Math.max(16, endY + offsetYEnd - y));
+				this.blit(matrices, x, y, windowWidth, 0, Math.max(16, endX - x), Math.max(16, endY + offsetYEnd - y));
 			}
 		}
 	}
@@ -224,7 +229,7 @@ public class ChooseOriginScreen extends Screen {
 		return retValue;
 	}
 
-	private void renderOriginContent(MatrixStack matrices, int mouseX, int mouseY) {
+	private void renderOriginContent(PoseStack matrices, int mouseX, int mouseY) {
 		Origin origin = getCurrentOrigin();
 		int x = guiLeft + 18;
 		int y = guiTop + 50;
@@ -232,21 +237,21 @@ public class ChooseOriginScreen extends Screen {
 		int endY = y - 72 + windowHeight;
 		y -= scrollPos;
 		
-		Text orgDesc = origin.getDescription();
-		List<OrderedText> descLines = textRenderer.wrapLines(orgDesc, windowWidth - 36);
-		for(OrderedText line : descLines) {
+		Component orgDesc = origin.getDescription();
+		List<FormattedCharSequence> descLines = font.split(orgDesc, windowWidth - 36);
+		for(FormattedCharSequence line : descLines) {
 			if(y >= startY - 18 && y <= endY + 12) {
-				textRenderer.draw(matrices, line, x + 2, y - 6, 0xCCCCCC);
+				font.draw(matrices, line, x + 2, y - 6, 0xCCCCCC);
 			}
 			y += 12;
 		}
 
 		if(origin == randomOrigin) {
-			List<OrderedText> drawLines = textRenderer.wrapLines(randomOriginText, windowWidth - 36);
-			for(OrderedText line : drawLines) {
+			List<FormattedCharSequence> drawLines = font.split(randomOriginText, windowWidth - 36);
+			for(FormattedCharSequence line : drawLines) {
 				y += 12;
 				if(y >= startY - 24 && y <= endY + 12) {
-					textRenderer.draw(matrices, line, x + 2, y, 0xCCCCCC);
+					font.draw(matrices, line, x + 2, y, 0xCCCCCC);
 				}
 			}
 			y += 14;
@@ -255,16 +260,16 @@ public class ChooseOriginScreen extends Screen {
 				if(p.isHidden()) {
 					continue;
 				}
-				OrderedText name = Language.getInstance().reorder(textRenderer.trimToWidth(p.getName().formatted(Formatting.UNDERLINE), windowWidth - 36));
-				Text desc = p.getDescription();
-				List<OrderedText> drawLines = textRenderer.wrapLines(desc, windowWidth - 36);
+				FormattedCharSequence name = Language.getInstance().getVisualOrder(font.substrByWidth(p.getName().withStyle(ChatFormatting.UNDERLINE), windowWidth - 36));
+				Component desc = p.getDescription();
+				List<FormattedCharSequence> drawLines = font.split(desc, windowWidth - 36);
 				if(y >= startY - 24 && y <= endY + 12) {
-					textRenderer.draw(matrices, name, x, y, 0xFFFFFF);
+					font.draw(matrices, name, x, y, 0xFFFFFF);
 				}
-				for(OrderedText line : drawLines) {
+				for(FormattedCharSequence line : drawLines) {
 					y += 12;
 					if(y >= startY - 24 && y <= endY + 12) {
-						textRenderer.draw(matrices, line, x + 2, y, 0xCCCCCC);
+						font.draw(matrices, line, x + 2, y, 0xCCCCCC);
 					}
 				}
 

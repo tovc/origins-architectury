@@ -1,20 +1,20 @@
 package io.github.apace100.origins.origin;
 
-import net.minecraft.text.TranslatableText;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.TranslatableComponent;
 
 public enum Impact {
 	
-	NONE(0, "none", Formatting.GRAY),
-	LOW(1, "low", Formatting.GREEN),
-	MEDIUM(2, "medium", Formatting.YELLOW),
-	HIGH(3, "high", Formatting.RED);
+	NONE(0, "none", ChatFormatting.GRAY),
+	LOW(1, "low", ChatFormatting.GREEN),
+	MEDIUM(2, "medium", ChatFormatting.YELLOW),
+	HIGH(3, "high", ChatFormatting.RED);
 	
 	private int impactValue;
 	private String translationKey;
-	private Formatting textStyle;
+	private ChatFormatting textStyle;
 
-	private Impact(int impactValue, String translationKey, Formatting textStyle) {
+	private Impact(int impactValue, String translationKey, ChatFormatting textStyle) {
 		this.translationKey = "origins.gui.impact." + translationKey;
 		this.impactValue = impactValue;
 		this.textStyle = textStyle;
@@ -28,12 +28,12 @@ public enum Impact {
 		return translationKey;
 	}
 	
-	public Formatting getTextStyle() {
+	public ChatFormatting getTextStyle() {
 		return textStyle;
 	}
 	
-	public TranslatableText getTextComponent() {
-		return (TranslatableText)new TranslatableText(getTranslationKey()).formatted(getTextStyle());
+	public TranslatableComponent getTextComponent() {
+		return (TranslatableComponent)new TranslatableComponent(getTranslationKey()).withStyle(getTextStyle());
 	}
 	
 	public static Impact getByValue(int impactValue) {

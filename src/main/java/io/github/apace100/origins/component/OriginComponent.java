@@ -11,14 +11,13 @@ import io.github.apace100.origins.origin.OriginLayers;
 import io.github.apace100.origins.origin.OriginRegistry;
 import io.github.apace100.origins.power.OriginsCallbackPower;
 import io.github.apace100.origins.registry.ModComponents;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.Identifier;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
 
 public interface OriginComponent extends AutoSyncedComponent {
 
@@ -36,19 +35,19 @@ public interface OriginComponent extends AutoSyncedComponent {
 
 	void onPowersRead();
 
-	static void sync(PlayerEntity player) {
+	static void sync(Player player) {
 		ModComponents.ORIGIN.sync(player);
 		PowerHolderComponent.KEY.sync(player);
 	}
 
-	static void onChosen(PlayerEntity player, boolean hadOriginBefore) {
+	static void onChosen(Player player, boolean hadOriginBefore) {
 		if(!hadOriginBefore) {
 			PowerHolderComponent.getPowers(player, ModifyPlayerSpawnPower.class).forEach(ModifyPlayerSpawnPower::teleportToModifiedSpawn);
 		}
 		PowerHolderComponent.getPowers(player, OriginsCallbackPower.class).forEach(p -> p.onChosen(hadOriginBefore));
 	}
 
-	static void partialOnChosen(PlayerEntity player, boolean hadOriginBefore, Origin origin) {
+	static void partialOnChosen(Player player, boolean hadOriginBefore, Origin origin) {
 		PowerHolderComponent powerHolder = PowerHolderComponent.KEY.get(player);
 		for(PowerType<?> powerType : powerHolder.getPowersFromSource(origin.getIdentifier())) {
 			Power p = powerHolder.getPower(powerType);
@@ -61,7 +60,7 @@ public interface OriginComponent extends AutoSyncedComponent {
 		}
 	}
 
-	default boolean checkAutoChoosingLayers(PlayerEntity player, boolean includeDefaults) {
+	default boolean checkAutoChoosingLayers(Player player, boolean includeDefaults) {
 		boolean choseOneAutomatically = false;
 		ArrayList<OriginLayer> layers = new ArrayList<>();
 		for(OriginLayer layer : OriginLayers.getLayers()) {
@@ -80,7 +79,7 @@ public interface OriginComponent extends AutoSyncedComponent {
 				} else if (layer.getOriginOptionCount(player) == 1 && layer.shouldAutoChoose()) {
 					List<Origin> origins = layer.getOrigins(player).stream().map(OriginRegistry::get).filter(Origin::isChoosable).collect(Collectors.toList());
 					if (origins.size() == 0) {
-						List<Identifier> randomOrigins = layer.getRandomOrigins(player);
+						List<ResourceLocation> randomOrigins = layer.getRandomOrigins(player);
 						setOrigin(layer, OriginRegistry.get(randomOrigins.get(player.getRandom().nextInt(randomOrigins.size()))));
 					} else {
 						setOrigin(layer, origins.get(0));

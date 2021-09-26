@@ -8,63 +8,63 @@ import io.github.apace100.origins.origin.Origin;
 import io.github.apace100.origins.origin.OriginLayer;
 import io.github.apace100.origins.registry.ModComponents;
 import io.github.apace100.origins.registry.ModLoot;
-import net.minecraft.loot.condition.LootCondition;
-import net.minecraft.loot.condition.LootConditionType;
-import net.minecraft.loot.context.LootContext;
-import net.minecraft.loot.context.LootContextParameters;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.JsonHelper;
-import net.minecraft.util.JsonSerializer;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.GsonHelper;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.Serializer;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
+import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public class OriginLootCondition implements LootCondition {
-    private final Identifier origin;
+public class OriginLootCondition implements LootItemCondition {
+	private final ResourceLocation origin;
 
-    private OriginLootCondition(Identifier origin) {
-        this.origin = origin;
-    }
+	private OriginLootCondition(ResourceLocation origin) {
+		this.origin = origin;
+	}
 
-    public LootConditionType getType() {
-        return ModLoot.ORIGIN_LOOT_CONDITION;
-    }
+	public LootItemConditionType getType() {
+		return ModLoot.ORIGIN_LOOT_CONDITION;
+	}
 
-    public boolean test(LootContext lootContext) {
-        Optional<OriginComponent> optional = ModComponents.ORIGIN.maybeGet(lootContext.get(LootContextParameters.THIS_ENTITY));
-        if(optional.isPresent()){
-            OriginComponent component = optional.get();
-            HashMap<OriginLayer, Origin> map = component.getOrigins();
-            boolean matches = false;
-            for (Map.Entry<OriginLayer, Origin> entry: map.entrySet()) {
-                if(entry.getValue().getIdentifier().equals(origin)) {
-                    matches = true;
-                    break;
-                }
-            }
-            return matches;
-        }
-        return false;
-    }
+	public boolean test(LootContext lootContext) {
+		Optional<OriginComponent> optional = ModComponents.ORIGIN.maybeGet(lootContext.getParamOrNull(LootContextParams.THIS_ENTITY));
+		if (optional.isPresent()) {
+			OriginComponent component = optional.get();
+			HashMap<OriginLayer, Origin> map = component.getOrigins();
+			boolean matches = false;
+			for (Map.Entry<OriginLayer, Origin> entry : map.entrySet()) {
+				if (entry.getValue().getIdentifier().equals(origin)) {
+					matches = true;
+					break;
+				}
+			}
+			return matches;
+		}
+		return false;
+	}
 
-    public static LootCondition.Builder builder(String originId) {
-        return builder(new Identifier(originId));
-    }
+	public static LootItemCondition.Builder builder(String originId) {
+		return builder(new ResourceLocation(originId));
+	}
 
-    public static LootCondition.Builder builder(Identifier origin) {
-        return () -> {
-            return new OriginLootCondition(origin);
-        };
-    }
+	public static LootItemCondition.Builder builder(ResourceLocation origin) {
+		return () -> {
+			return new OriginLootCondition(origin);
+		};
+	}
 
-    public static class Serializer implements JsonSerializer<OriginLootCondition> {
-        public void toJson(JsonObject jsonObject, OriginLootCondition originLootCondition, JsonSerializationContext jsonSerializationContext) {
-            jsonObject.addProperty("origin", originLootCondition.origin.toString());
-        }
+	public static class Serializer implements net.minecraft.world.level.storage.loot.Serializer<OriginLootCondition> {
+		public void serialize(JsonObject jsonObject, OriginLootCondition originLootCondition, JsonSerializationContext context) {
+			jsonObject.addProperty("origin", originLootCondition.origin.toString());
+		}
 
-        public OriginLootCondition fromJson(JsonObject jsonObject, JsonDeserializationContext jsonDeserializationContext) {
-            return new OriginLootCondition(new Identifier(JsonHelper.getString(jsonObject, "origin")));
-        }
-    }
+		public OriginLootCondition deserialize(JsonObject jsonObject, JsonDeserializationContext context) {
+			return new OriginLootCondition(new ResourceLocation(GsonHelper.getAsString(jsonObject, "origin")));
+		}
+	}
 }

@@ -1,110 +1,151 @@
 plugins {
-	id 'fabric-loom' version '0.8-SNAPSHOT'
+	id 'net.minecraftforge.gradle'
+	id 'org.spongepowered.mixin'
+	id 'idea'
 	id 'maven-publish'
 }
 
-sourceCompatibility = JavaVersion.VERSION_16
-targetCompatibility = JavaVersion.VERSION_16
+println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
 
-archivesBaseName = project.archives_base_name
+java.toolchain.languageVersion = JavaLanguageVersion.of(16)
+
+archivesBaseName = "${project.name}-${minecraft_version}"
 version = project.mod_version
 group = project.maven_group
 
 repositories {
-	maven {
-		name = "Ladysnake Libs"
-		url = 'https://ladysnake.jfrog.io/artifactory/mods'
-	}
-	maven {
-		url = 'https://maven.cafeteria.dev'
-		content {
-			includeGroup 'net.adriantodt.fabricmc'
+	mavenLocal()
+	maven { url "https://maven.minecraftforge.net/" }
+	maven { url 'https://maven.architectury.dev' }
+	maven { url 'https://repo.spongepowered.org/maven'}
+	maven { url 'https://dvs1.progwml6.com/files/maven'}
+}
+
+mixin {
+	add sourceSets.main, 'origins.refmap.json'
+}
+
+sourceSets {
+	main {
+		resources {
+			srcDir project.file("src/generated/resources");
 		}
 	}
-	maven {
-		url "https://maven.jamieswhiteshirt.com/libs-release"
-		content {
-			includeGroup "com.jamieswhiteshirt"
+}
+
+minecraft {
+	mappings channel: 'official', version: project.ext.minecraft_version
+	def atFile = file("src/main/resources/META-INF/accesstransformer.cfg");
+	if (atFile.exists()) accessTransformer atFile
+
+	runs {
+		client {
+			workingDirectory file('run')
+			property 'forge.logging.markers', 'REGISTRIES'
+			property 'forge.logging.console.level', 'debug'
+			property 'mixin.debug', 'true'
+			args '--mixin', 'origins.mixins.json'
+
+			mods {
+				origins {
+					source sourceSets.main
+				}
+			}
+		}
+		server {
+			workingDirectory file('run')
+			property 'forge.logging.markers', 'REGISTRIES'
+			property 'forge.logging.console.level', 'debug'
+			property 'mixin.debug', 'true'
+			args '--mixin', 'origins.mixins.json'
+
+			mods {
+				origins {
+					source sourceSets.main
+				}
+			}
+		}
+		data {
+			workingDirectory file('run')
+			property 'forge.logging.markers', 'REGISTRIES'
+			property 'forge.logging.console.level', 'debug'
+			property 'mixin.debug', 'true'
+			args '--mixin', 'origins.mixins.json'
+
+			args '--all'
+			args '--mod', 'apoli'
+			args '--existing', file('src/main/resources')
+			args '--existing', file('src/generated/resources')
+			args '--output', file('src/generated/resources/')
+			mods {
+				origins {
+					source sourceSets.main
+				}
+			}
 		}
 	}
-	maven {
-		url "https://jitpack.io"
-	}
-	maven {
-		url "https://maven.shedaniel.me/"
-	}
-	maven {
-		url "https://api.modrinth.com/maven"
+}
+
+processResources {
+	filesMatching('META-INF/mods.toml', {
+		expand  'version': version,
+				'minecraft_version': project.ext.minecraft_version
+	})
+}
+
+jar {
+	manifest {
+		attributes(
+				"Specification-Title": project.name,
+				"Specification-Vendor": 'apace100',
+				"Specification-Version": '1.0',
+				"Implementation-Title": project.name,
+				"Implementation-Version": project.version,
+				"Implementation-Vendor": "EdwinMindcraft",
+				"Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+		)
 	}
 }
 
 dependencies {
-	//to change the versions see the gradle.properties file
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	minecraft group: 'net.minecraftforge', name: 'forge', version: "${minecraft_version}-${forge_version}"
+	testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.6.2'
+	implementation group: 'org.jetbrains', name: 'annotations', version: '22.0.0'
 
-	// Fabric API. This is technically optional, but you probably want it anyway.
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	//APIs
+	implementation fg.deobf(group: 'io.github.edwinmindcraft', name: "calio-${rootProject.minecraft_version}", version: "${calio_version}")
+	implementation fg.deobf(group: 'io.github.edwinmindcraft', name: "apoli-${rootProject.minecraft_version}", version: "${apoli_version}")
+	implementation fg.deobf(group: 'me.shedaniel.cloth', name: 'cloth-config-forge', version: "${clothconfig_version}")
+	compileOnly fg.deobf(group: 'mezz.jei', name: "jei-${rootProject.minecraft_version}", version: rootProject.jei_version, classifier: 'api')
 
-	modImplementation "com.github.apace100:apoli:${project.apoli_version}"
-	include "com.github.apace100:apoli:${project.apoli_version}"
-
-	modApi("me.shedaniel.cloth:cloth-config-fabric:${project.clothconfig_version}") {
-		exclude(group: "net.fabricmc.fabric-api")
-	}
-	include "me.shedaniel.cloth:cloth-config-fabric:${project.clothconfig_version}"
-
-	modImplementation "maven.modrinth:modmenu:${project.modmenu_version}"
-
-	include modImplementation("com.jamieswhiteshirt:reach-entity-attributes:${project.reach_version}")
-}
-
-processResources {
-	inputs.property "version", project.version
-
-	filesMatching("fabric.mod.json") {
-		expand "version": project.version
-	}
-}
-
-// ensure that the encoding is set to UTF-8, no matter what the system default is
-// this fixes some edge cases with special characters not displaying correctly
-// see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
-tasks.withType(JavaCompile).configureEach {
-	it.options.encoding = "UTF-8"
-	it.options.release = 16
-}
-
-// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-// if it is present.
-// If you remove this task, sources will not be generated.
-task sourcesJar(type: Jar, dependsOn: classes) {
-	classifier = "sources"
-	from sourceSets.main.allSource
+	//Runtime
+	runtimeOnly fg.deobf(group: 'mezz.jei', name: "jei-${rootProject.minecraft_version}", version: rootProject.jei_version)
 }
 
 jar {
-	from "LICENSE"
+	from("LICENSE") {
+		rename { "${it}_${project.archivesBaseName}"}
+	}
 }
 
-// configure the maven publication
+task sourceJar(type: Jar, dependsOn: processResources) {
+	classifier 'sources'
+	from sourceSets.main.allSource
+}
+
+jar.finalizedBy('reobfJar')
+
 publishing {
 	publications {
 		mavenJava(MavenPublication) {
-			// add all the jars that should be included when publishing to maven
-			artifact(remapJar) {
-				builtBy remapJar
-			}
-			artifact(sourcesJar) {
-				builtBy remapSourcesJar
-			}
+			artifactId = archivesBaseName
+			version = project.mod_version
+			groupId = project.maven_group
+			artifact jar
+			artifact sourceJar
 		}
 	}
-
-	// select the repositories you want to publish to
 	repositories {
-		// uncomment to publish to the local maven
-		// mavenLocal()
+
 	}
 }

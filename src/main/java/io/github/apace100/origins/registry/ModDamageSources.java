@@ -1,7 +1,7 @@
 package io.github.apace100.origins.registry;
 
 import io.github.apace100.calio.mixin.DamageSourceAccessor;
-import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.world.damagesource.DamageSource;
 
 public class ModDamageSources {
 
