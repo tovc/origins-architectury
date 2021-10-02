@@ -2,30 +2,48 @@ package io.github.edwinmindcraft.origins.common;
 
 import io.github.apace100.apoli.mixin.EntityAccessor;
 import io.github.apace100.origins.Origins;
+import io.github.apace100.origins.origin.OriginLayers;
+import io.github.apace100.origins.origin.OriginRegistry;
 import io.github.apace100.origins.power.OriginsPowerTypes;
 import io.github.apace100.origins.registry.ModDamageSources;
 import io.github.edwinmindcraft.apoli.api.component.IPowerContainer;
 import io.github.edwinmindcraft.apoli.api.registry.ApoliDynamicRegistries;
 import io.github.edwinmindcraft.calio.api.event.CalioDynamicRegistryEvent;
 import io.github.edwinmindcraft.calio.api.registry.ICalioDynamicRegistryManager;
+import io.github.edwinmindcraft.origins.api.OriginsAPI;
+import io.github.edwinmindcraft.origins.api.capabilities.IOriginContainer;
 import io.github.edwinmindcraft.origins.api.origin.Origin;
 import io.github.edwinmindcraft.origins.api.origin.OriginLayer;
 import io.github.edwinmindcraft.origins.api.registry.OriginsBuiltinRegistries;
 import io.github.edwinmindcraft.origins.api.registry.OriginsDynamicRegistries;
+import io.github.edwinmindcraft.origins.common.capabilities.OriginContainer;
 import io.github.edwinmindcraft.origins.common.data.LayerLoader;
 import io.github.edwinmindcraft.origins.common.data.OriginLoader;
+import io.github.edwinmindcraft.origins.common.network.S2COpenOriginScreen;
+import net.minecraft.ChatFormatting;
+import net.minecraft.advancements.Advancement;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.player.AdvancementEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
+import net.minecraftforge.fmllegacy.network.PacketDistributor;
+import net.minecraftforge.fmllegacy.server.ServerLifecycleHooks;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Objects;
 
 @Mod.EventBusSubscriber(modid = Origins.MODID)
 public class OriginsEventHandler {
@@ -51,6 +69,12 @@ public class OriginsEventHandler {
 	//endregion
 
 	@SubscribeEvent
+	public static void attachCapabilities(AttachCapabilitiesEvent<Entity> event) {
+		if (event.getObject() instanceof Player player)
+			event.addCapability(OriginContainer.ID, new OriginContainer(player));
+	}
+
+	@SubscribeEvent
 	public static void addRegistries(CalioDynamicRegistryEvent.Initialize event) {
 		ICalioDynamicRegistryManager registryManager = event.getRegistryManager();
 		registryManager.addForge(OriginsDynamicRegistries.ORIGINS_REGISTRY, OriginsBuiltinRegistries.ORIGINS, Origin.CODEC);
@@ -63,9 +87,65 @@ public class OriginsEventHandler {
 	}
 
 	@SubscribeEvent
+	public static void onAdvancement(AdvancementEvent event) {
+		Advancement advancement = event.getAdvancement();
+		IOriginContainer.get(event.getPlayer()).ifPresent(container -> container.getOrigins().forEach((layer, origin) -> {
+			origin.getUpgrades().stream().filter(x -> Objects.equals(x.advancement(), advancement.getId())).findFirst().ifPresent(upgrade -> {
+				try {
+					Origin target = OriginsAPI.getOriginsRegistry().get(upgrade.origin());
+					if (target != null) {
+						container.setOrigin(layer, target);
+						container.synchronize();
+						if (!upgrade.announcement().isBlank())
+							event.getPlayer().displayClientMessage(new TranslatableComponent(upgrade.announcement()).withStyle(ChatFormatting.GOLD), false);
+					}
+				} catch (IllegalArgumentException e) {
+					Origins.LOGGER.error("Could not perform Origins upgrade from {} to {}, as the upgrade origin did not exist!", origin.getRegistryName(), upgrade.origin());
+				}
+			});
+		}));
+	}
+
+	@SubscribeEvent
+	public static void reloadComplete(CalioDynamicRegistryEvent.LoadComplete event) {
+		OriginRegistry.clear();
+		OriginLayers.clear();
+		MinecraftServer currentServer = ServerLifecycleHooks.getCurrentServer();
+		if (currentServer != null) {
+			for (ServerPlayer player : currentServer.getPlayerList().getPlayers()) {
+				//Revoke any power that would have been removed from the origin.
+				IOriginContainer.get(player).ifPresent(IOriginContainer::onReload);
+			}
+		}
+	}
+
+	@SubscribeEvent
+	public static void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
+		if (event.getPlayer() instanceof ServerPlayer sp && !event.getPlayer().level.isClientSide())
+			Objects.requireNonNull(sp.getServer()).submitAsync(() -> IOriginContainer.get(sp).ifPresent(container -> {
+				if (!container.hasAllOrigins()) {
+					container.checkAutoChoosingLayers(true);
+					OriginsCommon.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> sp), container.getSynchronizationPacket());
+					container.synchronize();
+					if (container.hasAllOrigins())
+						container.onChosen(false);
+					else
+						OriginsCommon.CHANNEL.send(PacketDistributor.PLAYER.with(() -> sp), new S2COpenOriginScreen(true));
+				}
+			}));
+	}
+
+	@SubscribeEvent
+	public static void onStartTracking(PlayerEvent.StartTracking event) {
+		if (event.getTarget() instanceof Player target && event.getPlayer() instanceof ServerPlayer sp && !event.getPlayer().level.isClientSide())
+			Objects.requireNonNull(sp.getServer()).submitAsync(() -> IOriginContainer.get(target).ifPresent(x -> OriginsCommon.CHANNEL.send(PacketDistributor.PLAYER.with(() -> sp), x.getSynchronizationPacket())));
+	}
+
+	@SubscribeEvent
 	public static void onPlayerTickEnd(TickEvent.PlayerTickEvent event) {
 		if (event.phase == TickEvent.Phase.END) {
 			Player player = event.player;
+			IOriginContainer.get(event.player).ifPresent(IOriginContainer::tick);
 			if (IPowerContainer.hasPower(player, OriginsPowerTypes.WATER_BREATHING.get())) {
 				if (!player.isEyeInFluid(FluidTags.WATER) && !player.hasEffect(MobEffects.WATER_BREATHING) && !player.hasEffect(MobEffects.CONDUIT_POWER)) {
 					if (!((EntityAccessor) player).callIsBeingRainedOn()) {

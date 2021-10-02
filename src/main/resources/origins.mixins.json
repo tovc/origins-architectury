@@ -1,26 +1,24 @@
 {
-  "required": true,
-  "minVersion": "0.8",
-  "package": "io.github.apace100.origins.mixin",
-  "compatibilityLevel": "JAVA_16",
-  "mixins": [
-    "ConduitOnLandMixin",
-    "LikeWaterMixin",
-    "LoginMixin",
-    "NoCobwebSlowdownMixin",
-    "OriginDeserializationMixin",
-    "OriginUpgradeMixin",
-    "ScareCreepersMixin",
-    "SelectionInvulnerabilityMixin",
-    "WaterBreathingMixin$CanBreatheInWater",
-    "WaterBreathingMixin$UpdateAir"
-  ],
-  "client": [
-    "PhasingOverlayMixin",
-    "ServerCheckMixin",
-    "WaterVisibilityMixin"
-  ],
-  "injectors": {
-    "defaultRequire": 1
-  }
+	"required": true,
+	"minVersion": "0.8",
+	"package": "io.github.apace100.origins.mixin",
+	"compatibilityLevel": "JAVA_16",
+	"mixins": [
+		"ConduitOnLandMixin",
+		"LikeWaterMixin",
+		"NoCobwebSlowdownMixin",
+		"ScareCreepersMixin",
+		"SelectionInvulnerabilityMixin",
+		"WaterBreathingMixin$CanBreatheInWater",
+		"WaterBreathingMixin$UpdateAir",
+		"forge.ModifyPlayerSpawnPowerMixin"
+	],
+	"client": [
+		"PhasingOverlayMixin",
+		"ServerCheckMixin",
+		"WaterVisibilityMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
 }

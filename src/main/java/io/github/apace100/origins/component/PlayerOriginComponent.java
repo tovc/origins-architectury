@@ -1,114 +1,61 @@
 package io.github.apace100.origins.component;
 
-import io.github.apace100.apoli.component.PowerHolderComponent;
-import io.github.apace100.apoli.power.PowerType;
-import io.github.apace100.apoli.power.PowerTypeRegistry;
-import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.origin.Origin;
 import io.github.apace100.origins.origin.OriginLayer;
 import io.github.apace100.origins.origin.OriginLayers;
 import io.github.apace100.origins.origin.OriginRegistry;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import io.github.edwinmindcraft.origins.api.capabilities.IOriginContainer;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.player.Player;
+
+import java.util.HashMap;
 
 public class PlayerOriginComponent implements OriginComponent {
 
-    private Player player;
-    private HashMap<OriginLayer, Origin> origins = new HashMap<>();
+	private final IOriginContainer wrapped;
+	private final HashMap<OriginLayer, Origin> origins = new HashMap<>();
 
-    private boolean hadOriginBefore = false;
+	public PlayerOriginComponent(IOriginContainer wrapped) {
+		this.wrapped = wrapped;
+	}
 
-    private CompoundTag cachedData;
+	@Override
+	public boolean hasAllOrigins() {
+		return this.wrapped.hasAllOrigins();
+	}
 
-    public PlayerOriginComponent(Player player) {
-        this.player = player;
-    }
+	@Override
+	public HashMap<OriginLayer, Origin> getOrigins() {
+		this.origins.clear();
+		this.wrapped.getOrigins().forEach((x, y) -> this.origins.put(OriginLayers.get(x), OriginRegistry.get(y)));
+		return this.origins;
+	}
 
-    @Override
-    public boolean hasAllOrigins() {
-        return OriginLayers.getLayers().stream().allMatch(layer -> {
-            return !layer.isEnabled() || layer.getOrigins(player).size() == 0 || (origins.containsKey(layer) && origins.get(layer) != null && origins.get(layer) != Origin.EMPTY);
-        });
-    }
+	@Override
+	public boolean hasOrigin(OriginLayer layer) {
+		return this.wrapped.hasOrigin(layer.getWrapped());
+	}
 
-    @Override
-    public HashMap<OriginLayer, Origin> getOrigins() {
-        return origins;
-    }
+	@Override
+	public Origin getOrigin(OriginLayer layer) {
+		return OriginRegistry.get(this.wrapped.getOrigin(layer.getWrapped()));
+	}
 
-    @Override
-    public boolean hasOrigin(OriginLayer layer) {
-        return origins != null && origins.containsKey(layer) && origins.get(layer) != null && origins.get(layer) != Origin.EMPTY;
-    }
+	@Override
+	public boolean hadOriginBefore() {
+		return this.wrapped.hasAllOrigins();
+	}
 
-    @Override
-    public Origin getOrigin(OriginLayer layer) {
-        if(!origins.containsKey(layer)) {
-            return null;
-        }
-        return origins.get(layer);
-    }
+	@Override
+	public void setOrigin(OriginLayer layer, Origin origin) {
+		this.wrapped.setOrigin(layer.getWrapped(), origin.getWrapped());
+	}
 
-    @Override
-    public boolean hadOriginBefore() {
-        return hadOriginBefore;
-    }
-
-    @Override
-    public void setOrigin(OriginLayer layer, Origin origin) {
-        Origin oldOrigin = getOrigin(layer);
-        if(oldOrigin == origin) {
-            return;
-        }
-        this.origins.put(layer, origin);
-        PowerHolderComponent powerComponent = PowerHolderComponent.KEY.get(player);
-        grantPowersFromOrigin(origin, powerComponent);
-        if(oldOrigin != null) {
-            powerComponent.removeAllPowersFromSource(oldOrigin.getIdentifier());
-        }
-        if(this.hasAllOrigins()) {
-            this.hadOriginBefore = true;
-        }
-    }
-
-    private void grantPowersFromOrigin(Origin origin, PowerHolderComponent powerComponent) {
-        ResourceLocation source = origin.getIdentifier();
-        for(PowerType<?> powerType : origin.getPowerTypes()) {
-            if(!powerComponent.hasPower(powerType, source)) {
-                powerComponent.addPower(powerType, source);
-            }
-        }
-    }
-
-    private void revokeRemovedPowers(Origin origin, PowerHolderComponent powerComponent) {
-        ResourceLocation source = origin.getIdentifier();
-        List<PowerType<?>> powersByOrigin = powerComponent.getPowersFromSource(source);
-        powersByOrigin.stream().filter(p -> !origin.hasPowerType(p)).forEach(p -> powerComponent.removePower(p, source));
-    }
-
-    @Override
+    /*@Override
     public void readFromNbt(CompoundTag compoundTag) {
         this.cachedData = compoundTag;
-    }
+    }*/
 
-    @Override
-    public void onPowersRead() {
-        if(cachedData == null) {
-            Origins.LOGGER.error("Power read callback was invoked on OriginComponent without data being cached.");
-        } else {
-            fromTag(cachedData);
-            cachedData = null;
-        }
-    }
-
-    private void fromTag(CompoundTag compoundTag) {
+/*    private void fromTag(CompoundTag compoundTag) {
 
         if(player == null) {
             Origins.LOGGER.error("Player was null in `fromTag`! This is a bug!");
@@ -214,10 +161,10 @@ public class PlayerOriginComponent implements OriginComponent {
         if(compoundTag != null) {
             this.fromTag(compoundTag);
         }
-    }
+    }*/
 
-    @Override
-    public void sync() {
-        OriginComponent.sync(this.player);
-    }
+	@Override
+	public void sync() {
+		this.wrapped.synchronize();
+	}
 }

@@ -54,7 +54,7 @@ public class OriginsPowerProvider extends PowerGenerator {
 						ApoliEntityActions.BLOCK_ACTION_AT.get().configure(FieldConfiguration.of(
 								ApoliBlockActions.IF_ELSE.get().configure(new IfElseConfiguration<>(
 										ApoliBlockConditions.REPLACEABLE.get().configure(NoConfiguration.INSTANCE),
-										ApoliBlockActions.SET_BLOCK.get().configure(new BlockConfiguration(ModBlocks.TEMPORARY_COBWEB)),
+										ApoliBlockActions.SET_BLOCK.get().configure(new BlockConfiguration(ModBlocks.TEMPORARY_COBWEB.get())),
 										null, ApoliBlockActions.PREDICATE, ApoliBlockActions.EXECUTOR))
 						))),
 				PowerData.DEFAULT));

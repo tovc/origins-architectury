@@ -1,73 +1,115 @@
 package io.github.apace100.origins.origin;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Stream;
+import io.github.edwinmindcraft.origins.api.OriginsAPI;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 @Deprecated
 public class OriginRegistry {
 
-    private static HashMap<ResourceLocation, Origin> idToOrigin = new HashMap<>();
+	private static final Map<io.github.edwinmindcraft.origins.api.origin.Origin, Origin> CACHE_MAP = new ConcurrentHashMap<>();
 
-    public static Origin register(Origin origin) {
-        return register(origin.getIdentifier(), origin);
-    }
 
-    public static Origin register(ResourceLocation id, Origin origin) {
-        if(idToOrigin.containsKey(id)) {
-            throw new IllegalArgumentException("Duplicate origin id tried to register: '" + id.toString() + "'");
-        }
-        idToOrigin.put(id, origin);
-        return origin;
-    }
+	@Deprecated
+	public static Origin register(Origin origin) {
+		return register(origin.getIdentifier(), origin);
+	}
 
-    protected static Origin update(ResourceLocation id, Origin origin) {
-        if(idToOrigin.containsKey(id)) {
-            Origin old = idToOrigin.get(id);
-            idToOrigin.remove(id);
-        }
-        return register(id, origin);
-    }
+	@Deprecated
+	public static Origin register(ResourceLocation id, Origin origin) {
+		return origin;
+	}
 
-    public static int size() {
-        return idToOrigin.size();
-    }
+	@Deprecated
+	protected static Origin update(ResourceLocation id, Origin origin) {
+		return register(id, origin);
+	}
 
-    public static Stream<ResourceLocation> identifiers() {
-        return idToOrigin.keySet().stream();
-    }
+	public static int size() {
+		return OriginsAPI.getOriginsRegistry().keySet().size();
+	}
 
-    public static Iterable<Map.Entry<ResourceLocation, Origin>> entries() {
-        return idToOrigin.entrySet();
-    }
+	public static Stream<ResourceLocation> identifiers() {
+		return OriginsAPI.getOriginsRegistry().keySet().stream();
+	}
 
-    public static Iterable<Origin> values() {
-        return idToOrigin.values();
-    }
+	public static Iterable<Map.Entry<ResourceLocation, Origin>> entries() {
+		return () -> {
+			Iterator<Map.Entry<ResourceKey<io.github.edwinmindcraft.origins.api.origin.Origin>, io.github.edwinmindcraft.origins.api.origin.Origin>> iterator = OriginsAPI.getOriginsRegistry().entrySet().iterator();
+			return new Iterator<>() {
+				@Override
+				public boolean hasNext() {
+					return iterator.hasNext();
+				}
 
-    public static Origin get(ResourceLocation id) {
-        if(!idToOrigin.containsKey(id)) {
-            throw new IllegalArgumentException("Could not get origin from id '" + id.toString() + "', as it was not registered!");
-        }
-        Origin origin = idToOrigin.get(id);
-        return origin;
-    }
+				@Override
+				public Map.Entry<ResourceLocation, Origin> next() {
+					Map.Entry<ResourceKey<io.github.edwinmindcraft.origins.api.origin.Origin>, io.github.edwinmindcraft.origins.api.origin.Origin> next = iterator.next();
+					return new Map.Entry<>() {
+						@Override
+						public ResourceLocation getKey() {
+							return next.getKey().location();
+						}
 
-    public static boolean contains(ResourceLocation id) {
-        return idToOrigin.containsKey(id);
-    }
+						@Override
+						public Origin getValue() {
+							return get(next.getValue());
+						}
 
-    public static boolean contains(Origin origin) {
-        return contains(origin.getIdentifier());
-    }
+						@Override
+						public Origin setValue(Origin value) {
+							return null;
+						}
+					};
+				}
+			};
+		};
+	}
 
-    public static void clear() {
-        idToOrigin.clear();
-    }
+	public static Iterable<Origin> values() {
+		return () -> {
+			Iterator<io.github.edwinmindcraft.origins.api.origin.Origin> iterator = OriginsAPI.getOriginsRegistry().iterator();
+			return new Iterator<>() {
+				@Override
+				public boolean hasNext() {
+					return iterator.hasNext();
+				}
 
-    public static void reset() {
-        clear();
-        register(Origin.EMPTY);
-    }
+				@Override
+				public Origin next() {
+					return get(iterator.next());
+				}
+			};
+		};
+	}
+
+	public static Origin get(ResourceLocation id) {
+		return OriginsAPI.getOriginsRegistry().getOptional(id).map(OriginRegistry::get)
+				.orElseThrow(() -> new IllegalArgumentException("Could not get origin from id '" + id.toString() + "', as it was not registered!"));
+	}
+
+	public static Origin get(io.github.edwinmindcraft.origins.api.origin.Origin origin) {
+		return CACHE_MAP.computeIfAbsent(origin, o -> new Origin(() -> o));
+	}
+
+	public static boolean contains(ResourceLocation id) {
+		return OriginsAPI.getOriginsRegistry().containsKey(id);
+	}
+
+	public static boolean contains(Origin origin) {
+		return contains(origin.getIdentifier());
+	}
+
+	public static void clear() {
+		CACHE_MAP.clear();
+	}
+
+	public static void reset() {
+		clear();
+	}
 }

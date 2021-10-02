@@ -2,6 +2,7 @@ package io.github.apace100.origins.mixin;
 
 import io.github.apace100.origins.power.OriginsPowerTypes;
 import io.github.edwinmindcraft.apoli.api.component.IPowerContainer;
+import io.github.edwinmindcraft.origins.common.power.NoSlowdownPower;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.world.Nameable;
 import net.minecraft.world.entity.EntityType;
@@ -22,10 +23,9 @@ public abstract class NoCobwebSlowdownMixin extends LivingEntity implements Name
         super(entityType, world);
     }
 
-    //Different from
     @Inject(at = @At("HEAD"), method = "makeStuckInBlock", cancellable = true)
     public void slowMovement(BlockState state, Vec3 multiplier, CallbackInfo info) {
-        if (state.getBlock() instanceof WebBlock && IPowerContainer.hasPower(this, OriginsPowerTypes.NO_SLOWDOWN.get()))
+        if (state.getBlock() instanceof WebBlock && NoSlowdownPower.isActive(this, state))
             info.cancel();
     }
 }

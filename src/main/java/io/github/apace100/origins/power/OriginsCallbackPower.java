@@ -1,27 +1,44 @@
 package io.github.apace100.origins.power;
 
-import io.github.apace100.apoli.power.ActionOnCallbackPower;
-import io.github.apace100.apoli.power.PowerType;
-import java.util.function.Consumer;
-import net.minecraft.world.entity.Entity;
+import io.github.edwinmindcraft.apoli.api.power.configuration.ConfiguredEntityAction;
+import io.github.edwinmindcraft.apoli.api.power.factory.PowerFactory;
+import io.github.edwinmindcraft.origins.api.origin.IOriginCallbackPower;
+import io.github.edwinmindcraft.origins.common.power.configuration.OriginsCallbackConfiguration;
 import net.minecraft.world.entity.LivingEntity;
 
-public class OriginsCallbackPower extends ActionOnCallbackPower {
+public class OriginsCallbackPower extends PowerFactory<OriginsCallbackConfiguration> implements IOriginCallbackPower<OriginsCallbackConfiguration> {
+	public OriginsCallbackPower() {
+		super(OriginsCallbackConfiguration.CODEC);
+	}
 
-    private final Consumer<Entity> entityActionChosen;
-    private final boolean executeChosenWhenOrb;
+	@Override
+	protected void onGained(OriginsCallbackConfiguration configuration, LivingEntity player) {
+		ConfiguredEntityAction.execute(configuration.entityActionGained(), player);
+	}
 
-    public OriginsCallbackPower(PowerType<?> type, LivingEntity entity, Consumer<Entity> entityActionRespawned, Consumer<Entity> entityActionRemoved, Consumer<Entity> entityActionGained, Consumer<Entity> entityActionLost, Consumer<Entity> entityActionAdded, Consumer<Entity> entityActionChosen, boolean executeChosenWhenOrb) {
-        super(type, entity, entityActionRespawned, entityActionRemoved, entityActionGained, entityActionLost, entityActionAdded);
-        this.entityActionChosen = entityActionChosen;
-        this.executeChosenWhenOrb = executeChosenWhenOrb;
-    }
+	@Override
+	protected void onLost(OriginsCallbackConfiguration configuration, LivingEntity player) {
+		ConfiguredEntityAction.execute(configuration.entityActionLost(), player);
+	}
 
-    public void onChosen(boolean isOrbOfOrigins) {
-        if(entityActionChosen != null) {
-            if(!isOrbOfOrigins || executeChosenWhenOrb) {
-                entityActionChosen.accept(entity);
-            }
-        }
-    }
+	@Override
+	protected void onAdded(OriginsCallbackConfiguration configuration, LivingEntity player) {
+		ConfiguredEntityAction.execute(configuration.entityActionAdded(), player);
+	}
+
+	@Override
+	protected void onRemoved(OriginsCallbackConfiguration configuration, LivingEntity player) {
+		ConfiguredEntityAction.execute(configuration.entityActionRemoved(), player);
+	}
+
+	@Override
+	protected void onRespawn(OriginsCallbackConfiguration configuration, LivingEntity player) {
+		ConfiguredEntityAction.execute(configuration.entityActionRespawned(), player);
+	}
+
+	@Override
+	public void onChosen(OriginsCallbackConfiguration configuration, LivingEntity entity, boolean isOrb) {
+		if (!isOrb || configuration.onOrb())
+			ConfiguredEntityAction.execute(configuration.entityActionChosen(), entity);
+	}
 }

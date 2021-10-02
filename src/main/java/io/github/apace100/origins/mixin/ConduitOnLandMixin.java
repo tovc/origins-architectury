@@ -2,7 +2,6 @@ package io.github.apace100.origins.mixin;
 
 import io.github.apace100.origins.power.OriginsPowerTypes;
 import io.github.edwinmindcraft.apoli.api.component.IPowerContainer;
-import io.github.edwinmindcraft.origins.common.registry.OriginPowers;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.entity.ConduitBlockEntity;
 import org.spongepowered.asm.mixin.Mixin;

@@ -20,6 +20,10 @@ public class OriginLayer implements Comparable<OriginLayer> {
 		return this.wrapped.name() instanceof TranslatableComponent tc ? tc.getKey() : "";
 	}
 
+	public io.github.edwinmindcraft.origins.api.origin.OriginLayer getWrapped() {
+		return this.wrapped;
+	}
+
 	public String getTranslationKey() {
 		return this.getOrCreateTranslationKey();
 	}

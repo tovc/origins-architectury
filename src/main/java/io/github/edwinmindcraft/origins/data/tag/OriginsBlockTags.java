@@ -11,4 +11,6 @@ public class OriginsBlockTags {
 	}
 
 	public static IOptionalNamedTag<Block> COBWEBS = tag("cobwebs");
+	public static IOptionalNamedTag<Block> UNPHASABLE = tag("unphasable");
+	public static IOptionalNamedTag<Block> NATURAL_STONE = tag("natural_stone");
 }

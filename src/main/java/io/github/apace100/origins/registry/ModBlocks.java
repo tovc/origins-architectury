@@ -1,32 +1,32 @@
 package io.github.apace100.origins.registry;
 
-import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.block.TemporaryCobwebBlock;
-import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
-import net.minecraft.core.Registry;
-import net.minecraft.resources.ResourceLocation;
+import io.github.edwinmindcraft.origins.common.registry.OriginRegisters;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.Material;
+import net.minecraftforge.fmllegacy.RegistryObject;
+
+import java.util.function.Supplier;
 
 public class ModBlocks {
 
-    public static final Block TEMPORARY_COBWEB = new TemporaryCobwebBlock(FabricBlockSettings.of(Material.WEB).noCollission().requiresCorrectToolForDrops().strength(4.0F));
+	public static final RegistryObject<TemporaryCobwebBlock> TEMPORARY_COBWEB = register("temporary_cobweb", () -> new TemporaryCobwebBlock(BlockBehaviour.Properties.of(Material.WEB).noCollission().requiresCorrectToolForDrops().strength(4.0F)), false);
 
-    public static void register() {
-        register("temporary_cobweb", TEMPORARY_COBWEB, false);
-    }
+	public static void register() {
+	}
 
-    private static void register(String blockName, Block block) {
-        register(blockName, block, true);
-    }
+	private static <T extends Block> RegistryObject<T> register(String blockName, Supplier<T> block) {
+		return register(blockName, block, true);
+	}
 
-    private static void register(String blockName, Block block, boolean withBlockItem) {
-        Registry.register(Registry.BLOCK, new ResourceLocation(Origins.MODID, blockName), block);
-        if(withBlockItem) {
-            Registry.register(Registry.ITEM, new ResourceLocation(Origins.MODID, blockName), new BlockItem(block, new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
-        }
-    }
+	private static <T extends Block> RegistryObject<T> register(String blockName, Supplier<T> block, boolean withBlockItem) {
+		RegistryObject<T> register = OriginRegisters.BLOCKS.register(blockName, block);
+		if (withBlockItem)
+			OriginRegisters.ITEMS.register(blockName, () -> new BlockItem(register.get(), new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
+		return register;
+	}
 }

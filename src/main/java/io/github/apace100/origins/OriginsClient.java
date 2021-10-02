@@ -36,7 +36,7 @@ public class OriginsClient implements ClientModInitializer {
 
     @Override
     @Environment(EnvType.CLIENT)
-    public void onInitializeClient() {
+    public static void onInitializeClient() {
         BlockRenderLayerMap.INSTANCE.putBlock(ModBlocks.TEMPORARY_COBWEB, RenderType.cutout());
 
         EntityRendererRegistry.INSTANCE.register(ModEntities.ENDERIAN_PEARL,

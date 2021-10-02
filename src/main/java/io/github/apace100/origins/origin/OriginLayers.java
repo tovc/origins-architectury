@@ -7,6 +7,8 @@ import net.minecraft.resources.ResourceLocation;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -14,6 +16,9 @@ import java.util.stream.Collectors;
  */
 @Deprecated
 public class OriginLayers {
+
+	private static final Map<io.github.edwinmindcraft.origins.api.origin.OriginLayer, OriginLayer> CACHE_MAP = new ConcurrentHashMap<>();
+
 	public static OriginLayer getLayer(ResourceLocation id) {
 		return OriginsAPI.getLayersRegistry().getOptional(id).map(OriginLayer::new).orElse(null);
 	}
@@ -26,15 +31,17 @@ public class OriginLayers {
 		return OriginsAPI.getLayersRegistry().keySet().size();
 	}
 
-	/**
-	 * @deprecated Dead code.
-	 */
-	@Deprecated
-	public static void clear() {}
+	public static void clear() {
+		CACHE_MAP.clear();
+	}
 
 	/**
 	 * @deprecated Dead code.
 	 */
 	@Deprecated
 	public static void add(OriginLayer layer) {}
+
+	public static OriginLayer get(io.github.edwinmindcraft.origins.api.origin.OriginLayer layer) {
+		return CACHE_MAP.computeIfAbsent(layer, OriginLayer::new);
+	}
 }

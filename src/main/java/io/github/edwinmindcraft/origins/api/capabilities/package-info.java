@@ -1,6 +1,6 @@
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
-package io.github.edwinmindcraft.origins.api.capabilies;
+package io.github.edwinmindcraft.origins.api.capabilities;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 

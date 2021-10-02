@@ -1,85 +1,83 @@
 package io.github.apace100.origins.entity;
 
 import io.github.apace100.origins.registry.ModEntities;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.ThrowableItemProjectile;
+import net.minecraft.world.entity.projectile.ThrownEnderpearl;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraftforge.event.ForgeEventFactory;
+import net.minecraftforge.event.entity.EntityTeleportEvent;
+import net.minecraftforge.fmllegacy.network.NetworkHooks;
+import org.jetbrains.annotations.NotNull;
 
-public class EnderianPearlEntity extends ThrowableItemProjectile {
-   public EnderianPearlEntity(EntityType<? extends EnderianPearlEntity> entityType, Level world) {
-      super(entityType, world);
-   }
+public class EnderianPearlEntity extends ThrownEnderpearl {
+	public EnderianPearlEntity(EntityType<? extends EnderianPearlEntity> entityType, Level world) {
+		super(entityType, world);
+	}
 
-   public EnderianPearlEntity(Level world, LivingEntity owner) {
-      super(ModEntities.ENDERIAN_PEARL, owner, world);
-   }
+	public EnderianPearlEntity(EntityType<? extends EnderianPearlEntity> entityType, LivingEntity owner, Level world) {
+		super(entityType, world);
+		this.setPos(owner.getX(), owner.getEyeY() - 0.1D, owner.getZ());
+		this.setOwner(owner);
+	}
 
-   @Environment(EnvType.CLIENT)
-   public EnderianPearlEntity(Level world, double x, double y, double z) {
-      super(ModEntities.ENDERIAN_PEARL, x, y, z, world);
-   }
+	public EnderianPearlEntity(Level world, LivingEntity owner) {
+		this(ModEntities.ENDERIAN_PEARL.get(), owner, world);
+	}
 
-   protected Item getDefaultItem() {
-      return Items.ENDER_PEARL;
-   }
+	@Override
+	protected void onHitEntity(@NotNull EntityHitResult entityHitResult) {}
 
-   protected void onHit(HitResult hitResult) {
-      super.onHit(hitResult);
-      Entity entity = this.getOwner();
+	protected @NotNull Item getDefaultItem() {
+		return Items.ENDER_PEARL;
+	}
 
-      for(int i = 0; i < 32; ++i) {
-         this.level.addParticle(ParticleTypes.PORTAL, this.getX(), this.getY() + this.random.nextDouble() * 2.0D, this.getZ(), this.random.nextGaussian(), 0.0D, this.random.nextGaussian());
-      }
+	protected void onHit(HitResult result) {
+		super.onHit(result);
 
-      if (!this.level.isClientSide && !this.isRemoved()) {
-         if (entity instanceof ServerPlayer) {
-            ServerPlayer serverPlayerEntity = (ServerPlayer)entity;
-            if (serverPlayerEntity.connection.getConnection().isConnected() && serverPlayerEntity.level == this.level && !serverPlayerEntity.isSleeping()) {
+		for (int i = 0; i < 32; ++i) {
+			this.level.addParticle(ParticleTypes.PORTAL, this.getX(), this.getY() + this.random.nextDouble() * 2.0D, this.getZ(), this.random.nextGaussian(), 0.0D, this.random.nextGaussian());
+		}
 
-               if (entity.isPassenger()) {
-                  entity.stopRiding();
-               }
+		if (!this.level.isClientSide && !this.isRemoved()) {
+			Entity entity = this.getOwner();
+			if (entity instanceof ServerPlayer serverplayer) {
+				//Origins: No damage from enderian pearls.
+				//Origins: Disable Endermite spawning.
+				if (serverplayer.connection.getConnection().isConnected() && serverplayer.level == this.level && !serverplayer.isSleeping()) {
+					EntityTeleportEvent.EnderPearl event = ForgeEventFactory.onEnderPearlLand(serverplayer, this.getX(), this.getY(), this.getZ(), this, 0.0F);
+					if (!event.isCanceled()) {
+						if (entity.isPassenger())
+							serverplayer.dismountTo(this.getX(), this.getY(), this.getZ());
+						else
+							entity.teleportTo(this.getX(), this.getY(), this.getZ());
 
-               entity.teleportTo(this.getX(), this.getY(), this.getZ());
-               entity.fallDistance = 0.0F;
-            }
-         } else if (entity != null) {
-            entity.teleportTo(this.getX(), this.getY(), this.getZ());
-            entity.fallDistance = 0.0F;
-         }
+						entity.teleportTo(event.getTargetX(), event.getTargetY(), event.getTargetZ());
+						entity.fallDistance = 0.0F;
+						if (event.getAttackDamage() > 0)
+							entity.hurt(DamageSource.FALL, event.getAttackDamage());
+					}
+				}
+			} else if (entity != null) {
+				entity.teleportTo(this.getX(), this.getY(), this.getZ());
+				entity.fallDistance = 0.0F;
+			}
 
-         this.discard();
-      }
+			this.discard();
+		}
+	}
 
-   }
-
-   public void tick() {
-      Entity entity = this.getOwner();
-      if (entity instanceof Player && !entity.isAlive()) {
-         this.discard();
-      } else {
-         super.tick();
-      }
-
-   }
-
-   public Entity changeDimension(ServerLevel destination) {
-      Entity entity = this.getOwner();
-      if (entity != null && entity.level.dimension() != destination.dimension()) {
-         this.setOwner((Entity)null);
-      }
-
-      return super.changeDimension(destination);
-   }
+	@Override
+	public @NotNull Packet<?> getAddEntityPacket() {
+		return NetworkHooks.getEntitySpawningPacket(this);
+	}
 }
