@@ -18,7 +18,7 @@ public record S2COpenOriginScreen(boolean showDirtBackground) {
 	}
 
 	public void handle(Supplier<NetworkEvent.Context> contextSupplier) {
-		contextSupplier.get().enqueueWork(() -> DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> () -> {
+		contextSupplier.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
 			OriginsClient.DISPLAY_ORIGIN_SCREEN = true;
 			OriginsClient.SHOW_DIRT_BACKGROUND = this.showDirtBackground();
 		}));

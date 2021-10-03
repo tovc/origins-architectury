@@ -1,7 +1,9 @@
 package io.github.edwinmindcraft.origins.client;
 
+import com.google.common.collect.ImmutableList;
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.screen.ChooseOriginScreen;
+import io.github.apace100.origins.screen.ViewOriginScreen;
 import io.github.edwinmindcraft.origins.api.OriginsAPI;
 import io.github.edwinmindcraft.origins.api.capabilities.IOriginContainer;
 import io.github.edwinmindcraft.origins.api.origin.OriginLayer;
@@ -12,6 +14,9 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static io.github.apace100.origins.OriginsClient.viewCurrentOriginKeybind;
 
 @Mod.EventBusSubscriber(value = Dist.CLIENT, modid = Origins.MODID)
 public class OriginsClientEventHandler {
@@ -23,10 +28,20 @@ public class OriginsClientEventHandler {
 			if (instance.screen != null || instance.player == null)
 				return;
 			IOriginContainer.get(instance.player).ifPresent(container -> {
-				List<OriginLayer> layers = OriginsAPI.getActiveLayers().stream().filter(x -> !container.hasOrigin(x)).toList();
-				layers.sort(OriginLayer::compareTo);
-				instance.setScreen(new ChooseOriginScreen(layers, 0, OriginsClient.SHOW_DIRT_BACKGROUND));
+				List<OriginLayer> layers = OriginsAPI.getActiveLayers().stream().filter(x -> !container.hasOrigin(x)).sorted(OriginLayer::compareTo).toList();
+				if (layers.size() > 0)
+					instance.setScreen(new ChooseOriginScreen(ImmutableList.copyOf(layers), 0, OriginsClient.SHOW_DIRT_BACKGROUND));
+				OriginsClient.DISPLAY_ORIGIN_SCREEN = false;
 			});
+		}
+	}
+
+	@SubscribeEvent
+	public static void onKeyPressed(TickEvent.ClientTickEvent event) {
+		while (viewCurrentOriginKeybind.consumeClick()) {
+			if (!(Minecraft.getInstance().screen instanceof ViewOriginScreen)) {
+				Minecraft.getInstance().setScreen(new ViewOriginScreen());
+			}
 		}
 	}
 }

@@ -1,6 +1,7 @@
 package io.github.edwinmindcraft.origins.data.generator;
 
 import io.github.apace100.origins.Origins;
+import io.github.apace100.origins.registry.ModBlocks;
 import io.github.edwinmindcraft.origins.data.tag.OriginsBlockTags;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.tags.BlockTagsProvider;
@@ -15,6 +16,6 @@ public class OriginsBlockTagProvider extends BlockTagsProvider {
 
 	@Override
 	protected void addTags() {
-		this.tag(OriginsBlockTags.COBWEBS).add(Blocks.COBWEB);
+		this.tag(OriginsBlockTags.COBWEBS).add(Blocks.COBWEB).add(ModBlocks.TEMPORARY_COBWEB.get());
 	}
 }

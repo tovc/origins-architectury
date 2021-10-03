@@ -1,0 +1,48 @@
+modLoader="javafml"
+loaderVersion="[37,)"
+license="MIT"
+
+[[mods]]
+modId="origins"
+version="${file.jarVersion}"
+displayName="Origins"
+#logoFile=
+authors="Apace"
+description='''
+This mod adds several origins with passive abilities to the game, which you can choose from at the beginning of the game.
+'''
+
+[[dependencies.origins]]
+    modId="forge"
+    mandatory=true
+    versionRange="[37.0.59,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.origins]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.17.1]"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.origins]]
+    modId="calio"
+    mandatory=true
+    versionRange="[1.0.2,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.origins]]
+    modId="apoli"
+    mandatory=true
+    versionRange="[1.0.4,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.origins]]
+    modId="cloth_config"
+    mandatory=true
+    versionRange="[5.0,)"
+    ordering="NONE"
+    side="BOTH"

@@ -17,11 +17,13 @@ repositories {
 	mavenLocal()
 	maven { url "https://maven.minecraftforge.net/" }
 	maven { url 'https://maven.architectury.dev' }
+	maven { url 'https://maven.theillusivec4.top' }
 	maven { url 'https://repo.spongepowered.org/maven'}
 	maven { url 'https://dvs1.progwml6.com/files/maven'}
 }
 
 mixin {
+	config 'origins.mixins.json'
 	add sourceSets.main, 'origins.refmap.json'
 }
 
@@ -44,7 +46,6 @@ minecraft {
 			property 'forge.logging.markers', 'REGISTRIES'
 			property 'forge.logging.console.level', 'debug'
 			property 'mixin.debug', 'true'
-			args '--mixin', 'origins.mixins.json'
 
 			mods {
 				origins {
@@ -57,7 +58,6 @@ minecraft {
 			property 'forge.logging.markers', 'REGISTRIES'
 			property 'forge.logging.console.level', 'debug'
 			property 'mixin.debug', 'true'
-			args '--mixin', 'origins.mixins.json'
 
 			mods {
 				origins {
@@ -70,10 +70,9 @@ minecraft {
 			property 'forge.logging.markers', 'REGISTRIES'
 			property 'forge.logging.console.level', 'debug'
 			property 'mixin.debug', 'true'
-			args '--mixin', 'origins.mixins.json'
 
 			args '--all'
-			args '--mod', 'apoli'
+			args '--mod', 'origins'
 			args '--existing', file('src/main/resources')
 			args '--existing', file('src/generated/resources')
 			args '--output', file('src/generated/resources/')
@@ -87,10 +86,10 @@ minecraft {
 }
 
 processResources {
-	filesMatching('META-INF/mods.toml', {
+	/*filesMatching('META-INF/mods.toml', {
 		expand  'version': version,
 				'minecraft_version': project.ext.minecraft_version
-	})
+	})*/
 }
 
 jar {
@@ -116,6 +115,7 @@ dependencies {
 	implementation fg.deobf(group: 'io.github.edwinmindcraft', name: "calio-${rootProject.minecraft_version}", version: "${calio_version}")
 	implementation fg.deobf(group: 'io.github.edwinmindcraft', name: "apoli-${rootProject.minecraft_version}", version: "${apoli_version}")
 	implementation fg.deobf(group: 'me.shedaniel.cloth', name: 'cloth-config-forge', version: "${clothconfig_version}")
+	implementation fg.deobf(group: 'top.theillusivec4.caelus', name: 'caelus-forge', version: "${caelus_version}")
 	compileOnly fg.deobf(group: 'mezz.jei', name: "jei-${rootProject.minecraft_version}", version: rootProject.jei_version, classifier: 'api')
 
 	//Runtime

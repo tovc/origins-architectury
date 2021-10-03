@@ -1,5 +1,6 @@
 package io.github.apace100.origins.screen;
 
+import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.vertex.PoseStack;
 import io.github.edwinmindcraft.origins.api.capabilities.IOriginContainer;
 import io.github.edwinmindcraft.origins.api.origin.OriginLayer;
@@ -20,7 +21,7 @@ public class WaitForNextLayerScreen extends Screen {
 
 	protected WaitForNextLayerScreen(List<OriginLayer> layerList, int currentLayerIndex, boolean showDirtBackground) {
 		super(TextComponent.EMPTY);
-		this.layerList = layerList;
+		this.layerList = ImmutableList.copyOf(layerList);
 		this.currentLayerIndex = currentLayerIndex;
 		this.showDirtBackground = showDirtBackground;
 		Player player = Minecraft.getInstance().player;

@@ -1,17 +1,13 @@
 package io.github.edwinmindcraft.origins.common.registry;
 
-import com.google.common.collect.ImmutableSet;
 import io.github.apace100.origins.Origins;
-import io.github.apace100.origins.origin.Impact;
 import io.github.edwinmindcraft.apoli.api.power.factory.EntityCondition;
 import io.github.edwinmindcraft.apoli.api.power.factory.PowerFactory;
 import io.github.edwinmindcraft.apoli.api.registry.ApoliRegistries;
 import io.github.edwinmindcraft.origins.api.origin.Origin;
 import io.github.edwinmindcraft.origins.api.registry.OriginsBuiltinRegistries;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -34,7 +30,7 @@ public class OriginRegisters {
 
 	public static void register() {
 		IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
-		OriginsBuiltinRegistries.ORIGINS = ORIGINS.makeRegistry("origins", () -> new RegistryBuilder<Origin>().setDefaultKey(Origins.identifier("empty")));;
+		OriginsBuiltinRegistries.ORIGINS = ORIGINS.makeRegistry("origins", () -> new RegistryBuilder<Origin>().setDefaultKey(Origins.identifier("empty")));
 
 		POWER_FACTORIES.register(bus);
 		ORIGINS.register(bus);

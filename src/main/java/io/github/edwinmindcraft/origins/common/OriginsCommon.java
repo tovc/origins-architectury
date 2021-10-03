@@ -1,14 +1,20 @@
 package io.github.edwinmindcraft.origins.common;
 
 import io.github.apace100.origins.Origins;
+import io.github.apace100.origins.command.OriginCommand;
 import io.github.apace100.origins.power.OriginsPowerTypes;
 import io.github.edwinmindcraft.origins.api.capabilities.IOriginContainer;
 import io.github.edwinmindcraft.origins.common.network.*;
 import io.github.edwinmindcraft.origins.common.registry.OriginRegisters;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
+import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fmllegacy.network.NetworkDirection;
 import net.minecraftforge.fmllegacy.network.NetworkRegistry;
 import net.minecraftforge.fmllegacy.network.simple.SimpleChannel;
+import net.minecraftforge.fmlserverevents.FMLServerStartingEvent;
 
 public class OriginsCommon {
 	private static final String NETWORK_VERSION = "1.0";
@@ -38,8 +44,10 @@ public class OriginsCommon {
 	}
 
 	public static void initialize() {
+		IEventBus mod = FMLJavaModLoadingContext.get().getModEventBus();
 		OriginRegisters.register();
 		OriginsPowerTypes.register();
+		mod.addListener(OriginsCommon::registerCapabilities);
 	}
 
 	public static void registerCapabilities(RegisterCapabilitiesEvent event) {

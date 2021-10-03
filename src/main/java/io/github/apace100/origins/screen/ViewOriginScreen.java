@@ -94,6 +94,8 @@ public class ViewOriginScreen extends OriginDisplayScreen {
 
 	@Override
 	protected OriginLayer getCurrentLayer() {
+		if (this.currentLayer >= this.originLayers.size() || this.currentLayer < 0)
+			return null;
 		return this.originLayers.get(this.currentLayer).getA();
 	}
 

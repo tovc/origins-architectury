@@ -1,0 +1,18 @@
+{
+  "vision": {
+    "condition": {
+      "power": "origins:water_vision_toggle",
+      "type": "apoli:power_active"
+    },
+    "type": "origins:water_vision"
+  },
+  "toggle": {
+    "active_by_default": true,
+    "condition": {
+      "fluid": "minecraft:water",
+      "type": "apoli:submerged_in"
+    },
+    "type": "apoli:toggle_night_vision"
+  },
+  "type": "apoli:multiple"
+}

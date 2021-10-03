@@ -26,10 +26,10 @@ public record S2CConfirmOrigin(ResourceLocation layer, ResourceLocation origin) 
 
 	public void handle(Supplier<NetworkEvent.Context> contextSupplier) {
 		contextSupplier.get().enqueueWork(() -> {
-			Player player = DistExecutor.safeCallWhenOn(Dist.CLIENT, () -> () -> (Player) Minecraft.getInstance().player);
+			Player player = DistExecutor.unsafeCallWhenOn(Dist.CLIENT, () -> () -> (Player) Minecraft.getInstance().player);
 			if (player == null) return;
 			IOriginContainer.get(player).ifPresent(x -> x.setOrigin(OriginsAPI.getLayersRegistry().get(this.layer()), OriginsAPI.getOriginsRegistry().get(this.origin())));
-			DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> () -> {
+			DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
 				if (Minecraft.getInstance().screen instanceof WaitForNextLayerScreen)
 					((WaitForNextLayerScreen) Minecraft.getInstance().screen).openSelection();
 			});

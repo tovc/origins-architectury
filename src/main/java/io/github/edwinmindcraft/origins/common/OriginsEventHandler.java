@@ -2,6 +2,7 @@ package io.github.edwinmindcraft.origins.common;
 
 import io.github.apace100.apoli.mixin.EntityAccessor;
 import io.github.apace100.origins.Origins;
+import io.github.apace100.origins.command.OriginCommand;
 import io.github.apace100.origins.origin.OriginLayers;
 import io.github.apace100.origins.origin.OriginRegistry;
 import io.github.apace100.origins.power.OriginsPowerTypes;
@@ -32,6 +33,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.AdvancementEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -69,6 +71,11 @@ public class OriginsEventHandler {
 	//endregion
 
 	@SubscribeEvent
+	public static void registerCommands(RegisterCommandsEvent event) {
+		OriginCommand.register(event.getDispatcher());
+	}
+
+	@SubscribeEvent
 	public static void attachCapabilities(AttachCapabilitiesEvent<Entity> event) {
 		if (event.getObject() instanceof Player player)
 			event.addCapability(OriginContainer.ID, new OriginContainer(player));
@@ -82,7 +89,7 @@ public class OriginsEventHandler {
 		registryManager.addValidation(OriginsDynamicRegistries.ORIGINS_REGISTRY, OriginLoader.INSTANCE, Origin.class, ApoliDynamicRegistries.CONFIGURED_POWER_KEY);
 
 		registryManager.add(OriginsDynamicRegistries.LAYERS_REGISTRY, OriginLayer.CODEC);
-		registryManager.addReload(OriginsDynamicRegistries.LAYERS_REGISTRY, "origins", LayerLoader.INSTANCE);
+		registryManager.addReload(OriginsDynamicRegistries.LAYERS_REGISTRY, "origin_layers", LayerLoader.INSTANCE);
 		registryManager.addValidation(OriginsDynamicRegistries.LAYERS_REGISTRY, LayerLoader.INSTANCE, OriginLayer.class, OriginsDynamicRegistries.ORIGINS_REGISTRY);
 	}
 

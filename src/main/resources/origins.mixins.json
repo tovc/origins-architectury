@@ -1,6 +1,6 @@
 {
 	"required": true,
-	"minVersion": "0.8",
+	"minVersion": "0.8.4",
 	"package": "io.github.apace100.origins.mixin",
 	"compatibilityLevel": "JAVA_16",
 	"mixins": [
@@ -15,7 +15,6 @@
 	],
 	"client": [
 		"PhasingOverlayMixin",
-		"ServerCheckMixin",
 		"WaterVisibilityMixin"
 	],
 	"injectors": {

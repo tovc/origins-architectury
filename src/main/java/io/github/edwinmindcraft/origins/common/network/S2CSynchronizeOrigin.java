@@ -40,7 +40,7 @@ public record S2CSynchronizeOrigin(int entity, Map<ResourceLocation, ResourceLoc
 
 	public void handle(Supplier<NetworkEvent.Context> contextSupplier) {
 		contextSupplier.get().enqueueWork(() -> {
-			Level level = DistExecutor.safeCallWhenOn(Dist.CLIENT, () -> () -> (Level) Minecraft.getInstance().level);
+			Level level = DistExecutor.unsafeCallWhenOn(Dist.CLIENT, () -> () -> (Level) Minecraft.getInstance().level);
 			if (level == null) return;
 			Entity entity = level.getEntity(this.entity());
 			if (entity == null) return;
