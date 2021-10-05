@@ -12,6 +12,8 @@ import net.minecraft.world.entity.projectile.ThrownEnderpearl;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.event.ForgeEventFactory;
@@ -42,7 +44,15 @@ public class EnderianPearlEntity extends ThrownEnderpearl {
 	}
 
 	protected void onHit(HitResult result) {
-		super.onHit(result);
+		HitResult.Type hitresult$type = result.getType();
+		if (hitresult$type == HitResult.Type.ENTITY)
+			this.onHitEntity((EntityHitResult)result);
+		else if (hitresult$type == HitResult.Type.BLOCK)
+			this.onHitBlock((BlockHitResult)result);
+
+		if (hitresult$type != HitResult.Type.MISS)
+			this.gameEvent(GameEvent.PROJECTILE_LAND, this.getOwner());
+
 
 		for (int i = 0; i < 32; ++i) {
 			this.level.addParticle(ParticleTypes.PORTAL, this.getX(), this.getY() + this.random.nextDouble() * 2.0D, this.getZ(), this.random.nextGaussian(), 0.0D, this.random.nextGaussian());

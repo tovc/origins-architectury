@@ -9,6 +9,7 @@ import io.github.apace100.origins.power.OriginsPowerTypes;
 import io.github.apace100.origins.registry.ModDamageSources;
 import io.github.edwinmindcraft.apoli.api.component.IPowerContainer;
 import io.github.edwinmindcraft.apoli.api.registry.ApoliDynamicRegistries;
+import io.github.edwinmindcraft.apoli.common.registry.ApoliCapabilities;
 import io.github.edwinmindcraft.calio.api.event.CalioDynamicRegistryEvent;
 import io.github.edwinmindcraft.calio.api.registry.ICalioDynamicRegistryManager;
 import io.github.edwinmindcraft.origins.api.OriginsAPI;
@@ -24,6 +25,7 @@ import io.github.edwinmindcraft.origins.common.network.S2COpenOriginScreen;
 import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -146,6 +148,13 @@ public class OriginsEventHandler {
 	public static void onStartTracking(PlayerEvent.StartTracking event) {
 		if (event.getTarget() instanceof Player target && event.getPlayer() instanceof ServerPlayer sp && !event.getPlayer().level.isClientSide())
 			Objects.requireNonNull(sp.getServer()).submitAsync(() -> IOriginContainer.get(target).ifPresent(x -> OriginsCommon.CHANNEL.send(PacketDistributor.PLAYER.with(() -> sp), x.getSynchronizationPacket())));
+	}
+
+	@SubscribeEvent
+	public static void playerClone(PlayerEvent.Clone event) {
+		event.getPlayer().getCapability(OriginsAPI.ORIGIN_CONTAINER)
+				.ifPresent(target -> event.getOriginal().getCapability(OriginsAPI.ORIGIN_CONTAINER)
+						.ifPresent(source -> target.deserializeNBT(source.serializeNBT())));
 	}
 
 	@SubscribeEvent

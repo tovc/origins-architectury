@@ -38,7 +38,7 @@ public class JsonUtils {
 	}
 
 	public static List<ResourceLocation> getIdentifierList(JsonObject root, String name) {
-		return getOptionalList(root, "exclude_random", (jsonElement, s) -> {
+		return getOptionalList(root, name, (jsonElement, s) -> {
 			String s1 = GsonHelper.convertToString(jsonElement, s);
 			try {
 				return new ResourceLocation(s1);

@@ -1,7 +1,9 @@
 package io.github.edwinmindcraft.origins.api.data;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Streams;
 import com.google.gson.*;
+import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.data.CompatibilityDataTypes;
 import io.github.apace100.origins.origin.Impact;
 import io.github.edwinmindcraft.origins.api.origin.Origin;
@@ -16,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Type;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public record PartialOrigin(@NotNull Set<ResourceLocation> powers,
 							@Nullable ItemStack icon, @Nullable Boolean unchoosable,
@@ -88,6 +91,7 @@ public record PartialOrigin(@NotNull Set<ResourceLocation> powers,
 		private Builder() {}
 
 		public Builder powers(Iterable<ResourceLocation> powers) {
+			Origins.LOGGER.info("Found powers [{}]", String.join(",", Streams.stream(powers).map(ResourceLocation::toString).collect(Collectors.toSet())));
 			this.powers.addAll(powers);
 			return this;
 		}

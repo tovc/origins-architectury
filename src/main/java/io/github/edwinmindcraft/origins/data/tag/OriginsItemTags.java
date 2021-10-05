@@ -11,5 +11,6 @@ public class OriginsItemTags {
 	}
 
 	public static IOptionalNamedTag<Item> MEAT = tag("meat");
+	public static IOptionalNamedTag<Item> IGNORE_DIET = tag("ignore_diet");
 	public static IOptionalNamedTag<Item> RANGED_WEAPONS = tag("ranged_weapons");
 }

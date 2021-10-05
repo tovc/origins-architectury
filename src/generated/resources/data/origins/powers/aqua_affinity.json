@@ -1,0 +1,49 @@
+{
+  "underwater": {
+    "modifier": {
+      "name": "Unnamed modifier",
+      "value": 4.0,
+      "operation": 2
+    },
+    "condition": {
+      "conditions": [
+        {
+          "fluid": "minecraft:water",
+          "type": "apoli:submerged_in"
+        },
+        {
+          "comparison": 1,
+          "compare_to": 0,
+          "enchantment": "minecraft:aqua_affinity",
+          "type": "apoli:enchantment"
+        }
+      ],
+      "type": "apoli:and"
+    },
+    "type": "apoli:modify_break_speed"
+  },
+  "ungrounded": {
+    "modifier": {
+      "name": "Unnamed modifier",
+      "value": 4.0,
+      "operation": 2
+    },
+    "condition": {
+      "conditions": [
+        {
+          "comparison": 3,
+          "compare_to": 0.0,
+          "fluid": "minecraft:water",
+          "type": "apoli:fluid_height"
+        },
+        {
+          "inverted": true,
+          "type": "apoli:on_block"
+        }
+      ],
+      "type": "apoli:and"
+    },
+    "type": "apoli:modify_break_speed"
+  },
+  "type": "apoli:multiple"
+}
