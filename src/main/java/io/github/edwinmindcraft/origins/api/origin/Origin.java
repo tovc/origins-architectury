@@ -126,11 +126,11 @@ public class Origin extends ForgeRegistryEntry.UncheckedRegistryEntry<Origin> {
 		StringBuilder builder = new StringBuilder("Origin(").append(this.getRegistryName()).append(")[");
 		boolean first = true;
 		for (ResourceLocation power : this.getPowers()) {
-			builder.append(power);
 			if (first)
 				first = false;
 			else
 				builder.append(',');
+			builder.append(power);
 		}
 		return builder.append(']').toString();
 	}

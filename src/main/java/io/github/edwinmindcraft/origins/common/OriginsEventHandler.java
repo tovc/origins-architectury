@@ -1,5 +1,6 @@
 package io.github.edwinmindcraft.origins.common;
 
+import io.github.apace100.apoli.Apoli;
 import io.github.apace100.apoli.mixin.EntityAccessor;
 import io.github.apace100.origins.Origins;
 import io.github.apace100.origins.command.OriginCommand;
@@ -34,6 +35,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
@@ -152,9 +154,16 @@ public class OriginsEventHandler {
 
 	@SubscribeEvent
 	public static void playerClone(PlayerEvent.Clone event) {
-		event.getPlayer().getCapability(OriginsAPI.ORIGIN_CONTAINER)
-				.ifPresent(target -> event.getOriginal().getCapability(OriginsAPI.ORIGIN_CONTAINER)
-						.ifPresent(source -> target.deserializeNBT(source.serializeNBT())));
+		event.getOriginal().reviveCaps(); // Reload capabilities.
+
+		LazyOptional<IOriginContainer> original = IOriginContainer.get(event.getOriginal());
+		LazyOptional<IOriginContainer> player = IOriginContainer.get(event.getPlayer());
+		if (original.isPresent() != player.isPresent()) {
+			Apoli.LOGGER.info("Capability mismatch: original:{}, new:{}", original.isPresent(), player.isPresent());
+		}
+		player.ifPresent(p -> original.ifPresent(o -> p.deserializeNBT(o.serializeNBT())));
+
+		event.getOriginal().invalidateCaps(); // Unload capabilities.
 	}
 
 	@SubscribeEvent

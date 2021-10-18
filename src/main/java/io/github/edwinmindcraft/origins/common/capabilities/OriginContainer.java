@@ -7,7 +7,6 @@ import io.github.apace100.origins.component.PlayerOriginComponent;
 import io.github.edwinmindcraft.apoli.api.ApoliAPI;
 import io.github.edwinmindcraft.apoli.api.component.IPowerContainer;
 import io.github.edwinmindcraft.apoli.api.power.configuration.ConfiguredPower;
-import io.github.edwinmindcraft.apoli.common.network.S2CSynchronizePowerContainer;
 import io.github.edwinmindcraft.origins.api.OriginsAPI;
 import io.github.edwinmindcraft.origins.api.capabilities.IOriginContainer;
 import io.github.edwinmindcraft.origins.api.origin.IOriginCallbackPower;
@@ -254,14 +253,14 @@ public class OriginContainer implements IOriginContainer, ICapabilitySerializabl
 			String origin = layers.getString(key);
 			if (origin.isBlank())
 				continue;
-			ResourceLocation orig = ResourceLocation.tryParse(key);
+			ResourceLocation orig = ResourceLocation.tryParse(origin);
 			if (orig == null) {
 				Origins.LOGGER.warn("Invalid origin {} found for layer {} on entity {}", origin, key, this.player.getScoreboardName());
 				continue;
 			}
 			Origin origin1 = origins.get(orig);
 			if (origin1 == null) {
-				Origins.LOGGER.warn("Invalid origin {} found for layer {} on entity {}", origin, key, this.player.getScoreboardName());
+				Origins.LOGGER.warn("Missing origin {} found for layer {} on entity {}", origin, key, this.player.getScoreboardName());
 				continue;
 			}
 			this.setOrigin(layer, origin1);
