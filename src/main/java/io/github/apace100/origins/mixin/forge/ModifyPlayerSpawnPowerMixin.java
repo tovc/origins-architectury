@@ -9,7 +9,8 @@ import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(ModifyPlayerSpawnPower.class)
 public abstract class ModifyPlayerSpawnPowerMixin implements IOriginCallbackPower<ModifyPlayerSpawnConfiguration> {
-	@Shadow public abstract void teleportToModifiedSpawn(ModifyPlayerSpawnConfiguration configuration, LivingEntity entity);
+	@Shadow(remap = false)
+	public abstract void teleportToModifiedSpawn(ModifyPlayerSpawnConfiguration configuration, LivingEntity entity);
 
 	@Override
 	public void onChosen(ModifyPlayerSpawnConfiguration configuration, LivingEntity living, boolean isOrb) {

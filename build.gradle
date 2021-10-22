@@ -23,8 +23,9 @@ repositories {
 }
 
 mixin {
-	config 'origins.mixins.json'
 	add sourceSets.main, 'origins.refmap.json'
+
+	config 'origins.mixins.json'
 }
 
 sourceSets {
@@ -110,6 +111,8 @@ dependencies {
 	minecraft group: 'net.minecraftforge', name: 'forge', version: "${minecraft_version}-${forge_version}"
 	testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.6.2'
 	implementation group: 'org.jetbrains', name: 'annotations', version: '22.0.0'
+
+	annotationProcessor 'org.spongepowered:mixin:0.8.4:processor'
 
 	//APIs
 	implementation fg.deobf(group: 'io.github.edwinmindcraft', name: "calio-${rootProject.minecraft_version}", version: "${calio_version}")
