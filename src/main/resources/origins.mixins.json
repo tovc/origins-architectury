@@ -17,6 +17,7 @@
 		"PhasingOverlayMixin",
 		"WaterVisibilityMixin"
 	],
+	"refmap": "origins.refmap.json",
 	"injectors": {
 		"defaultRequire": 1
 	}
