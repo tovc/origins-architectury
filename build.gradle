@@ -3,9 +3,13 @@ plugins {
 	id 'org.spongepowered.mixin'
 	id 'idea'
 	id 'maven-publish'
+	//Fatjar merging
+	id 'com.github.johnrengelman.shadow' version '7.1.0'
+	id "com.github.logicfan.gradle.shadow.json-transformer" version "1.0.1"
 }
 
 println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
+
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(16)
 
@@ -18,14 +22,15 @@ repositories {
 	maven { url "https://maven.minecraftforge.net/" }
 	maven { url 'https://maven.architectury.dev' }
 	maven { url 'https://maven.theillusivec4.top' }
-	maven { url 'https://repo.spongepowered.org/maven'}
-	maven { url 'https://dvs1.progwml6.com/files/maven'}
+	maven { url 'https://repo.spongepowered.org/maven' }
+	maven { url 'https://dvs1.progwml6.com/files/maven' }
 }
 
 mixin {
 	add sourceSets.main, 'origins.refmap.json'
 
 	config 'origins.mixins.json'
+	config 'apoli.mixins.json'
 }
 
 sourceSets {
@@ -127,9 +132,99 @@ dependencies {
 
 jar {
 	from("LICENSE") {
-		rename { "${it}_${project.archivesBaseName}"}
+		rename { "${it}_${project.archivesBaseName}" }
 	}
 }
+
+
+import com.github.jengelman.gradle.plugins.shadow.transformers.CacheableTransformer
+import com.github.jengelman.gradle.plugins.shadow.transformers.TransformerContext
+import com.github.logicfan.gradle.shadow.transformers.JsonTransformer
+import com.google.common.io.FileWriteMode
+import com.google.common.io.Files
+import shadow.org.apache.tools.zip.ZipEntry
+import shadow.org.apache.tools.zip.ZipOutputStream
+
+import java.nio.charset.StandardCharsets
+
+@CacheableTransformer
+class ModsTransformer implements com.github.jengelman.gradle.plugins.shadow.transformers.Transformer {
+
+	private final List<String> lines = new ArrayList<>()
+
+	@Override
+	boolean canTransformResource(FileTreeElement element) {
+		return element.relativePath.pathString.equalsIgnoreCase("META-INF/mods.toml")
+	}
+
+	@Override
+	void transform(TransformerContext context) {
+		List<String> result = new ArrayList<>()
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(context.is))) {
+			for (; ;) {
+				String line = reader.readLine()
+				if (line == null)
+					break
+				result.add(line)
+			}
+		}
+		if (!lines.isEmpty())
+			result.removeIf(x -> x.startsWithAny("modLoader=", "loaderVersion=", "license=", "issueTrackerURL="))
+		lines.addAll(result)
+	}
+
+	@Override
+	boolean hasTransformedResource() {
+		return !lines.isEmpty()
+	}
+
+	@Override
+	void modifyOutputStream(ZipOutputStream os, boolean preserveFileTimestamps) {
+		ZipEntry entry = new ZipEntry("META-INF/mods.toml")
+		entry.time = TransformerContext.getEntryTimestamp(preserveFileTimestamps, entry.time)
+		os.putNextEntry(entry)
+		os.write(lines.stream().reduce((x, y) -> x + "\n" + y).orElse("").getBytes(StandardCharsets.UTF_8))
+
+		lines.clear()
+	}
+}
+
+task mergeMappings(type: Copy) {
+	dependsOn configurations.compileClasspath
+	from {
+		configurations.compileClasspath.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
+	}
+	include 'META-INF/*-mappings.tsrg'
+	into project.file("${compileJava.temporaryDir}")
+	eachFile {path = name}
+	doLast {
+		def f = new File("${compileJava.temporaryDir}/${compileJava.name}-mappings.tsrg")
+		var sink = Files.asCharSink(f, StandardCharsets.UTF_8, FileWriteMode.APPEND)
+		project.fileTree("${compileJava.temporaryDir}") {
+			include "*-mappings.tsrg"
+			exclude "compileJava-mappings.tsrg"
+		}.forEach(t -> {
+			Files.asCharSource(t, StandardCharsets.UTF_8).copyTo(sink)
+		})
+	}
+}
+
+shadowJar {
+	classifier 'unified'
+	dependencies {
+		exclude(dependency {
+			it.moduleGroup != 'io.github.edwinmindcraft'
+		})
+	}
+	append 'META-INF/accesstransformer.cfg'
+	transform(new JsonTransformer(resource: 'META-INF/coremods.json'))
+	transform(new ModsTransformer())
+	manifest {
+		attributes(['MixinConfigs': 'origins.mixins.json,apoli.mixins.json'])
+	}
+	finalizedBy(mergeMappings)
+}
+
 
 task sourceJar(type: Jar, dependsOn: processResources) {
 	classifier 'sources'
@@ -137,6 +232,9 @@ task sourceJar(type: Jar, dependsOn: processResources) {
 }
 
 jar.finalizedBy('reobfJar')
+mergeMappings.finalizedBy(reobf.maybeCreate('shadowJar'))
+
+build.dependsOn('shadowJar')
 
 publishing {
 	publications {
