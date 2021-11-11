@@ -30,7 +30,6 @@ mixin {
 	add sourceSets.main, 'origins.refmap.json'
 
 	config 'origins.mixins.json'
-	config 'apoli.mixins.json'
 }
 
 sourceSets {

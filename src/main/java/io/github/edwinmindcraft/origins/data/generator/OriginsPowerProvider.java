@@ -32,6 +32,7 @@ import io.github.edwinmindcraft.apoli.common.registry.condition.ApoliBlockCondit
 import io.github.edwinmindcraft.apoli.common.registry.condition.ApoliEntityConditions;
 import io.github.edwinmindcraft.apoli.common.registry.condition.ApoliItemConditions;
 import io.github.edwinmindcraft.origins.common.power.configuration.NoSlowdownConfiguration;
+import io.github.edwinmindcraft.origins.common.power.configuration.WaterVisionConfiguration;
 import io.github.edwinmindcraft.origins.data.tag.OriginsBlockTags;
 import io.github.edwinmindcraft.origins.data.tag.OriginsItemTags;
 import net.minecraft.core.NonNullList;
@@ -117,7 +118,7 @@ public class OriginsPowerProvider extends PowerGenerator {
 		this.add("water_breathing", OriginsPowerTypes.WATER_BREATHING.get().configure(NoConfiguration.INSTANCE, PowerData.DEFAULT));
 		this.add("scare_creepers", OriginsPowerTypes.SCARE_CREEPERS.get().configure(NoConfiguration.INSTANCE, PowerData.DEFAULT));
 		this.add("water_vision", ApoliPowers.MULTIPLE.get().configure(new MultipleConfiguration<>(ImmutableMap.of(
-						"vision", OriginsPowerTypes.WATER_VISION.get().configure(NoConfiguration.INSTANCE, PowerData.builder()
+						"vision", OriginsPowerTypes.WATER_VISION.get().configure(new WaterVisionConfiguration(1.0F), PowerData.builder()
 								.addCondition(ApoliEntityConditions.POWER_ACTIVE.get().configure(new PowerReference(Origins.identifier("water_vision_toggle")))).build()),
 						"toggle", ApoliPowers.TOGGLE_NIGHT_VISION.get().configure(new ToggleNightVisionConfiguration(true, IActivePower.Key.PRIMARY, 1.0F), PowerData.builder()
 								.addCondition(ApoliEntityConditions.SUBMERGED_IN.get().configure(FieldConfiguration.of(FluidTags.WATER))).build()))),

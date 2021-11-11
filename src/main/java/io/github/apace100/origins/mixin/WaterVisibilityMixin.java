@@ -3,6 +3,7 @@ package io.github.apace100.origins.mixin;
 import com.mojang.authlib.GameProfile;
 import io.github.apace100.origins.power.OriginsPowerTypes;
 import io.github.edwinmindcraft.apoli.api.component.IPowerContainer;
+import io.github.edwinmindcraft.origins.common.power.WaterVisionPower;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
@@ -21,9 +22,9 @@ public abstract class WaterVisibilityMixin extends AbstractClientPlayer {
 		super(world, profile);
 	}
 
-	@Inject(at = @At("HEAD"), method = "getWaterVision", cancellable = true)
+	@Inject(at = @At("RETURN"), method = "getWaterVision", cancellable = true)
 	private void getUnderwaterVisibility(CallbackInfoReturnable<Float> info) {
-		if (IPowerContainer.hasPower(this, OriginsPowerTypes.WATER_VISION.get()))
-			info.setReturnValue(1.0F);
+		//Changed to grant minimum water vision.
+		WaterVisionPower.getWaterVisionStrength(this).filter(x -> x > info.getReturnValueF()).ifPresent(info::setReturnValue);
 	}
 }

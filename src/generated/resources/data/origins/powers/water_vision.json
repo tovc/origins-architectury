@@ -1,7 +1,7 @@
 {
   "vision": {
     "condition": {
-      "power": "origins:water_vision_toggle",
+      "power": "*:*_toggle",
       "type": "apoli:power_active"
     },
     "type": "origins:water_vision"
