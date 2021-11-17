@@ -9,7 +9,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.forge.event.lifecycle.GatherDataEvent;
 
 public class OriginsData {
-	public static void initilize() {
+	public static void initialize() {
 		IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
 		bus.addListener(OriginsData::gatherData);
 	}

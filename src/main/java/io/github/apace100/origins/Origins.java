@@ -56,7 +56,7 @@ public class Origins {
 		Origin.init();
 
 		OriginsCommon.initialize();
-		OriginsData.initilize();
+		OriginsData.initialize();
 
 		DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> OriginsClient::initialize);
 		NamespaceAlias.addAlias("origins", "apoli");

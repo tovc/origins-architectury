@@ -16,7 +16,7 @@ This mod adds several origins with passive abilities to the game, which you can 
 [[dependencies.origins]]
     modId="forge"
     mandatory=true
-    versionRange="[37.0.59,)"
+    versionRange="[37.0.74,)"
     ordering="NONE"
     side="BOTH"
 
@@ -30,14 +30,14 @@ This mod adds several origins with passive abilities to the game, which you can 
 [[dependencies.origins]]
     modId="calio"
     mandatory=true
-    versionRange="[1.0.2,)"
+    versionRange="[1.0.2.2,)"
     ordering="NONE"
     side="BOTH"
 
 [[dependencies.origins]]
     modId="apoli"
     mandatory=true
-    versionRange="[1.0.4,)"
+    versionRange="[1.0.4.4,)"
     ordering="NONE"
     side="BOTH"
 

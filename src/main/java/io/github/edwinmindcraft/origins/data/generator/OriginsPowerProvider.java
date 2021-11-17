@@ -62,7 +62,7 @@ public class OriginsPowerProvider extends PowerGenerator {
 						.configure(
 								new ModifyBreakSpeedConfiguration(ListConfiguration.of(new AttributeModifier(UUID.randomUUID(), "Unnamed attribute modifier", 4, AttributeModifier.Operation.MULTIPLY_TOTAL)), null),
 								PowerData.builder().addCondition(ApoliEntityConditions.and(
-										ApoliEntityConditions.SUBMERGED_IN.get().configure(FieldConfiguration.of(FluidTags.WATER)),
+										ApoliEntityConditions.SUBMERGED_IN.get().configure(new TagConfiguration<>(FluidTags.WATER)),
 										ApoliEntityConditions.ENCHANTMENT.get().configure(new EnchantmentConfiguration(new IntegerComparisonConfiguration(Comparison.EQUAL, 0), Enchantments.AQUA_AFFINITY, EnchantmentConfiguration.Calculation.SUM))
 								)).build()));
 		builder.put("ungrounded",
@@ -77,7 +77,7 @@ public class OriginsPowerProvider extends PowerGenerator {
 	}
 
 	private static Map<String, ConfiguredPower<?, ?>> makeMasterOfWebs() {
-		ConfiguredBlockCondition<?, ?> inCobwebs = ApoliBlockConditions.IN_TAG.get().configure(FieldConfiguration.of(OriginsBlockTags.COBWEBS));
+		ConfiguredBlockCondition<?, ?> inCobwebs = ApoliBlockConditions.IN_TAG.get().configure(new TagConfiguration<>(OriginsBlockTags.COBWEBS));
 
 		ImmutableMap.Builder<String, ConfiguredPower<?, ?>> builder = ImmutableMap.builder();
 		builder.put("webbing", ApoliPowers.TARGET_ACTION_ON_HIT.get().configure(
@@ -121,7 +121,7 @@ public class OriginsPowerProvider extends PowerGenerator {
 						"vision", OriginsPowerTypes.WATER_VISION.get().configure(new WaterVisionConfiguration(1.0F), PowerData.builder()
 								.addCondition(ApoliEntityConditions.POWER_ACTIVE.get().configure(new PowerReference(Origins.identifier("water_vision_toggle")))).build()),
 						"toggle", ApoliPowers.TOGGLE_NIGHT_VISION.get().configure(new ToggleNightVisionConfiguration(true, IActivePower.Key.PRIMARY, 1.0F), PowerData.builder()
-								.addCondition(ApoliEntityConditions.SUBMERGED_IN.get().configure(FieldConfiguration.of(FluidTags.WATER))).build()))),
+								.addCondition(ApoliEntityConditions.SUBMERGED_IN.get().configure(new TagConfiguration<>(FluidTags.WATER))).build()))),
 				PowerData.DEFAULT));
 		this.add("no_cobweb_slowdown", OriginsPowerTypes.NO_SLOWDOWN.get().configure(new NoSlowdownConfiguration(OriginsBlockTags.COBWEBS), hidden));
 		//this.add("master_of_webs", ApoliPowers.MULTIPLE.get().configure(new MultipleConfiguration<>(makeMasterOfWebs()), PowerData.DEFAULT));

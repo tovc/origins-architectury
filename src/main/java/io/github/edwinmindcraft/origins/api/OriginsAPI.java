@@ -9,7 +9,8 @@ import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityInject;
+import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.common.capabilities.CapabilityToken;
 import org.apache.commons.lang3.Validate;
 
 import java.util.List;
@@ -19,8 +20,7 @@ public class OriginsAPI {
 	private static final ConcurrentHashMap<ResourceLocation, ResourceLocation> POWER_SOURCE_CACHE = new ConcurrentHashMap<>();
 	public static final String MODID = "origins";
 
-	@CapabilityInject(IOriginContainer.class)
-	public static Capability<IOriginContainer> ORIGIN_CONTAINER;
+	public static final Capability<IOriginContainer> ORIGIN_CONTAINER = CapabilityManager.get(new CapabilityToken<>() {});
 
 	public static Registry<Origin> getOriginsRegistry(MinecraftServer server) {
 		return CalioAPI.getDynamicRegistries(server).get(OriginsDynamicRegistries.ORIGINS_REGISTRY);

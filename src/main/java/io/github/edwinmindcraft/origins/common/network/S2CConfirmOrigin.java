@@ -3,6 +3,7 @@ package io.github.edwinmindcraft.origins.common.network;
 import io.github.apace100.origins.screen.WaitForNextLayerScreen;
 import io.github.edwinmindcraft.origins.api.OriginsAPI;
 import io.github.edwinmindcraft.origins.api.capabilities.IOriginContainer;
+import io.github.edwinmindcraft.origins.client.OriginsClientUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -26,7 +27,7 @@ public record S2CConfirmOrigin(ResourceLocation layer, ResourceLocation origin) 
 
 	public void handle(Supplier<NetworkEvent.Context> contextSupplier) {
 		contextSupplier.get().enqueueWork(() -> {
-			Player player = DistExecutor.unsafeCallWhenOn(Dist.CLIENT, () -> () -> (Player) Minecraft.getInstance().player);
+			Player player = DistExecutor.safeCallWhenOn(Dist.CLIENT, () -> OriginsClientUtils::getClientPlayer);
 			if (player == null) return;
 			IOriginContainer.get(player).ifPresent(x -> x.setOrigin(OriginsAPI.getLayersRegistry().get(this.layer()), OriginsAPI.getOriginsRegistry().get(this.origin())));
 			DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {

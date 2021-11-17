@@ -2,6 +2,7 @@ package io.github.edwinmindcraft.origins.common.network;
 
 import com.google.common.collect.ImmutableMap;
 import io.github.edwinmindcraft.origins.api.OriginsAPI;
+import io.github.edwinmindcraft.origins.client.OriginsClientUtils;
 import io.github.edwinmindcraft.origins.common.capabilities.OriginContainer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
@@ -40,7 +41,7 @@ public record S2CSynchronizeOrigin(int entity, Map<ResourceLocation, ResourceLoc
 
 	public void handle(Supplier<NetworkEvent.Context> contextSupplier) {
 		contextSupplier.get().enqueueWork(() -> {
-			Level level = DistExecutor.unsafeCallWhenOn(Dist.CLIENT, () -> () -> (Level) Minecraft.getInstance().level);
+			Level level = DistExecutor.safeCallWhenOn(Dist.CLIENT, () -> OriginsClientUtils::getClientLevel);
 			if (level == null) return;
 			Entity entity = level.getEntity(this.entity());
 			if (entity == null) return;
